@@ -18,9 +18,7 @@ lambd=args.lambd;
 loss=args.loss;
 
 nthreads=4
-datapath='/scratch/clear/mairal/large_datasets/'
-datapath='./'
-logfiles='/scratch/clear/mairal/logs_arsenic/'
+datapath='./data/'
 normalize=True
 centering=True
 it0=10

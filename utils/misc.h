@@ -41,10 +41,8 @@ using namespace std;
 
 /// a useful debugging function
 static inline void stop();
-/// seed for random number generation
-static int seed = 0;
 /// standard random number generator 
-template <typename T> static inline T ran1b(); 
+template <typename T> static inline T ran1(); 
 /// random sampling from the normal distribution
 template <typename T> static inline T normalDistrib();
 /// reorganize a sparse table between indices beg and end,
@@ -86,7 +84,7 @@ static inline void stop() {
 }
 
 /// standard random number generator 
-template <typename T> T ran1b() {
+template <typename T> T ran1() {
    return static_cast<T>(rand())/RAND_MAX;
 }
 
