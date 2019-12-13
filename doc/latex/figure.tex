@@ -1,0 +1,31 @@
+\documentclass{standalone}
+
+\usepackage{pst-plot}
+\usepackage{pstricks-add}
+\usepackage{pst-func}
+\begin{document}
+\psset{yunit=1,xunit=1}
+\begin{pspicture}(-3.5,-0.5)(3.5,3)
+\psline[linewidth=0.75pt]{->}(-3.5,0)(3.5,0)
+\psline[linewidth=0.75pt]{->}(0,-0.5)(0,3)
+   \psplot[linecolor=red, linewidth=1pt]{-3.5}{3.5}{
+      2.718 x neg exp 1 add ln
+   }
+   \psplot[linecolor=green!70!black!90, linewidth=1pt]{-3.5}{1}{
+      0.5 x neg 1 add x neg 1 add mul mul 
+   }
+   \psplot[linecolor=green!70!black!90, linewidth=1pt]{1}{3.5}{
+      0
+   }
+   \psplot[linecolor=blue, linestyle=dotted, linewidth=1pt]{-3.5}{3.5}{
+      0.5 x neg 1 add x neg 1 add mul mul 
+   }
+   \psplot[linecolor=magenta!70!black!90, linestyle=dashed, linewidth=1pt]{-3.5}{1}{
+       2.718 x -1 add  exp x neg add
+   }
+   \psplot[linecolor=magenta!70!black!90, linestyle=dashed, linewidth=1pt]{1}{3.5}{
+      0 
+   }
+    \put(3.25,-0.25){\footnotesize {$\hat{y}$}}
+\end{pspicture}
+\end{document}
