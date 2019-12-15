@@ -14,8 +14,10 @@ setup(name='arsenic-mkl',
         version='0.1',
         author="Julien Mairal",
         author_email="julien.mairal@inria.fr",
+        license='bsd-3-clause',
         url="http://julien.mairal.org/arsenic/",
         description='optimization toolbox for machine learning',
+        classifiers=["License :: BSD-3-Clause"],
         ext_modules=[arsenic_wrap],
         py_modules=['arsenic'])
 
