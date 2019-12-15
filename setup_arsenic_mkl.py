@@ -16,7 +16,6 @@ setup(name='arsenic-mkl',
         author_email="julien.mairal@inria.fr",
         url="http://julien.mairal.org/arsenic/",
         description='optimization toolbox for machine learning',
-#        install_requires=['mkl','intel_openmp'],
         ext_modules=[arsenic_wrap],
         py_modules=['arsenic'])
 
