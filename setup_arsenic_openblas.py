@@ -12,11 +12,10 @@ arsenic_wrap=Extension('arsenic_wrap',
 
 setup(name='arsenic-openblas',
         version='0.1',
-        description='optimization toolbox',
         author_email="julien.mairal@inria.fr",
         url="http://julien.mairal.org/arsenic/",
         description='optimization toolbox for machine learning',
-        install_requires=['openblas']
+        install_requires=['openblas'],
         ext_modules=[arsenic_wrap],
         py_modules=['arsenic'])
 
