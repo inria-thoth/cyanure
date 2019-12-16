@@ -16,8 +16,7 @@ setup(name='arsenic-openblas',
         license='bsd-3-clause',
         url="http://julien.mairal.org/arsenic/",
         description='optimization toolbox for machine learning',
-        classifiers=["License :: BSD-3-Clause"],
-        install_requires=['openblas'],
+#        install_requires=['openblas'],
         ext_modules=[arsenic_wrap],
         py_modules=['arsenic'])
 
