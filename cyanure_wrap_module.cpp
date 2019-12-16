@@ -193,14 +193,14 @@ static PyMethodDef methods[] = {
 
 static struct PyModuleDef module = {
    PyModuleDef_HEAD_INIT,
-   "arsenic_wrap",   /* name of module */
+   "cyanure_wrap",   /* name of module */
    NULL, /* module documentation, may be NULL */
    -1,       /* size of per-interpreter state of the module,
                 or -1 if the module keeps state in global variables. */
    methods
 };
 
-PyMODINIT_FUNC PyInit_arsenic_wrap(void) {
+PyMODINIT_FUNC PyInit_cyanure_wrap(void) {
    PyObject* m = PyModule_Create(&module);
    if (m == NULL)
       return NULL;

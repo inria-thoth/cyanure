@@ -5,7 +5,7 @@
 from abc import abstractmethod
 import numpy as np
 import scipy.sparse
-import arsenic_wrap 
+import cyanure_wrap 
 
 def preprocess(X,centering=False,normalize=True,columns=False):
     """ Perform in-place centering or normalization, either of columns or rows
@@ -30,7 +30,7 @@ def preprocess(X,centering=False,normalize=True,columns=False):
         Xf=X.T
     else:
         Xf=np.asfortranarray(X.T)
-    return arsenic_wrap.preprocess_(Xf,centering,normalize,not columns)
+    return cyanure_wrap.preprocess_(Xf,centering,normalize,not columns)
 
 class ERM:
     """ The generic class for empirical risk minimization problems.
@@ -212,7 +212,7 @@ class ERM:
                 self.dual_variable=np.zeros([n,nclasses],dtype=Xf.dtype)
 
         w=np.copy(w0)
-        optim_info=arsenic_wrap.erm_(Xf,yf,w0,w,dual_variable=self.dual_variable,loss=self.loss,penalty=self.penalty,solver=solver,lambd=float(lambd),lambd2=float(lambd2),lambd3=float(lambd3),intercept=bool(self.fit_intercept),tol=float(tol),it0=int(it0),nepochs=int(max_epochs),l_qning=int(l_qning),f_restart=int(f_restart),verbose=bool(verbose),univariate=bool(univariate),nthreads=int(nthreads),seed=int(seed))
+        optim_info=cyanure_wrap.erm_(Xf,yf,w0,w,dual_variable=self.dual_variable,loss=self.loss,penalty=self.penalty,solver=solver,lambd=float(lambd),lambd2=float(lambd2),lambd3=float(lambd3),intercept=bool(self.fit_intercept),tol=float(tol),it0=int(it0),nepochs=int(max_epochs),l_qning=int(l_qning),f_restart=int(f_restart),verbose=bool(verbose),univariate=bool(univariate),nthreads=int(nthreads),seed=int(seed))
         if self.fit_intercept:
             self.b=w[-1,]
             self.w=w[0:-1,]

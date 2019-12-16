@@ -1,4 +1,4 @@
-import arsenic as ars
+import cyanure 
 import numpy as np
 import scipy.sparse
 import argparse
@@ -59,15 +59,15 @@ if dataset=='real-sim' or dataset=='webspam' or dataset=='kddb' or dataset=='cri
     X = scipy.sparse.load_npz(datapath+dataset+'_X.npz')
     y=np.squeeze(y)
 
-ars.preprocess(X,centering=centering,normalize=normalize,columns=False) 
+cyanure.preprocess(X,centering=centering,normalize=normalize,columns=False) 
 
 if classif:
     if multiclass:
-        classifier=ars.MultiClassifier(loss=loss,penalty=penalty,fit_intercept=intercept)
+        classifier=cyanure.MultiClassifier(loss=loss,penalty=penalty,fit_intercept=intercept)
     else:
-        classifier=ars.BinaryClassifier(loss=loss,penalty=penalty,fit_intercept=intercept)
+        classifier=cyanure.BinaryClassifier(loss=loss,penalty=penalty,fit_intercept=intercept)
 else:
-    classifier=ars.Regression(loss=loss,penalty=penalty,fit_intercept=intercept)
+    classifier=cyanure.Regression(loss=loss,penalty=penalty,fit_intercept=intercept)
 
 if penalty=='l2':
     lambd=lambd/(X.shape[0])
