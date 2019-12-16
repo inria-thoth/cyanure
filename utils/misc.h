@@ -300,7 +300,9 @@ static inline void set_mkl_sequential() {
 
 static inline void set_mkl_parallel() {
 #ifdef HAVE_MKL
+#ifdef _OPENMP
    MKL_Set_Num_Threads(omp_get_max_threads());
+#endif
 #endif
 };
 

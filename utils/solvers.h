@@ -1353,7 +1353,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
       }
       const int nclass=W0.n();
       Regularizer<D,I>* regul = get_regul_mat<T,I>(model,nclass,loss->transpose());
-      solve_mat<LinearLossMat< M, Matrix<T> >>(*loss,*regul,param,W0,W,dual_variable,optim_info);
+      solve_mat<LinearLossMat< M, Matrix<T> > >(*loss,*regul,param,W0,W,dual_variable,optim_info);
       delete(regul);
       delete(loss);
    } else {

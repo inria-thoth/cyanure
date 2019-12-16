@@ -2147,7 +2147,7 @@ template <typename T> inline void Matrix<T>::AddMultDiagRight(
    //mat.setZeros();
    T* d = diag.rawX();
    for (INTM i = 0; i< _n; ++i) {
-      cblas_axpy<T>(_m,d[i],_X+i*m,1,mat._X+i*m,1);
+      cblas_axpy<T>(_m,d[i],_X+i*_m,1,mat._X+i*_m,1);
    }
 };
 
