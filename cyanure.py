@@ -364,9 +364,9 @@ class BinaryClassifier(ERM):
 
         y=np.squeeze(y)
         uniq=np.unique(y)
-        if uniq.shape[0] != 2:
-            print(uniq.shape[0]+" classes detected; use MulticlassClassifier instead")
-            return
+        nb_classes = len(uniq)
+        if nb_classes != 2:
+            raise ValueError("{} classes detected; use MulticlassClassifier instead".format(nb_classes))
         if not np.all(uniq == [-1, 1]):
             print("You have called BinaryClassifier, labels should be either -1 or 1, but they are")
             print(np.unique(y))
