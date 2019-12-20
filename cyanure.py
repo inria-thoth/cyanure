@@ -416,10 +416,10 @@ class Regression(ERM):
 
     """
     def __init__(self,loss='square',penalty='l2',fit_intercept=False):
-        if self.loss!='square':
+        if loss!='square':
             print("square loss should be used")
             return
-        super().__init__(self,loss=loss,penalty=penalty,fit_intercept=fit_intercept)
+        super().__init__(loss=loss,penalty=penalty,fit_intercept=fit_intercept)
 
     def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,nthreads=-1,seed=0):
         """
@@ -532,10 +532,10 @@ class MultiVariateRegression(ERM):
             learns an unregularized intercept b 
     """
     def __init__(self,loss='square',penalty='l2',fit_intercept=False):
-        if self.loss!='square':
+        if loss!='square':
             print("square loss should be used")
             return
-        super().__init__(self,loss=loss,penalty=penalty,fit_intercept=fit_intercept)
+        super().__init__(loss=loss,penalty=penalty,fit_intercept=fit_intercept)
 
     def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,nthreads=-1,seed=0):
         """ same as ERM.fit, but y should be n x k, where k is size of the target for each data point
@@ -576,7 +576,7 @@ class LinearSVC(BinaryClassifier):
     def __init__(self,loss='sqhinge',penalty='l2',fit_intercept=False,C=1,max_iter=500):
         if loss != 'sqhinge' and loss != 'squared_hinge':
             print("LinearSVC is only compatible with squared hinge loss at the moment")
-        super().__init__(self,loss='sqhinge',penalty=penalty,fit_intercept=fit_intercept,verbose=verbose,max_epochs=max_iter)
+        super().__init__(loss='sqhinge',penalty=penalty,fit_intercept=fit_intercept,verbose=verbose,max_epochs=max_iter)
         self.C=C
         self.verbose=verbose
         self.max_iter=max_iter
@@ -613,7 +613,7 @@ class LogisticRegression(BinaryClassifier):
     """
  
     def __init__(self,penalty='l2',fit_intercept=False,C=1,max_iter=500):
-        super().__init__(self,loss='logistic',penalty=penalty,fit_intercept=fit_intercept,verbose=verbose,max_epochs=max_iter)
+        super().__init__(loss='logistic',penalty=penalty,fit_intercept=fit_intercept,verbose=verbose,max_epochs=max_iter)
         self.C=C
         self.verbose=verbose
         self.max_iter=max_iter
