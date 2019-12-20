@@ -5,10 +5,11 @@
 from abc import abstractmethod
 import numpy as np
 import scipy.sparse
-import cyanure_wrap 
+import cyanure_wrap
 
-def preprocess(X,centering=False,normalize=True,columns=False):
-    """ Perform in-place centering or normalization, either of columns or rows
+
+def preprocess(X, centering=False, normalize=True, columns=False):
+    """Perform in-place centering or normalization, either of columns or rows
     of the input matrix X
 
     Parameters
@@ -27,21 +28,22 @@ def preprocess(X,centering=False,normalize=True,columns=False):
     """
 
     if scipy.sparse.issparse(X):
-        Xf=X.T
+        Xf = X.T
     else:
-        Xf=np.asfortranarray(X.T)
-    return cyanure_wrap.preprocess_(Xf,centering,normalize,not columns)
+        Xf = np.asfortranarray(X.T)
+    return cyanure_wrap.preprocess_(Xf, centering, normalize, not columns)
+
 
 class ERM:
-    """ The generic class for empirical risk minimization problems.
+    """The generic class for empirical risk minimization problems.
     For univariates problems, minimizes
-        
+
         min_{w,b} (1/n) sum_{i=1}^n L( y_i, <w, x_i> + b)   + psi(w)
-        
+
     """
 
-    def __init__(self,loss='square',penalty='l2',fit_intercept=False):
-        """ Initialization function of the ERM class. 
+    def __init__(self, loss='square', penalty='l2', fit_intercept=False):
+        """Initialization function of the ERM class.
 
         Parameters
         ----------
@@ -50,9 +52,12 @@ class ERM:
             - 'square' =>  L(y,z) = 0.5 ( y-z)^2
             - 'logistic' => L(y,z) = log(1 + e^{-y z} )
             - 'sqhinge' or 'squared_hinge' => L(y,z) = 0.5 max( 0, 1- y z)^2
-            - 'safe-logistic' => L(y,z) = e^{ yz - 1 } - y z  if yz <= 1 and 0 otherwise
-            - 'multiclass-logistic' => multinomial logistic (see Latex documentation).
-            Note that for binary classification, we assume the labels to be of the form {-1,+1}
+            - 'safe-logistic' => L(y,z) = e^{ yz - 1 } - y z  if yz <= 1
+                                 and 0 otherwise
+            - 'multiclass-logistic' => multinomial logistic (see Latex
+                                       documentation).
+            Note that for binary classification, we assume the labels to be of
+            the form {-1,+1}
 
         penalty: string, default='none'
             Regularization function psi. Possible choices are
@@ -62,27 +67,34 @@ class ERM:
             - 'l2' =>  psi{w) = (lambd/2) ||w||_2^2
             - 'l1' =>  psi{w) = lambd ||w||_1
             - 'elastic-net' =>  psi{w) = lambd ||w||_1 + (lambd2/2)||w||_2^2
-            - 'fused-lasso' => psi(w) = lambd sum_{i=2}^p |w[i]-w[i-1]| + lambd2||w||_1 + (lambd3/2)||w||_2^2
+            - 'fused-lasso' => psi(w) = lambd sum_{i=2}^p |w[i]-w[i-1]|
+                                      + lambd2||w||_1 + (lambd3/2)||w||_2^2
             - 'l1-ball'     => encodes the constraint ||w||_1 <= lambd
             - 'l2-ball'     => encodes the constraint ||w||_2 <= lambd
-            For multivariate problems, the previous penalties operate on each individual (e.g., class) predictor.
-            In addition, multitask-group Lasso penalties are provided for multivariate problems (w is then a matrix)
+
+            For multivariate problems, the previous penalties operate on each
+            individual (e.g., class) predictor.
+            In addition, multitask-group Lasso penalties are provided for
+            multivariate problems (w is then a matrix)
             - 'l1l2' or 'l1linf', see Latex documentation
 
         fit_intercept: boolean, default='False'
-            learns an unregularized intercept b  (or several intercepts for multivariate problems)
+            learns an unregularized intercept b  (or several intercepts for
+            multivariate problems)
         """
 
-        self.loss=loss
-        if (loss=='squared_hinge'):
-            self.loss='sqhinge'
-        self.penalty=penalty
-        self.fit_intercept=fit_intercept
-        self.w=0
-        self.b=0
-        self.dual_variable=None;
+        self.loss = loss
+        if (loss == 'squared_hinge'):
+            self.loss = 'sqhinge'
+        self.penalty = penalty
+        self.fit_intercept = fit_intercept
+        self.w = 0
+        self.b = 0
+        self.dual_variable = None
 
-    def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,univariate=True,nthreads=-1,seed=0):
+    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, univariate=True, nthreads=-1, seed=0):
         """
         The fitting function (the one that does the job)
 
@@ -90,20 +102,23 @@ class ERM:
         ----------
 
         X : numpy array, or scipy sparse CSR matrix
-            input n x p numpy matrix; the samples are on the rows 
+            input n x p numpy matrix; the samples are on the rows
 
         y : labels, numpy array.
             - vector of size n with real values for regression
-            - vector of size n with {-1,+1} labels for binary classification, which will be automatically converted if labels in {0,1} are provided
+            - vector of size n with {-1,+1} labels for binary classification,
+              which will be automatically converted if labels in {0,1} are
+              provided
             - matrix of size n x k for multivariate regression
-            - vector of size n with entries in {0,1,k-1} for classification with k classes
-        
+            - vector of size n with entries in {0,1,k-1} for classification
+              with k classes
+
         lambd: float, default=0
             first regularization parameter
-        
+
         lambd2: float, default=0
             second regularization parameter, if needed
-        
+
         lambd3: float, default=0
             third regularization parameter, if needed
 
@@ -121,28 +136,30 @@ class ERM:
             - 'catalyst-miso' (accelerated MISO with Catalyst)
             - 'qning-miso'  (quasi-Newton MISO)
             - 'auto'
-            see the Latex documentation for more details. If you are unsure, use 'auto'
-         
+            see the Latex documentation for more details.
+            If you are unsure, use 'auto'
+
          tol: float, default='1e-3'
             Tolerance parameter. For almost all combinations of loss and
             penalty functions, this parameter is based on a duality gap.
             Assuming the (non-negative) objective function is "f" and its
             optimal value is "f^*", the algorithm stops with the guarantee
 
-            f(x_t) - f^*  <=  tol f(x_t) 
+            f(x_t) - f^*  <=  tol f(x_t)
 
-         max_epochs: int, default=500  
-            Maximum number of iteration of the algorithm in terms of passes over the data
+         max_epochs: int, default=500
+            Maximum number of iteration of the algorithm in terms of passes
+            over the data
 
-         it0: int, default=10  
+         it0: int, default=10
             Frequency of duality-gap computation
 
          verbose: boolean, default=True
             Display information or not
 
          nthreads: int, default=-1
-            maximum number of cores the method may use (-1 = all cores). Note that more cores
-            is not always better.
+            maximum number of cores the method may use (-1 = all cores).
+            Note that more cores is not always better.
 
          seed: int, default=0
             random seed
@@ -158,126 +175,142 @@ class ERM:
 
          f_restart: int, default=50
             restart strategy for fista
-             
-        
-        Returns 
+
+
+        Returns
         -------
 
-        test returns a numpy array carrying information about the optimization process
-        (number of iterations, objective function values, duality gap)
+        test returns a numpy array carrying information about the optimization
+        process (number of iterations, objective function values, duality gap)
         will be documented in the future if people ask me,
         """
 
-        if y.ndim==0:
+        if y.ndim == 0:
             print("Please provide label vector")
-            return;
+            return
         Xf = X.T if scipy.sparse.issparse(X) else np.asfortranarray(X.T)
         p = X.shape[1]+1 if self.fit_intercept else X.shape[1]
-        y=np.squeeze(y)
+        y = np.squeeze(y)
         if y.shape[0] != X.shape[0]:
             print("X and y should have the same number of observations")
-            return;
+            return
         if univariate:
-            w0 = np.zeros(p,dtype=Xf.dtype)
-            yf=np.squeeze(y.astype(Xf.dtype))
+            w0 = np.zeros(p, dtype=Xf.dtype)
+            yf = np.squeeze(y.astype(Xf.dtype))
         else:
             if y.squeeze().ndim > 1:
-                nclasses=y.squeeze().shape[1]
-                yf=np.asfortranarray(y.T)
+                nclasses = y.squeeze().shape[1]
+                yf = np.asfortranarray(y.T)
             else:
-                nclasses=int(np.max(y)+1)
-                yf=np.squeeze(np.int32(y))
+                nclasses = int(np.max(y)+1)
+                yf = np.squeeze(np.int32(y))
             print(nclasses)
             print(p)
-            w0 = np.zeros([p,nclasses],dtype=Xf.dtype,order='F')
+            w0 = np.zeros([p, nclasses], dtype=Xf.dtype, order='F')
 
         if restart and np.any(self.w != 0):
             print("Restart")
             if self.fit_intercept:
-                w0[-1,]=self.b
-                w0[0:-1,]=self.w
+                w0[-1, ] = self.b
+                w0[0:-1, ] = self.w
             else:
-                w0=self.w
+                w0 = self.w
 
-        if restart and (solver=='auto' or solver=='miso' or solver=='catalyst-miso' or solver=='qning-miso'):
-            n=X.shape[0];
-            reset_dual = np.any(self.dual_variable==None)
+        if restart and (solver == 'auto' or solver == 'miso' or
+                        solver == 'catalyst-miso' or solver == 'qning-miso'):
+            n = X.shape[0]
+            reset_dual = np.any(self.dual_variable is None)
             if not reset_dual and univariate:
                 reset_dual = self.dual_variable.shape[0] != n
             if not reset_dual and not univariate:
-                reset_dual = np.any(self.dual_variable.shape != [n,nclasses])
+                reset_dual = np.any(self.dual_variable.shape != [n, nclasses])
             if reset_dual and univariate:
-                self.dual_variable=np.zeros(n,dtype=Xf.dtype)
+                self.dual_variable = np.zeros(n, dtype=Xf.dtype)
             if reset_dual and not univariate:
-                self.dual_variable=np.zeros([n,nclasses],dtype=Xf.dtype)
+                self.dual_variable = np.zeros([n, nclasses], dtype=Xf.dtype)
 
-        w=np.copy(w0)
-        optim_info=cyanure_wrap.erm_(Xf,yf,w0,w,dual_variable=self.dual_variable,loss=self.loss,penalty=self.penalty,solver=solver,lambd=float(lambd),lambd2=float(lambd2),lambd3=float(lambd3),intercept=bool(self.fit_intercept),tol=float(tol),it0=int(it0),nepochs=int(max_epochs),l_qning=int(l_qning),f_restart=int(f_restart),verbose=bool(verbose),univariate=bool(univariate),nthreads=int(nthreads),seed=int(seed))
+        w = np.copy(w0)
+        optim_info = cyanure_wrap.erm_(
+            Xf, yf, w0, w, dual_variable=self.dual_variable, loss=self.loss,
+            penalty=self.penalty, solver=solver, lambd=float(lambd),
+            lambd2=float(lambd2), lambd3=float(lambd3),
+            intercept=bool(self.fit_intercept), tol=float(tol), it0=int(it0),
+            nepochs=int(max_epochs), l_qning=int(l_qning),
+            f_restart=int(f_restart), verbose=bool(verbose),
+            univariate=bool(univariate), nthreads=int(nthreads), seed=int(seed)
+        )
         if self.fit_intercept:
-            self.b=w[-1,]
-            self.w=w[0:-1,]
+            self.b = w[-1, ]
+            self.w = w[0:-1, ]
         else:
-            self.w=w
+            self.w = w
         return optim_info
 
     @abstractmethod
-    def predict(self,X):
+    def predict(self, X):
         """
-        predict the labels given an input matrix X (same format as function fit)
+        predict the labels given an input matrix X (same format as fit)
         """
         pass
-    
+
     def get_weights(self):
         """
         get the model parameters (either w or the tuple (w,b))
         """
-        return (self.w,self.b) if self.fit_intercept else self.w
+        return (self.w, self.b) if self.fit_intercept else self.w
 
-    def eval(self,X,y,lambd=0,lambd2=0,lambd3=0):
+    def eval(self, X, y, lambd=0, lambd2=0, lambd3=0):
         """
-        get the value of the objective function and computes a relative duality gap, see function fit for the format of parameters.
+        get the value of the objective function and computes a relative
+        duality gap, see function fit for the format of parameters.
         """
-        return self.fit(X,y,lambd=lambd,lambd2=lambd2,lambd3=lambd3,max_epochs=0,verbose=False,restart=True)
+        return self.fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+                        max_epochs=0, verbose=False, restart=True)
 
-        
+
 class BinaryClassifier(ERM):
-    """ The binary classification class, which derives from ERM. The goal is to minimize
-        the following objective
+    """
+    The binary classification class, which derives from ERM. The goal is to
+    minimize the following objective
 
-        .. math:: 
-            \min_{w,b} \\frac{1}{n} \sum_{i=1}^n L\\left( y_i, w^\\top x_i + b\\right)   + \psi(w),
+        .. math::
+            \\min_{w,b} \\frac{1}{n} \\sum_{i=1}^n
+            L\\left( y_i, w^\\top x_i + b\\right) + \\psi(w),
 
-        where :math:`L` is a classification loss, :math:`\psi` is a regularization function (or constraint), 
-        :math:`w` is a p-dimensional vector representing model parameters,
-        and b is an optional unregularized intercept. We expect binary labels in {-1,+1}.
- 
+        where :math:`L` is a classification loss, :math:`\\psi` is a
+        regularization function (or constraint), :math:`w` is a p-dimensional
+        vector representing model parameters, and b is an optional
+        unregularized intercept. We expect binary labels in {-1,+1}.
+
         Parameters
         ----------
         loss: string, default='square'
             Loss function to be used. Possible choices are
 
             - 'square' =>  :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
-            - 'logistic' => :math:`L(y,z) = \log(1 + e^{-y z} )`
-            - 'sqhinge' or 'squared_hinge' => :math:`L(y,z) = \\frac{1}{2} \max( 0, 1- y z)^2`
-            - 'safe-logistic' => :math:`L(y,z) = e^{ yz - 1 } - y z ~\\text{if}~ yz \leq 1~~\\text{and}~~0` otherwise
+            - 'logistic' => :math:`L(y,z) = \\log(1 + e^{-y z} )`
+            - 'sqhinge' or 'squared_hinge' =>:math:`L(y,z) = \\frac{1}{2} \\max( 0, 1- y z)^2`
+            - 'safe-logistic' => :math:`L(y,z) = e^{ yz - 1 } - y z ~\\text{if}~ yz \\leq 1~~\\text{and}~~0` otherwise
 
         penalty: string, default='l2'
             Regularization function psi. Possible choices are
 
-            - 'none' => :math:`\psi(w) = 0`
-            - 'l2' =>  :math:`\psi(w) = \\frac{\\lambda}{2} \|w\|_2^2`
-            - 'l1' =>  :math:`\psi(w) = \\lambda \|w\|_1`
-            - 'elastic-net' =>  :math:`\psi(w) = \\lambda \|w\|_1 + \\frac{\\lambda_2}{2}\|w\|_2^2`
-            - 'fused-lasso' => :math:`\psi(w) = \\lambda \sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_2\|w\|_1 + \\frac{\lambda_3}{2}\|w\|_2^2`
-            - 'l1-ball'     => encodes the constraint :math:`\|w\|_1 \leq \lambda`
-            - 'l2-ball'     => encodes the constraint :math:`\|w\|_2 \leq \lambda`
+            - 'none' => :math:`\\psi(w) = 0`
+            - 'l2' =>  :math:`\\psi(w) = \\frac{\\lambda}{2} \\|w\\|_2^2`
+            - 'l1' =>  :math:`\\psi(w) = \\lambda \\|w\\|_1`
+            - 'elastic-net' =>  :math:`\\psi(w) = \\lambda \\|w\\|_1 + \\frac{\\lambda_2}{2}\\|w\\|_2^2`
+            - 'fused-lasso' => :math:`\\psi(w) = \\lambda \\sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_2\\|w\\|_1 + \\frac{\\lambda_3}{2}\\|w\\|_2^2`
+            - 'l1-ball'     => encodes the constraint :math:`\\|w\\|_1 \\leq \\lambda`
+            - 'l2-ball'     => encodes the constraint :math:`\\|w\\|_2 \\leq \\lambda`
 
         fit_intercept: boolean, default='False'
-            learns an unregularized intercept b 
+            learns an unregularized intercept b
 
     """
 
-    def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,nthreads=-1,seed=0):
+    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, nthreads=-1, seed=0):
         """
         The fitting function (the one that does the job)
 
@@ -285,19 +318,21 @@ class BinaryClassifier(ERM):
         ----------
 
         X: numpy array, or scipy sparse CSR matrix
-            input n x p numpy matrix; the samples are on the rows 
+            input n x p numpy matrix; the samples are on the rows
 
         y: labels, numpy array.
-            - vector of size n with {-1,+1} labels for binary classification, which will be automatically converted if labels in {0,1} are provided
-        
+            - vector of size n with {-1,+1} labels for binary classification,
+              which will be automatically converted if labels in {0,1} are
+              provided
+
         lambd: float, default=0
-            first regularization parameter :math:`\lambda`
-        
+            first regularization parameter :math:`\\lambda`
+
         lambd2: float, default=0
-            second regularization parameter :math:`\lambda_2`, if needed
-        
+            second regularization parameter :math:`\\lambda_2`, if needed
+
         lambd3: float, default=0
-            third regularization parameter :math:`\lambda_3`, if needed
+            third regularization parameter :math:`\\lambda_3`, if needed
 
         solver: string, default='auto'
             Optimization solver. Possible choices are
@@ -314,29 +349,32 @@ class BinaryClassifier(ERM):
             - 'catalyst-miso' (accelerated MISO with Catalyst)
             - 'qning-miso'  (quasi-Newton MISO)
             - 'auto'
-            see the Latex documentation for more details. If you are unsure, use 'auto'
-         
+            see the Latex documentation for more details.
+            If you are unsure, use 'auto'
+
          tol: float, default='1e-3'
             Tolerance parameter. For almost all combinations of loss and
             penalty functions, this parameter is based on a duality gap.
             Assuming the (non-negative) objective function is :math:`f` and its
-            optimal value is :math:`f^*`, the algorithm stops with the guarantee
+            optimal value is :math:`f^*`, the algorithm stops with the
+            guarantee
 
-            .. math:: 
-                f(x_t) - f^*  \leq  tol f(x_t) 
+            .. math::
+                f(x_t) - f^*  \\leq  tol f(x_t)
 
-         max_epochs: int, default=500  
-            Maximum number of iteration of the algorithm in terms of passes over the data
+         max_epochs: int, default=500
+            Maximum number of iteration of the algorithm in terms of passes
+            over the data
 
-         it0: int, default=10  
+         it0: int, default=10
             Frequency of duality-gap computation
 
          verbose: boolean, default=True
             Display information or not
 
          nthreads: int, default=-1
-            maximum number of cores the method may use (-1 = all cores). Note that more cores
-            is not always better.
+            maximum number of cores the method may use (-1 = all cores).
+            Note that more cores is not always better.
 
          seed: int, default=0
             random seed
@@ -352,9 +390,9 @@ class BinaryClassifier(ERM):
 
          f_restart: int, default=50
             restart strategy for fista
-             
-        
-        Returns 
+
+
+        Returns
         -------
         numpy array
             information about the optimization process (number of iterations,
@@ -362,271 +400,342 @@ class BinaryClassifier(ERM):
             future if people ask me.
         """
 
-        y=np.squeeze(y)
-        uniq=np.unique(y)
+        y = np.squeeze(y)
+        uniq = np.unique(y)
         if uniq.shape[0] != 2:
-            print(uniq.shape[0]+" classes detected; use MulticlassClassifier instead")
+            print(uniq.shape[0] + " classes detected; "
+                  "use MulticlassClassifier instead")
             return
         if not np.all(uniq == [-1, 1]):
-            print("You have called BinaryClassifier, labels should be either -1 or 1, but they are")
+            print("You have called BinaryClassifier, labels should be either "
+                  "-1 or 1, but they are")
             print(np.unique(y))
             print("Automatic conversion to [-1,1]")
-            neg= y==uniq[0]
-            y[neg]=-1
-            y[np.logical_not(neg)]=1
-        return super().fit(X,y,lambd=lambd,lambd2=lambd2,lambd3=lambd3,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_restart,verbose=verbose,restart=restart,univariate=True,nthreads=nthreads,seed=seed)
+            neg = y == uniq[0]
+            y[neg] = -1
+            y[np.logical_not(neg)] = 1
+        return super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+                           solver=solver, tol=tol, it0=it0,
+                           max_epochs=max_epochs, l_qning=l_qning,
+                           f_restart=f_restart, verbose=verbose,
+                           restart=restart, univariate=True, nthreads=nthreads,
+                           seed=seed)
 
-    def predict(self,X):
-        pred=X.dot(self.w)
-        if self.fit_intercept: pred += self.b
+    def predict(self, X):
+        pred = X.dot(self.w)
+        if self.fit_intercept:
+            pred += self.b
         return np.sign(pred)
 
-    def score(self,X,y):
-        """ compute classification accuracy of the model for new test data (X,y)
+    def score(self, X, y):
+        """Compute classification accuracy of the model for new test data (X,y)
         """
-        y=np.squeeze(y)
-        uniq=np.unique(y)
+        y = np.squeeze(y)
+        uniq = np.unique(y)
         if not np.all(uniq == [-1, 1]):
-            print("You have called BinaryClassifier, labels should be either -1 or 1, but they are")
+            print("You have called BinaryClassifier, labels should be either "
+                  "-1 or 1, but they are")
             print(np.unique(y))
             print("Automatic conversion to [-1,1]")
-            neg= y==uniq[0]
-            y[neg]=-1
-            y[np.logical_not(neg)]=1
-        pred=np.squeeze(self.predict(X))
-        return np.sum(np.squeeze(y)==pred)/pred.shape[0]
-    
+            neg = y == uniq[0]
+            y[neg] = -1
+            y[np.logical_not(neg)] = 1
+        pred = np.squeeze(self.predict(X))
+        return np.sum(np.squeeze(y) == pred)/pred.shape[0]
+
 
 class Regression(ERM):
-    """ The regression class. The objective is the same as for the BinaryClassifier class,
-        but we use a regression loss only (see below), and the targets will be real values.
- 
-        Parameters
-        ----------
-        loss: string, default='square'
-            Only the square loss is implemented at this point 
+    """
+    The regression class. The objective is the same as for the BinaryClassifier
+    class, but we use a regression loss only (see below), and the targets will
+    be real values.
 
-            - 'square' =>  :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
+    Parameters
+    ----------
+    loss: string, default='square'
+        Only the square loss is implemented at this point
 
-        penalty: string, default='l2'
-            same as for the class BinaryClassifier
+        - 'square' =>  :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
 
-        fit_intercept: boolean, default='False'
-            learns an unregularized intercept b 
+    penalty: string, default='l2'
+        same as for the class BinaryClassifier
+
+    fit_intercept: boolean, default='False'
+        learns an unregularized intercept b
 
     """
-    def __init__(self,loss='square',penalty='l2',fit_intercept=False):
-        if loss!='square':
+
+    def __init__(self, loss='square', penalty='l2', fit_intercept=False):
+        if loss != 'square':
             print("square loss should be used")
             return
-        super().__init__(loss=loss,penalty=penalty,fit_intercept=fit_intercept)
+        super().__init__(loss=loss, penalty=penalty,
+                         fit_intercept=fit_intercept)
 
-    def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,nthreads=-1,seed=0):
+    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, nthreads=-1, seed=0):
         """
-        The fitting function is the same as for the class BinaryClassifier, except that we do not
-        necessarily expect binary labels in y. 
+        The fitting function is the same as for the class BinaryClassifier,
+        except that we do not necessarily expect binary labels in y.
         """
 
-        return super().fit(X,y,lambd=lambd,lambd2=lambd2,lambd3=lambd3,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_restart,verbose=verbose,restart=restart,univariate=True,nthreads=nthreads,seed=seed)
+        return super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+                           solver=solver, tol=tol, it0=it0,
+                           max_epochs=max_epochs, l_qning=l_qning,
+                           f_restart=f_restart, verbose=verbose,
+                           restart=restart, univariate=True, nthreads=nthreads,
+                           seed=seed)
 
-    def predict(self,X):
-        pred=X.dot(self.w)
-        if self.fit_intercept: pred += self.b
+    def predict(self, X):
+        pred = X.dot(self.w)
+        if self.fit_intercept:
+            pred += self.b
         return pred
 
+
 class MultiClassifier(ERM):
-    """ The multi-class classification class. The goal is to minimize
-        the following objective
+    """The multi-class classification class. The goal is to minimize the
+    following objective
 
-        .. math:: 
-            \min_{W,b} \\frac{1}{n} \sum_{i=1}^n L\\left( y_i, W^\\top x_i + b\\right)   + \psi(W),
+    .. math::
+        \\min_{W,b} \\frac{1}{n} \\sum_{i=1}^n
+        L\\left( y_i, W^\\top x_i + b\\right)   + \\psi(W),
 
-        where :math:`L` is a classification loss, :math:`\psi` is a regularization function (or constraint), 
-        :math:`W=[w_1,\ldots,w_k]` is a (p x k) matrix that carries the k predictors, where k is the number
-        of classes, and :math:`y_i` is a label in :math:`\{1,\ldots,k\}`.
-        b is a k-dimensional vector representing an unregularized intercept (which is optional).
- 
-        Parameters
-        ----------
-        loss: string, default='square'
-            Loss function to be used. Possible choices are
+    where :math:`L` is a classification loss, :math:`\\psi` is a regularization
+    function (or constraint), :math:`W=[w_1,\\ldots,w_k]` is a (p x k) matrix
+    that carries the k predictors, where k is the number of classes, and
+    :math:`y_i` is a label in :math:`\\{1,\\ldots,k\\}`.
+    b is a k-dimensional vector representing an unregularized intercept
+    (which is optional).
 
-            - any loss function compatible with the class BinaryClassifier such as
-              ('square', 'logistic', 'sqhinge', 'safe-logistic'). In such a
-              case, the loss function encodes a one vs. all strategy based on
-              the chosen binary-classification loss.
-            - 'multiclass-logistic', which is also called multinomial or softmax logistic: 
-        
-            .. math:: 
-                L(y, W^\\top x + b) = \sum_{j=1}^k \log\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right) 
+    Parameters
+    ----------
+    loss: string, default='square'
+        Loss function to be used. Possible choices are
 
-        penalty: string, default='l2'
-            Regularization function psi. Possible choices are 
+        - any loss function compatible with the class BinaryClassifier e.g.
+            ('square', 'logistic', 'sqhinge', 'safe-logistic'). In such a case,
+            the loss function encodes a one vs. all strategy based on the
+            chosen binary-classification loss.
+        - 'multiclass-logistic', which is also called multinomial or
+            softmax logistic:
 
-            - any penalty function compatible with the class BinaryClassifier such as
-                ('none', 'l2', 'l1', 'elastic-net', 'fused-lasso', 'l1-ball', 'l2-ball'). In such a case,. the penalty is
-                applied on each predictor :math:`w_j` individually:
+        .. math::
+            L(y, W^\\top x + b) = \\sum_{j=1}^k
+            \\log\\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right)
 
-            .. math::
-                \psi(W) = \sum_{j=1}^k \psi(w_j). 
-            - 'l1l2', which is the multi-task group Lasso regularization  
+    penalty: string, default='l2'
+        Regularization function psi. Possible choices are
 
-            .. math:: 
-                \psi(W) = \sum_{j=1}^p \|W^j\|_2~~~~\\text{where}~W^j~\\text{is the j-th row of}~W.
-            - 'l1linf'
+        - any penalty function compatible with the class BinaryClassifier such
+          as ('none', 'l2', 'l1', 'elastic-net', 'fused-lasso', 'l1-ball',
+          'l2-ball'). In such a case,. the penalty is applied on each predictor
+           :math:`w_j` individually:
 
-            .. math:: 
-                \psi(W) = \sum_{j=1}^p \|W^j\|_\infty. 
+        .. math::
+            \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+        - 'l1l2', which is the multi-task group Lasso regularization
 
-        fit_intercept: boolean, default='False'
-            learns an unregularized intercept b, which is a k-dimensional vector 
+        .. math::
+            \\psi(W) = \\sum_{j=1}^p \\|W^j\\|_2~~~~
+            \\text{where}~W^j~\\text{is the j-th row of}~W.
+        - 'l1linf'
+
+        .. math::
+            \\psi(W) = \\sum_{j=1}^p \\|W^j\\|_\\infty.
+
+    fit_intercept: boolean, default='False'
+        learns an unregularized intercept b, which is a k-dimensional vector
     """
-    def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,nthreads=-1,seed=0):
-        """ same as BinaryClassifier, but y should be a vector a n-dimensional vector of integers
+
+    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, nthreads=-1, seed=0):
+        """Same as BinaryClassifier, but y should be a vector a n-dimensional
+        vector of integers
         """
-        y=np.squeeze(y)
+        y = np.squeeze(y)
         if y.squeeze().ndim != 1 or np.any(y != y.astype(int)):
             print("y should be a n-dimensional vector of integers")
             return
-        nclasses=np.max(y)+1
-        uniqu=np.unique(y)
-        if nclasses==2:
+        nclasses = np.max(y)+1
+        uniqu = np.unique(y)
+        if nclasses == 2:
             print("Two classes detected, use BinaryClassifier instead")
             return
-        if nclasses!= uniqu.shape[0] or not all(np.unique(y) == np.arange(nclasses)):
+        if (nclasses != uniqu.shape[0] or
+                not all(np.unique(y) == np.arange(nclasses))):
             print("Class labels should be of the form")
             print(np.arange(nclasses))
             print("but they are")
             print(uniqu)
             return
-        return super().fit(X,y,lambd=lambd,lambd2=lambd2,lambd3=lambd3,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_restart,verbose=verbose,restart=restart,univariate=False,nthreads=nthreads,seed=seed)
+        return super().fit(
+            X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3, solver=solver,
+            tol=tol, it0=it0, max_epochs=max_epochs, l_qning=l_qning,
+            f_restart=f_restart, verbose=verbose, restart=restart,
+            univariate=False, nthreads=nthreads, seed=seed)
 
-    def predict(self,X):
-        """ predicts the class label
-        """
-        pred=X.dot(self.w)
-        if self.fit_intercept: pred += self.b[newaxix,:] 
-        return np.argmax(pred,1)
+    def predict(self, X):
+        """Predicts the class label"""
+        pred = X.dot(self.w)
+        if self.fit_intercept:
+            pred += self.b[np.newaxix, :]
+        return np.argmax(pred, 1)
 
-    def score(self,X,y):
-        """ gives a classification score on new test data
-        """
-        pred=np.squeeze(self.predict(X))
-        return np.sum(np.squeeze(y)==pred)/pred.shape[0]
+    def score(self, X, y):
+        """Gives a classification score on new test data"""
+        pred = np.squeeze(self.predict(X))
+        return np.sum(np.squeeze(y) == pred)/pred.shape[0]
+
 
 class MultiVariateRegression(ERM):
-    """ The multivariate regression class. The objective is the same as for the MultiClassifier class,
-        but we use a regression loss only (see below), and the targets :math:`y_i` are k-dimensional vectors.
- 
+    """
+    The multivariate regression class. The objective is the same as for the
+    MultiClassifier class, but we use a regression loss only (see below), and
+    the targets :math:`y_i` are k-dimensional vectors.
+
         Parameters
         ----------
         loss: string, default='square'
-            Only the square loss is implemented at this point. Given two k-dimensional vectors y,z:
+            Only the square loss is implemented at this point. Given two
+            k-dimensional vectors y,z:
 
-            - 'square' =>  :math:`L(y,z) = \\frac{1}{2} \|y-z\|^2`
+            - 'square' =>  :math:`L(y,z) = \\frac{1}{2} \\|y-z\\|^2`
 
         penalty: string, default='l2'
             same as for the class MultiClassifier
 
         fit_intercept: boolean, default='False'
-            learns an unregularized intercept b 
+            learns an unregularized intercept b
     """
-    def __init__(self,loss='square',penalty='l2',fit_intercept=False):
-        if loss!='square':
+
+    def __init__(self, loss='square', penalty='l2', fit_intercept=False):
+        if loss != 'square':
             print("square loss should be used")
             return
-        super().__init__(loss=loss,penalty=penalty,fit_intercept=fit_intercept)
+        super().__init__(loss=loss, penalty=penalty,
+                         fit_intercept=fit_intercept)
 
-    def fit(self,X,y,lambd=0,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_epochs=500,l_qning=20,f_restart=50,verbose=True,restart=False,nthreads=-1,seed=0):
-        """ same as ERM.fit, but y should be n x k, where k is size of the target for each data point
+    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, nthreads=-1, seed=0):
+        """Same as ERM.fit, but y should be n x k, where k is size of the
+        target for each data point
         """
         if y.squeeze().ndim <= 1:
-            print("y should be n x k, where k is size of the target for each data point")
+            print("y should be n x k, where k is size of the target "
+                  "for each data point")
             return
-        return super().fit(X,y,lambd=lambd,lambd2=lambd2,lambd3=lambd3,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_restart,verbose=verbose,restart=restart,univariate=False,nthreads=nthreads,seed=seed)
+        return super().fit(
+            X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3, solver=solver,
+            tol=tol, it0=it0, max_epochs=max_epochs, l_qning=l_qning,
+            f_restart=f_restart, verbose=verbose, restart=restart,
+            univariate=False, nthreads=nthreads, seed=seed)
 
-    def predict(self,X):
-        """ predicts the targets
-        """
-        pred=X.dot(self.w)
-        if self.fit_intercept: pred += self.b[newaxix,:] 
+    def predict(self, X):
+        """Predicts the targets"""
+        pred = X.dot(self.w)
+        if self.fit_intercept:
+            pred += self.b[np.newaxix, :]
         return pred
 
 
-
 class LinearSVC(BinaryClassifier):
-    """ A compatibility class for scikit-learn user, but only for square hinge loss 
-        It is perfectly equivalent to the BinaryClassifier class, but the regularization
-        parameter (here "C") is provided during the class initialization. 
-        Note that :math:`C= \\frac{1}{2n \lambda}`
-
-        Parameters
-        ----------
-        
-        loss: should be 'sqhinge' or 'squared_hinge'
-
-        penalty: same as BinaryClassifier
-        
-        fit_intercept: same as BinaryClassifier
-        
-        C: regularization parameter
-        
-        max_iter: maximum number of iterations for the optimization solver
     """
-    def __init__(self,loss='sqhinge',penalty='l2',fit_intercept=False,C=1,max_iter=500):
-        if loss != 'sqhinge' and loss != 'squared_hinge':
-            print("LinearSVC is only compatible with squared hinge loss at the moment")
-        super().__init__(loss='sqhinge',penalty=penalty,fit_intercept=fit_intercept,verbose=verbose,max_epochs=max_iter)
-        self.C=C
-        self.verbose=verbose
-        self.max_iter=max_iter
+    A compatibility class for scikit-learn user, but only for square hinge loss
+    It is perfectly equivalent to the BinaryClassifier class, but the
+    regularization parameter (here "C") is provided during the class
+    initialization. Note that :math:`C= \\frac{1}{2n \\lambda}`
 
-    def fit(self,X,y,C=None,verbose=None,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_iter=None,l_qning=20,f_restart=50,restart=False,nthreads=-1,seed=0):
-        """ same as BinaryClassification, but the parameter C replaces lambd, and max_iter replaces max_epochs """
-        n=X.shape[0]
-        if C != None:
-            self.C=C
-        if verbose != None:
-            self.verbose=verbose
-        if max_iter != None:
-            self.max_iter=max_iter
-        super().fit(self,X=X,y=y,lambd=1/(2*n*self.C),lambd2=lambd2,lambd3=lambd3,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_rstart,verbose=verbose,restart=restart,nthreads=nthreads,seed=seed)
+    Parameters
+    ----------
+
+    loss: should be 'sqhinge' or 'squared_hinge'
+
+    penalty: same as BinaryClassifier
+
+    fit_intercept: same as BinaryClassifier
+
+    C: regularization parameter
+
+    max_iter: maximum number of iterations for the optimization solver
+    """
+
+    def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=False, C=1,
+                 max_iter=500):
+        if loss != 'sqhinge' and loss != 'squared_hinge':
+            print("LinearSVC is only compatible with squared hinge loss at "
+                  "the moment")
+        super().__init__(loss='sqhinge', penalty=penalty,
+                         fit_intercept=fit_intercept, max_epochs=max_iter)
+        self.C = C
+        self.max_iter = max_iter
+
+    def fit(self, X, y, C=None, verbose=None, lambd2=0, lambd3=0,
+            solver='auto', tol=1e-3, it0=10, max_iter=None, l_qning=20,
+            f_restart=50, restart=False, nthreads=-1, seed=0):
+        """Same as BinaryClassification, but the parameter C replaces lambd,
+        and max_iter replaces max_epochs.
+        """
+        n = X.shape[0]
+        if C is not None:
+            self.C = C
+        if verbose is not None:
+            self.verbose = verbose
+        if max_iter is not None:
+            self.max_iter = max_iter
+        super().fit(
+            X=X, y=y, lambd=1/(2*n*self.C), lambd2=lambd2, lambd3=lambd3,
+            solver=solver, tol=tol, it0=it0, max_epochs=max_iter,
+            l_qning=l_qning, f_restart=f_restart, verbose=verbose,
+            restart=restart, nthreads=nthreads, seed=seed)
+
 
 class LogisticRegression(BinaryClassifier):
-    """ A compatibility class for scikit-learn user, but only for square hinge loss 
-        It is perfectly equivalent to the BinaryClassifier class, but the regularization
-        parameter (here "C") is provided during the class initialization. 
-        Note that :math:`C= \\frac{1}{n \lambda}`
-
-        Parameters
-        ----------
-        
-        loss: should be 'sqhinge' or 'squared_hinge'
-
-        penalty: same as BinaryClassifier
-        
-        fit_intercept: same as BinaryClassifier
-        
-        C: regularization parameter
-        
-        max_iter: maximum number of iterations for the optimization solver
     """
- 
-    def __init__(self,penalty='l2',fit_intercept=False,C=1,max_iter=500):
-        super().__init__(loss='logistic',penalty=penalty,fit_intercept=fit_intercept,verbose=verbose,max_epochs=max_iter)
-        self.C=C
-        self.verbose=verbose
-        self.max_iter=max_iter
+    A compatibility class for scikit-learn user, but only for square hinge loss
+    It is perfectly equivalent to the BinaryClassifier class, but the
+    regularization parameter (here "C") is provided during the class
+    initialization. Note that :math:`C= \\frac{1}{n \\lambda}`
 
-    def fit(self,X,y,C=None,lambd2=0,lambd3=0,solver='auto',tol=1e-3,it0=10,max_iter=None,l_qning=20,f_restart=50,verbose=None,restart=False,nthreads=-1,seed=0):
-        """ same as BinaryClassification, but the parameter C replaces lambd, and max_iter replaces max_epochs """
-        n=X.shape[0]
-        if C != None:
-            self.C=C
-        if verbose != None:
-            self.verbose=verbose
-        if max_iter != None:
-            self.max_iter=max_iter
-        super().fit(self,X=X,y=y,lambd=1/(n*self.C),lambd2=lambd2,lambd3=lambd3,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_rstart,verbose=verbose,restart=restart,nthreads=nthreads,seed=seed)
+    Parameters
+    ----------
 
+    loss: should be 'sqhinge' or 'squared_hinge'
 
+    penalty: same as BinaryClassifier
+
+    fit_intercept: same as BinaryClassifier
+
+    C: regularization parameter
+
+    max_iter: maximum number of iterations for the optimization solver
+    """
+
+    def __init__(self, penalty='l2', fit_intercept=False, C=1, max_iter=500):
+        super().__init__(loss='logistic', penalty=penalty,
+                         fit_intercept=fit_intercept, max_epochs=max_iter)
+        self.C = C
+        self.max_iter = max_iter
+
+    def fit(self, X, y, C=None, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+            it0=10, max_iter=None, l_qning=20, f_restart=50, verbose=None,
+            restart=False, nthreads=-1, seed=0):
+        """
+        Same as BinaryClassification, but the parameter C replaces lambd,
+        and max_iter replaces max_epochs.
+        """
+        n = X.shape[0]
+        if C is not None:
+            self.C = C
+        if verbose is not None:
+            self.verbose = verbose
+        if max_iter is not None:
+            self.max_iter = max_iter
+        super().fit(
+            X=X, y=y, lambd=1/(n*self.C), lambd2=lambd2, lambd3=lambd3,
+            solver=solver, tol=tol, it0=it0, max_epochs=max_iter,
+            l_qning=l_qning, f_restart=f_restart, verbose=verbose,
+            restart=restart, nthreads=nthreads, seed=seed)
