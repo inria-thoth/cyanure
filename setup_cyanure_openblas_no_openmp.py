@@ -11,7 +11,7 @@ cyanure_wrap=Extension('cyanure_wrap',
         sources=['cyanure_wrap_module.cpp'])
 
 setup(name='cyanure-openblas-no-openmp',
-        version='0.1',
+        version='0.1.post1',
         author_email="julien.mairal@inria.fr",
         license='bsd-3-clause',
         url="http://julien.mairal.org/cyanure/",

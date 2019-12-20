@@ -464,7 +464,6 @@ class SVRG_Solver: public IncrementalSolver<loss_type> {
          IncrementalSolver<loss_type>::print();
       };
       D _xtilde, _gtilde;
-
 };
 
 template <typename loss_type> 
