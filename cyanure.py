@@ -204,8 +204,6 @@ class ERM:
             else:
                 nclasses = int(np.max(y)+1)
                 yf = np.squeeze(np.int32(y))
-            print(nclasses)
-            print(p)
             w0 = np.zeros([p, nclasses], dtype=Xf.dtype, order='F')
 
         if restart and np.any(self.w != 0):

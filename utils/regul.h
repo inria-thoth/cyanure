@@ -4,7 +4,7 @@
 #include "linalg.h"
 Timer timer_global, timer_global2, timer_global3;
 
-enum regul_t { L2, L1, ELASTICNET, L1BALL, L2BALL, FUSEDLASSO, L1L2, L1LINF, NONE, INCORRECT_REG };
+enum regul_t { L2, L1, ELASTICNET, L1BALL, L2BALL, FUSEDLASSO, L1L2, L1LINF, NONE, L1L2_L1, INCORRECT_REG };
 
 static bool is_regul_for_matrices(const regul_t& reg) {
    return reg==L1L2 || reg==L1LINF;
@@ -45,6 +45,7 @@ static regul_t regul_from_string(char* regul) {
    if (strcmp(regul,"l2-ball")==0) return L2BALL;
    if (strcmp(regul,"elastic-net")==0) return ELASTICNET;
    if (strcmp(regul,"l1l2")==0) return L1L2;
+   if (strcmp(regul,"l1l2+l1")==0) return L1L2_L1;
    if (strcmp(regul,"l1linf")==0) return L1LINF;
    if (strcmp(regul,"none")==0) return NONE;
    return INCORRECT_REG;
@@ -461,7 +462,6 @@ class RegMat final : public Regularizer< Matrix<typename Reg::T>, typename Reg::
 };
 
 
-/// TODO, faire classe plus general sur [W b] avec vec(W)
 template <typename Reg>
 class RegVecToMat final : public Regularizer< Matrix<typename Reg::T>, typename Reg::index_type > {
    public:
@@ -533,44 +533,108 @@ class RegVecToMat final : public Regularizer< Matrix<typename Reg::T>, typename 
 
 template <typename T>
 struct normL2 {
-   typedef T value_type;
-   static inline void prox(Vector<T>& x, const T thrs) {
-      const T nrm=x.nrm2();
-      if (nrm > thrs) {
-         x.scal((nrm-thrs)/nrm);
-      } else {
-         x.setZeros();
-      }
-   };
-   static inline T eval(const Vector<T>& x) {
-      return x.nrm2();
-   };
-   static inline void print() {
-      cout << "L2";
-   };
-   static inline T eval_dual(const Vector<T>& x) {
-      return x.nrm2();
-   };
+   public:
+      typedef T value_type;
+      normL2(const ParamModel<T>& model) : _lambda(model.lambda) { };
+
+      inline void prox(Vector<T>& x, const T thrs) const {
+         const T nrm=x.nrm2();
+         const T thrs2 = thrs*_lambda;
+         if (nrm > thrs2) {
+            x.scal((nrm-thrs2)/nrm);
+         } else {
+            x.setZeros();
+         }
+      };
+      inline T eval(const Vector<T>& x) const {
+         return _lambda*x.nrm2();
+      };
+      static inline void print() {
+         cout << "L2";
+      };
+      inline T eval_dual(const Vector<T>& x) const {
+         return x.nrm2()/_lambda;
+      };
+   private:
+      const T _lambda;
 };
 
 template <typename T>
 struct normLinf {
-   typedef T value_type;
-   static inline void prox(Vector<T>& x, const T thrs) {
-      Vector<T> z;
-      x.l1project(z,thrs);
-      x.sub(z);
-   };
-   static inline T eval(const Vector<T>& x) {
-      return x.fmaxval();
-   };
-   static inline void print() {
-      cout << "LInf";
-   };
-   static inline T eval_dual(const Vector<T>& x) {
-      return x.asum();
-   };
+   public:
+      typedef T value_type;
+      normLinf(const ParamModel<T>& model) : _lambda(model.lambda) { };
+
+      inline void prox(Vector<T>& x, const T thrs) const {
+         Vector<T> z;
+         x.l1project(z,thrs*_lambda);
+         x.sub(z);
+      };
+      inline T eval(const Vector<T>& x) const {
+         return _lambda*x.fmaxval();
+      };
+      static inline void print() {
+         cout << "LInf";
+      }
+      inline T eval_dual(const Vector<T>& x) const {
+         return x.asum()/_lambda;
+      };
+   private:
+      const T _lambda;
 };
+
+
+template <typename T>
+struct normL2_L1 {
+   public:
+      typedef T value_type;
+      normL2_L1(const ParamModel<T>& model) : _lambda(model.lambda), _lambda2(model.lambda2) { };
+
+      inline void prox(Vector<T>& x, const T thrs) const {
+         x.fastSoftThrshold(x,thrs*_lambda2);
+         const T nrm=x.nrm2();
+         const T thrs2 = thrs*_lambda;
+         if (nrm > thrs2) {
+            x.scal((nrm-thrs2)/nrm);
+         } else {
+            x.setZeros();
+         }
+      };
+      inline T eval(const Vector<T>& x) const {
+         return _lambda*x.nrm2()+_lambda2*x.asum();
+      };
+      static inline void print() {
+         cout << "L2+L1";
+      };
+      inline T eval_dual(const Vector<T>& x) const {
+         Vector<T> sorted_x;
+         sorted_x.copy(x);
+         sorted_x.abs_vec();
+         sorted_x.sort(false);
+         const int n = x.n();
+         T lambda_gamma=0;
+         T sum_sq=0;
+         T sum_lin=0;
+         for (int ii=0; ii<n; ++ii) {
+            lambda_gamma=sorted_x[ii];
+            sum_lin+=lambda_gamma;
+            sum_sq+=lambda_gamma*lambda_gamma;
+            const T lambda_mu = _lambda*lambda_gamma/(_lambda2);
+            if (sum_sq - 2*lambda_gamma*sum_lin + (ii+1)*lambda_gamma*lambda_gamma >= lambda_mu*lambda_mu) {
+               sum_lin-=lambda_gamma;
+               sum_sq -=lambda_gamma*lambda_gamma;
+               const T dual=solve_binomial2((ii)*_lambda2*_lambda2-_lambda*_lambda,-2*sum_lin*_lambda2,sum_sq);
+               return dual;
+            }
+         }
+         return 0;
+      };
+   private:
+      const T _lambda;
+      const T _lambda2;
+};
+
+
 
 template <typename N, typename I>
 class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > {
@@ -578,9 +642,8 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
       typedef typename N::value_type T;
       typedef Matrix<T> D;
       MixedL1LN(const ParamModel<T>& model, const int nclass, const bool transpose) :
-         Regularizer<D,I>(model), _transpose(transpose), _lambda(model.lambda) { };
+         Regularizer<D,I>(model), _transpose(transpose), _lambda(model.lambda), _norm(model) { };
       inline void prox(const D& x, D& y, const T eta) const {
-         const T thrs=_lambda*eta;
          const int n = x.n();
          const int m = x.m();
          y.copy(x);
@@ -590,7 +653,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
             for (int i = 0; i<nn; ++i) {
                Vector<T> col;
                y.refCol(i,col);
-               N::prox(col,thrs);
+               _norm.prox(col,eta);
             }
          } else {
             const int nn = this->_intercept ? m-1 : m;
@@ -598,7 +661,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
             for (int i = 0; i<nn; ++i) {
                Vector<T> row;
                y.copyRow(i,row);
-               N::prox(row,thrs);
+               _norm.prox(row,eta);
                y.copyToRow(i,row);
             }
          }
@@ -613,7 +676,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
             for (int i = 0; i<nn; ++i) {
                Vector<T> col;
                x.refCol(i,col);
-               sum+=N::eval(col);
+               sum+=_norm.eval(col);
             }
          } else {
             const int nn = this->_intercept ? m-1 : m;
@@ -621,10 +684,10 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
             for (int i = 0; i<nn; ++i) {
                Vector<T> row;
                x.copyRow(i,row);
-               sum+=N::eval(row);
+               sum+=_norm.eval(row);
             }
          }
-         return _lambda*sum;
+         return sum;
       }
       // grad1 is nclasses * n
       inline T fenchel(D& grad1, D& grad2) const { 
@@ -637,7 +700,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
             for (int i = 0; i<nn; ++i) {
                Vector<T> col;
                grad2.refCol(i,col);
-               mm = MAX(N::eval_dual(col),mm);
+               mm = MAX(_norm.eval_dual(col),mm);
             }
             Vector<T> col;
             if (this->_intercept) {
@@ -649,7 +712,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
             for (int i = 0; i<nn; ++i) {
                Vector<T> row;
                grad2.copyRow(i,row);
-               mm = MAX(N::eval_dual(row),mm);
+               mm = MAX(_norm.eval_dual(row),mm);
             }
             Vector<T> col;
             if (this->_intercept) {
@@ -657,8 +720,8 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
                if (col.nrm2sq() > T(1e-7)) res=INFINITY; 
             }
          }
-         if (mm > _lambda)  
-            grad1.scal(_lambda/mm);
+         if (mm > T(1.0))  
+            grad1.scal(T(1.0)/mm);
          return res;
       };
 
@@ -671,7 +734,6 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
       inline void lazy_prox(const D& input, D& output, const Vector<I>& indices, const T eta) const { 
          output.resize(input.m(),input.n());
          const int r = indices.n();
-         const T thrs=_lambda*eta;
          const int m = input.m();
          const int n = input.n();
          if (_transpose) {
@@ -682,7 +744,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
                input.refCol(ind,col1);
                output.refCol(ind,col);
                col.copy(col1);
-               N::prox(col,thrs);
+               _norm.prox(col,eta);
             }
             if (this->_intercept) {
                Vector<T> col, col1;
@@ -696,7 +758,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
                const int ind=indices[i];
                Vector<T> col;
                input.copyRow(ind,col);
-               N::prox(col,thrs);
+               _norm.prox(col,eta);
                output.copyToRow(ind,col);
             }
             if (this->_intercept) {
@@ -712,6 +774,7 @@ class MixedL1LN final : public Regularizer< Matrix<typename N::value_type>, I > 
    private:
       const bool _transpose;
       const T _lambda;
+      N _norm;
 };
 
 template <typename T, typename I>
@@ -719,5 +782,8 @@ using MixedL1L2=MixedL1LN< normL2<T>, I >;
 
 template <typename T, typename I>
 using MixedL1Linf=MixedL1LN< normLinf<T> , I>;
+
+template <typename T, typename I>
+using MixedL1L2_L1=MixedL1LN< normL2_L1<T>, I >;
 
 #endif

@@ -112,6 +112,20 @@ static inline T logexp2(const T x) {
       log( T(1.0) + exp_alt<T>( x ) );
 }
 
+template <typename T>
+static T solve_binomial(const T a, const T b, const T c) {
+   const T delta = b*b-4*a*c;
+   return (-b + alt_sqrt<T>(delta))/(2*a); // returns single largest solution, assiming delta > 0;
+};
+
+template <typename T>
+static T solve_binomial2(const T a, const T b, const T c) {
+   const T delta = b*b-4*a*c;
+   return (-b - alt_sqrt<T>(delta))/(2*a); // returns single largest solution, assiming delta > 0;
+};
+
+
+
 /// Class Matrix
 template<typename T> class Matrix {
    friend class SpMatrix<T>;
@@ -721,7 +735,7 @@ template<typename T> class Vector {
    inline void fusedProjectHomotopy(Vector<T>& out, const T lambda1,const T lambda2,const T lambda3 = 0,
          const bool penalty = true);
    /// projects the vector onto the l1 ball of radius thrs,
-   /// sort the vector
+   /// _sort the vector
    inline void sort(Vector<T>& out, const bool mode) const;
    /// sort the vector
    inline void sort(const bool mode);

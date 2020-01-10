@@ -11,7 +11,7 @@ cyanure_wrap=Extension('cyanure_wrap',
         sources=['cyanure_wrap_module.cpp'])
 
 setup(name='cyanure-mkl',
-        version='0.1.post1',
+        version='0.2',
         author="Julien Mairal",
         author_email="julien.mairal@inria.fr",
         license='bsd-3-clause',

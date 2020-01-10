@@ -74,12 +74,6 @@ template <typename T> struct ParamSolver {
    int freq_restart;
 };
 
-template <typename T>
-static T solve_binomial(const T a, const T b, const T c) {
-   const T delta = b*b-4*a*c;
-   return (-b + alt_sqrt<T>(delta))/(2*a); // returns single largest solution, assiming delta > 0;
-};
-
 template <typename loss_type> 
 class Solver {
    public:
@@ -1261,6 +1255,7 @@ Regularizer<Matrix<T>,I>* get_regul_mat(const ParamModel<T>& model, const int nc
       case L1BALL: regul = new RegMat<L1Ball<V,I> >(model,nclass,transpose); break;
       case L2BALL: regul = new RegMat<L2Ball<V,I> >(model,nclass,transpose); break;
       case L1L2: regul = new MixedL1L2<T,I>(model,nclass,transpose); break;
+      case L1L2_L1: regul = new MixedL1L2_L1<T,I>(model,nclass,transpose); break;
       case L1LINF: regul = new MixedL1Linf<T,I>(model,nclass,transpose); break;
       case FUSEDLASSO: regul = new RegMat<FusedLasso<V,I> >(model,nclass,transpose); break;
       case NONE: regul = new None<D,I>(model); break;
