@@ -536,12 +536,19 @@ class MultiClassifier(ERM):
         - 'l1l2', which is the multi-task group Lasso regularization
 
         .. math::
-            \\psi(W) = \\sum_{j=1}^p \\|W^j\\|_2~~~~
+            \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_2~~~~
             \\text{where}~W^j~\\text{is the j-th row of}~W.
         - 'l1linf'
 
         .. math::
-            \\psi(W) = \\sum_{j=1}^p \\|W^j\\|_\\infty.
+            \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_\\infty.
+
+        - 'l1l2+l1', which is the multi-task group Lasso regularization + l1
+
+        .. math::
+            \\psi(W) = \\sum_{j=1}^p \\lambda \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
+            \\text{where}~W^j~\\text{is the j-th row of}~W.
+
 
     fit_intercept: boolean, default='False'
         learns an unregularized intercept b, which is a k-dimensional vector
