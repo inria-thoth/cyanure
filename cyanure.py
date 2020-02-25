@@ -586,7 +586,7 @@ class MultiClassifier(ERM):
         """Predicts the class label"""
         pred = X.dot(self.w)
         if self.fit_intercept:
-            pred += self.b[np.newaxix, :]
+            pred += self.b[np.newaxis, :]
         return np.argmax(pred, 1)
 
     def score(self, X, y):
@@ -643,11 +643,134 @@ class MultiVariateRegression(ERM):
         """Predicts the targets"""
         pred = X.dot(self.w)
         if self.fit_intercept:
-            pred += self.b[np.newaxix, :]
+            pred += self.b[np.newaxis, :]
         return pred
 
+# from sklearn.base import BaseEstimator
+class SKLearnClassifier(ERM):
+    def fit(self, X, y, C=None, verbose=False, lambd2=0, lambd3=0,
+            solver='auto', tol=1e-3, it0=10, max_iter=None, l_qning=20,
+            f_restart=50, restart=False, nthreads=-1, seed=0):
+        """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
+        and max_iter replaces max_epochs.
+        """
+        n = X.shape[0]
+        if C is not None:
+            self.C = C
+        if verbose is not None:
+            self.verbose = verbose
+        if max_iter is not None:
+            self.max_iter = max_iter
+        self.classes_ = np.unique(y)
+        nb_classes = len(self.classes_)
+        if self.loss == 'sqhinge':
+            lambd = 1. / (2. * n * self.C)
+        elif self.loss == 'logistic':
+            lambd = 1. / (n * self.C)
+        else:
+            lambd = 1. / (2. * n * self.C)
+        if nb_classes == 2:
+            univariate = True
+            if not np.all(self.classes_ == [-1, 1]):
+                neg = y == self.classes_[0]
+                y = y.copy()
+                y[neg] = -1
+                y[np.logical_not(neg)] = 1
+        else:
+            univariate = False
+        optim_info = super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+                    solver=solver, tol=tol, it0=it0,
+                    max_epochs=self.max_iter, l_qning=l_qning,
+                    f_restart=f_restart, verbose=verbose,
+                    restart=restart, univariate=univariate, nthreads=nthreads,
+                    seed=seed)
+        self.w = self.w.reshape(self.w.shape[0], -1)
+        if self.fit_intercept:
+            self.b = self.b.reshape(1, -1)
+        else:
+            self.b = 0.
+        return optim_info
 
-class LinearSVC(BinaryClassifier):
+    def decision_function(self, X):
+        n_features = self.w.shape[0]
+        if X.shape[1] != n_features:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], n_features))
+        scores = X.dot(self.w) + self.b
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
+
+    def score(self, X, y, sample_weight=None):
+        return np.average(y == self.predict(X), weights=sample_weight)
+
+    def get_params(self, deep=True):
+        out = dict()
+        for key in self._get_param_names():
+            try:
+                value = getattr(self, key)
+            except AttributeError:
+                value = None
+            if deep and hasattr(value, 'get_params'):
+                deep_items = value.get_params().items()
+                out.update((key + '__' + k, val) for k, val in deep_items)
+            out[key] = value
+        return out
+
+    @classmethod
+    def _get_param_names(cls):
+        import inspect
+        init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
+        if init is object.__init__:
+            # No explicit constructor to introspect
+            return []
+
+        # introspect the constructor arguments to find the model parameters
+        # to represent
+        init_signature = inspect.signature(init)
+        # Consider the constructor parameters excluding 'self'
+        parameters = [p for p in init_signature.parameters.values()
+                      if p.name != 'self' and p.kind != p.VAR_KEYWORD]
+        for p in parameters:
+            if p.kind == p.VAR_POSITIONAL:
+                raise RuntimeError()
+        # Extract and sort argument names excluding 'self'
+        return sorted([p.name for p in parameters])
+
+    def set_params(self, **params):
+        from collections import defaultdict
+        if not params:
+            # Simple optimization to gain speed (inspect is slow)
+            return self
+        valid_params = self.get_params(deep=True)
+
+        nested_params = defaultdict(dict)  # grouped by prefix
+        for key, value in params.items():
+            key, delim, sub_key = key.partition('__')
+            if key not in valid_params:
+                raise ValueError('Invalid parameter %s for estimator %s. '
+                                 'Check the list of available parameters '
+                                 'with `estimator.get_params().keys()`.' %
+                                 (key, self))
+
+            if delim:
+                nested_params[key][sub_key] = value
+            else:
+                setattr(self, key, value)
+                valid_params[key] = value
+
+        for key, sub_params in nested_params.items():
+            valid_params[key].set_params(**sub_params)
+
+        return self
+
+class LinearSVC(SKLearnClassifier):
     """
     A compatibility class for scikit-learn user, but only for square hinge loss
     It is perfectly equivalent to the BinaryClassifier class, but the
@@ -668,37 +791,18 @@ class LinearSVC(BinaryClassifier):
     max_iter: maximum number of iterations for the optimization solver
     """
 
-    def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=False, C=1,
+    def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True, C=1,
                  max_iter=500):
         if loss != 'sqhinge' and loss != 'squared_hinge':
             print("LinearSVC is only compatible with squared hinge loss at "
                   "the moment")
-        super().__init__(loss='sqhinge', penalty=penalty,
-                         fit_intercept=fit_intercept, max_epochs=max_iter)
+        super(SKLearnClassifier, self).__init__(
+            loss='sqhinge', penalty=penalty,
+            fit_intercept=fit_intercept)
         self.C = C
         self.max_iter = max_iter
 
-    def fit(self, X, y, C=None, verbose=None, lambd2=0, lambd3=0,
-            solver='auto', tol=1e-3, it0=10, max_iter=None, l_qning=20,
-            f_restart=50, restart=False, nthreads=-1, seed=0):
-        """Same as BinaryClassification, but the parameter C replaces lambd,
-        and max_iter replaces max_epochs.
-        """
-        n = X.shape[0]
-        if C is not None:
-            self.C = C
-        if verbose is not None:
-            self.verbose = verbose
-        if max_iter is not None:
-            self.max_iter = max_iter
-        super().fit(
-            X=X, y=y, lambd=1/(2*n*self.C), lambd2=lambd2, lambd3=lambd3,
-            solver=solver, tol=tol, it0=it0, max_epochs=max_iter,
-            l_qning=l_qning, f_restart=f_restart, verbose=verbose,
-            restart=restart, nthreads=nthreads, seed=seed)
-
-
-class LogisticRegression(BinaryClassifier):
+class LogisticRegression(SKLearnClassifier):
     """
     A compatibility class for scikit-learn user, but only for square hinge loss
     It is perfectly equivalent to the BinaryClassifier class, but the
@@ -719,28 +823,9 @@ class LogisticRegression(BinaryClassifier):
     max_iter: maximum number of iterations for the optimization solver
     """
 
-    def __init__(self, penalty='l2', fit_intercept=False, C=1, max_iter=500):
-        super().__init__(loss='logistic', penalty=penalty,
-                         fit_intercept=fit_intercept, max_epochs=max_iter)
+    def __init__(self, penalty='l2', fit_intercept=True, C=1, max_iter=500):
+        super(SKLearnClassifier, self).__init__(
+            loss='logistic', penalty=penalty,
+            fit_intercept=fit_intercept)
         self.C = C
         self.max_iter = max_iter
-
-    def fit(self, X, y, C=None, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
-            it0=10, max_iter=None, l_qning=20, f_restart=50, verbose=None,
-            restart=False, nthreads=-1, seed=0):
-        """
-        Same as BinaryClassification, but the parameter C replaces lambd,
-        and max_iter replaces max_epochs.
-        """
-        n = X.shape[0]
-        if C is not None:
-            self.C = C
-        if verbose is not None:
-            self.verbose = verbose
-        if max_iter is not None:
-            self.max_iter = max_iter
-        super().fit(
-            X=X, y=y, lambd=1/(n*self.C), lambd2=lambd2, lambd3=lambd3,
-            solver=solver, tol=tol, it0=it0, max_epochs=max_iter,
-            l_qning=l_qning, f_restart=f_restart, verbose=verbose,
-            restart=restart, nthreads=nthreads, seed=seed)
