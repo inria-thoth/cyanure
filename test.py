@@ -72,5 +72,5 @@ else:
 if penalty=='l2':
     lambd=lambd/(X.shape[0])
     
-classifier.fit(X,y,it0=it0,lambd=lambd,nthreads=nthreads,tol=1e-3,solver=solver,restart=False,seed=0)
+classifier.fit(X,y,it0=it0,lambd=lambd,nthreads=nthreads,tol=1e-3,solver=solver,restart=False,seed=0,max_epochs=1)
 

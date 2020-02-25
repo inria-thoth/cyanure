@@ -287,7 +287,7 @@ class BinaryClassifier(ERM):
 
             - 'square' =>  :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
             - 'logistic' => :math:`L(y,z) = \\log(1 + e^{-y z} )`
-            - 'sqhinge' or 'squared_hinge' =>:math:`L(y,z) = \\frac{1}{2} \\max( 0, 1- y z)^2`
+            - 'sqhinge' or 'squared_hinge' => :math:`L(y,z) = \\frac{1}{2} \\max( 0, 1- y z)^2`
             - 'safe-logistic' => :math:`L(y,z) = e^{ yz - 1 } - y z ~\\text{if}~ yz \\leq 1~~\\text{and}~~0` otherwise
 
         penalty: string, default='l2'
