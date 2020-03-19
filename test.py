@@ -21,7 +21,7 @@ nthreads=4
 datapath='./data/'
 normalize=True
 centering=True
-it0=10
+it0=5
 intercept=False
 
 
@@ -38,6 +38,11 @@ if dataset=='svhn':
     data=np.load(datapath+dataset+'.npz')
     y=data['arr_1']
     X=data['arr_0']
+    multiclass=True
+
+if dataset=='mathilde':
+    X=np.float64(np.load('X_julien190320.npy'))
+    y=np.float64(np.load('y_julien190320.npy'))
     multiclass=True
 
 if dataset=='rcv1':
@@ -72,5 +77,5 @@ else:
 if penalty=='l2':
     lambd=lambd/(X.shape[0])
     
-classifier.fit(X,y,it0=it0,lambd=lambd,nthreads=nthreads,tol=1e-3,solver=solver,restart=False,seed=0,max_epochs=1)
+classifier.fit(X,y,it0=it0,lambd=lambd,nthreads=nthreads,tol=1e-3,solver=solver,restart=False,seed=0,max_epochs=100)
 

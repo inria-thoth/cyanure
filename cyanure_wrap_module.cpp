@@ -112,6 +112,7 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
    const char* format = "OOOO|Osssdddpdiiiippii";
    if (!PyArg_ParseTupleAndKeywords(args, keywds,format,kwlist,&X,&y,&w0,&w,&dual,&loss,&regul,&solver,&lambda,&lambda2,&lambda3,&intercept,&tol,&it0,&nepochs,&l_qning,&f_restart,&verbose,&univariate,&nthreads,&seed))
       return NULL;
+   it0=MIN(it0,nepochs);
    srandom(seed);
    int T, I;
    getTypeObject((PyObject*)X,T,I);
