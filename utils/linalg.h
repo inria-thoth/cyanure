@@ -1184,7 +1184,8 @@ template <typename T> inline void Matrix<T>::print(const string& name) const {
 /// Print the matrix to std::cout
 template <typename T> inline void Matrix<T>::dump(const string& name) const {
    ofstream f; 
-   f.open(name);
+   const char * cname = name.c_str();
+   f.open(cname);
    f.precision(20);
    std::cerr << name << std::endl;
    f << _m << " x " << _n << std::endl;
@@ -3010,7 +3011,8 @@ template <typename T> inline void Vector<T>::print(const string& name) const {
 /// Print the matrix to std::cout
 template <typename T> inline void Vector<T>::dump(const string& name) const {
    ofstream f; 
-   f.open(name);
+   const char * cname = name.c_str();
+   f.open(cname);
    f.precision(20);
    std::cerr << name << std::endl;
    f <<  _n << std::endl;

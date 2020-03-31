@@ -41,9 +41,11 @@ if dataset=='svhn':
     multiclass=True
 
 if dataset=='mathilde':
-    X=np.float64(np.load('X_julien190320.npy'))
-    y=np.float64(np.load('y_julien190320.npy'))
+    X=np.float32(np.load('X_julien190320.npy'))
+    y=np.float32(np.load('y_julien190320.npy'))
     multiclass=True
+    normalize=False
+    centering=False
 
 if dataset=='rcv1':
     data = np.load(datapath+'rcv1.npz',allow_pickle=True)

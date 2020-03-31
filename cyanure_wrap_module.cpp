@@ -28,7 +28,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
       if (!npyToVector<T>(inY,y,"Data y")); 
       if (!npyToVector<T>(inw0,w0,"x0"));
       if (!npyToVector<T>(inw,w,"x")); 
-      if (!npyToVector<T>(in_dual,dual_variable,"dual")); 
+      if (reinterpret_cast<PyObject*>(in_dual) != Py_None && !npyToVector<T>(in_dual,dual_variable,"dual")); 
       if (w0.n() != w.n()) {
          PyErr_SetString(PyExc_TypeError, "Got wrong input size"); 
          return NULL;
@@ -48,7 +48,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
       Matrix<T> w0, w, dual_variable;
       if (!npyToMatrix<T>(inw0,w0,"x0"));
       if (!npyToMatrix<T>(inw,w,"x")); 
-      if (!npyToMatrix<T>(in_dual,dual_variable,"dual")); 
+      if (reinterpret_cast<PyObject*>(in_dual) != Py_None && !npyToMatrix<T>(in_dual,dual_variable,"dual")); 
       if (isSparseMatrix(inX)) {
          SpMatrix<T,I> X;
          if (!npyToSpMatrix<T,I>(inX,X,"Data"));
@@ -125,7 +125,8 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
    } else if (T == getTypeNumber<double>() && I == getTypeNumber<long long int>()) {
       optim_info=erm<double,long long int>(X,y,w0,w,dual,nepochs,l_qning,f_restart,tol,it0,verbose,solver,loss,regul,lambda,lambda2,lambda3,intercept,univariate,nthreads);
    } else {
-      PyErr_SetString(PyExc_TypeError, ("Got wrong data type: "+to_string(T)).c_str()); 
+      PyErr_SetString(PyExc_TypeError, ("Got wrong data type: ")); 
+      //PyErr_SetString(PyExc_TypeError, ("Got wrong data type: "+std::to_string(T)).c_str()); 
       return NULL;
    }
    return PyArray_Return(optim_info);
@@ -181,7 +182,8 @@ static PyObject* preprocess_(PyObject* self, PyObject* args, PyObject* keywds)
       preprocess_generic<double,long long int>(Ip, centering,normalize,columns);
       Py_RETURN_NONE;
    } else {
-      PyErr_SetString(PyExc_TypeError, ("Got wrong data type: "+to_string(T)).c_str()); 
+      PyErr_SetString(PyExc_TypeError, ("Got wrong data type: ")); 
+      //PyErr_SetString(PyExc_TypeError, ("Got wrong data type: "+std::to_string(T)).c_str()); 
       return NULL;
    }
 };
