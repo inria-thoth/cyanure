@@ -771,7 +771,6 @@ class QNing final: public Catalyst<SolverType> {
                }
             }
             if (_Fk > 1.05*oldFk) {
-               FLAG(5)
                _auxiliary_solver->restore_state();
                x.copy(oldxk);
                reset_lbfgs();

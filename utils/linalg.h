@@ -1430,8 +1430,9 @@ template <typename T> inline void Matrix<T>::normalize_rows() {
    for (INTM i = 0; i<_n; ++i)
       for (INTM j = 0; j<_m; ++j)
          norm_rows[j] += _X[i*_m+j]*_X[i*_m+j];
-   norm_rows.sqr();
-   this->multDiagRight(norm_rows);
+   for (INTM j = 0; j<_m; ++j)
+      norm_rows[j]  = norm_rows[j] < T(1e-10) ? T(1e-10) : T(1.0)/sqrt(norm_rows[j]);
+   this->multDiagLeft(norm_rows);
 };
 
 /// center the matrix and keep the center values
