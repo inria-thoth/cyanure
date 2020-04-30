@@ -12,12 +12,11 @@ cyanure_wrap = Extension(
         language='c++',
         extra_compile_args=[
                 '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
-                '-std=c++11', '-Wno-unused-function', '-Wno-write-strings',
-                '-fmax-errors=5', '-w'],
+                '-std=c++11'],
         sources=['cyanure_wrap_module.cpp'])
 
 setup(name='cyanure-mkl-no-openmp',
-      version='0.21post3',
+      version='0.21post4',
       author="Julien Mairal",
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',

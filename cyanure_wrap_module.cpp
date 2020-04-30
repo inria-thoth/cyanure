@@ -105,11 +105,11 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
    double lambda2=0;
    double lambda3=0;
    int intercept=0;
-   char* regul="none";
-   char* solver="ista";
-   char* loss="square";
-   static char* kwlist[] = { "", "", "", "", "dual_variable", "loss", "penalty", "solver", "lambd", "lambd2", "lambd3", "intercept", "tol", "it0", "nepochs", "l_qning", "f_restart", "verbose", "univariate", "nthreads", "seed", NULL };
-   const char* format = "OOOO|Osssdddpdiiiippii";
+   char* regul=(char*)"none";
+   char* solver=(char*)"ista";
+   char* loss=(char*)"square";
+   static char* kwlist[] = { (char*)"", (char*)"", (char*)"", (char*)"", (char*)"dual_variable", (char*)"loss", (char*)"penalty", (char*)"solver", (char*)"lambd", (char*)"lambd2", (char*)"lambd3", (char*)"intercept", (char*)"tol", (char*)"it0", (char*)"nepochs", (char*)"l_qning", (char*)"f_restart", (char*)"verbose", (char*)"univariate", (char*)"nthreads", (char*)"seed", NULL };
+   const char* format = (const char*)"OOOO|Osssdddpdiiiippii";
    if (!PyArg_ParseTupleAndKeywords(args, keywds,format,kwlist,&X,&y,&w0,&w,&dual,&loss,&regul,&solver,&lambda,&lambda2,&lambda3,&intercept,&tol,&it0,&nepochs,&l_qning,&f_restart,&verbose,&univariate,&nthreads,&seed))
       return NULL;
    it0=MIN(it0,nepochs);
@@ -162,8 +162,8 @@ static PyObject* preprocess_(PyObject* self, PyObject* args, PyObject* keywds)
    int centering = false;
    int normalize = false;
    int columns = true;
-   static char* kwlist[] = { "", "centering", "normalize", "columns", NULL };
-   const char* format = "O|ppp";
+   static char* kwlist[] = { (char*)"", (char*)"centering", (char*)"normalize", (char*)"columns", NULL };
+   const char* format = (const char*)"O|ppp";
    if (!PyArg_ParseTupleAndKeywords(args, keywds,format,kwlist,&Ip,&centering,&normalize,&columns))
       return NULL;
 

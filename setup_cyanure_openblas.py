@@ -11,12 +11,11 @@ cyanure_wrap = Extension(
     language='c++',
     extra_compile_args=[
         '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
-        '-std=c++11', '-Wno-unused-function', '-Wno-write-strings',
-        '-fmax-errors=5'],
+        '-std=c++11'],
     sources=['cyanure_wrap_module.cpp'])
 
 setup(name='cyanure-openblas',
-      version='0.21post3',
+      version='0.21post4',
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',
       url="http://julien.mairal.org/cyanure/",

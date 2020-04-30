@@ -600,11 +600,10 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       typedef typename loss_type::value_type T;
       typedef typename loss_type::data_type M;
       typedef typename loss_type::label_type L;
-      typedef Matrix<T> D;
       typedef LinearLossMat<M, Matrix<T> > base_loss;
 
       LossMat(DataMatrixLinear<M>& data, const Matrix<T>& y) : base_loss(data,y), _N(y.m()) {
-         _losses=new loss_type*[_N];
+         _losses=new LinearLossVec<M>*[_N];
          _datas=new DataLinear<M>*[_N];
          _n = y.n();
          y.transpose(_yT);
@@ -751,14 +750,14 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
          cerr << "Not used" << endl;
          return 0;
       };
-      virtual void get_dual_constraints(D& grad1) const {
+      virtual void get_dual_constraints(Matrix<T>& grad1) const {
          cerr << "Not used" << endl;
       };
 
    protected:
       int _N;
       int _n;
-      loss_type** _losses;
+      LinearLossVec<M>** _losses;
       DataLinear<M>** _datas;
       Matrix<T> _yT;
 };
