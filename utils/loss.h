@@ -603,7 +603,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       typedef LinearLossMat<M, Matrix<T> > base_loss;
 
       LossMat(DataMatrixLinear<M>& data, const Matrix<T>& y) : base_loss(data,y), _N(y.m()) {
-         _losses=new LinearLossVec<M>*[_N];
+         _losses=new loss_type*[_N];
          _datas=new DataLinear<M>*[_N];
          _n = y.n();
          y.transpose(_yT);
@@ -757,7 +757,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
    protected:
       int _N;
       int _n;
-      LinearLossVec<M>** _losses;
+      loss_type** _losses;
       DataLinear<M>** _datas;
       Matrix<T> _yT;
 };
