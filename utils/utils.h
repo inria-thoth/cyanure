@@ -72,8 +72,16 @@ typedef int mwSize;
 
 #include <time.h>
 #include <windows.h>
-#define random rand
-#define srandom srand
+#include <random>
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_int_distribution<int> distr(0,INT_MAX);
+static int random() {
+   return distr(gen);
+};
+static void srandom(const int seed) {
+   gen.seed(seed);
+};
 
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
 #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
