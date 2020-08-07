@@ -1,0 +1,34 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+        use_openmp : ['true', 'false']
+    name: Linux, Python (${{ matrix.python-version }}), OpenBLAS, OpenMP (${{matrix.use_openmp}})
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install numpy
+        sudo apt-get install -y libopenblas-dev
+    - name: Install cyanure
+      run: |
+        if ${{matrix.use_openmp == 'true'}}; then
+          python setup_cyanure_openblas.py install
+        else
+          python setup_cyanure_openblas_no_openmp.py install
+        fi
