@@ -6,6 +6,7 @@ from abc import abstractmethod
 import numpy as np
 import scipy.sparse
 import cyanure_wrap
+import math
 
 
 def preprocess(X, centering=False, normalize=True, columns=False):
@@ -207,7 +208,8 @@ class ERM:
             w0 = np.zeros([p, nclasses], dtype=Xf.dtype, order='F')
 
         if restart and np.any(self.w != 0):
-            print("Restart")
+            if verbose:
+                print("Restart")
             if self.fit_intercept:
                 w0[-1, ] = self.b
                 w0[0:-1, ] = self.w
@@ -829,3 +831,118 @@ class LogisticRegression(SKLearnClassifier):
             fit_intercept=fit_intercept)
         self.C = C
         self.max_iter = max_iter
+
+
+class Lasso(Regression):
+    def __init__(self, fit_intercept=False):
+        super().__init__(loss='square', penalty='l1',
+                         fit_intercept=fit_intercept)
+        self.aux = Regression(loss='square',penalty='l1',fit_intercept=fit_intercept)
+
+    def fit(self, X, y, lambd=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, nthreads=-1, seed=0):
+        n,p = X.shape
+        if p <= 1000:
+            # no active set
+            super().fit(X,y,lambd=lambd,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_restart,verbose=verbose,restart=restart,nthreads=nthreads,seed=seed)
+        else:
+            scaling = 4.0
+            init = min(100,p)
+            restart=True
+            num_as = math.ceil(math.log10(p/init)/math.log10(scaling))
+            active_set = []
+            n_active = 0
+            self.w = np.zeros(p, dtype=X.dtype)
+            if self.fit_intercept:
+                self.b=0
+
+            for ii in range(num_as):
+                if n_active == 0:
+                    R = y
+                else:
+                    pred = self.aux.predict(X[:,active_set])
+                    R = y.ravel() - pred.ravel()
+                corr = np.abs(X.transpose().dot(R).ravel())/n
+                if n_active > 0:
+                    corr[active_set] = -10e10
+                n_new_as = max(min(init*math.ceil(scaling ** (ii)),p) - n_active,0)
+                new_as = corr.argsort()[-n_new_as:]
+                if (len(new_as) == 0 or max(corr[new_as]) <= lambd*(1+tol)):
+                    break;
+                if len(active_set) > 0:
+                    neww = np.zeros(n_active+n_new_as,dtype=X.dtype)
+                    neww[0:n_active]=self.aux.w
+                    self.aux.w=neww
+                    active_set = np.concatenate((active_set, new_as))
+                else:
+                    active_set = new_as
+                    self.aux.w = np.zeros(len(active_set),dtype=X.dtype)
+                n_active = len(active_set)
+                if (verbose):
+                    print("Size of the active set: " + str(n_active))
+                self.aux.fit(X[:,active_set],y,lambd,tol=tol,it0=5,max_epochs=max_epochs,restart=restart,solver=solver,verbose=verbose)
+                self.w[active_set] = self.aux.w
+                if self.fit_intercept:
+                    self.b=self.aux.b
+    
+#TODO: remove code duplication with Lasso
+class L1Logistic(BinaryClassifier):
+    def __init__(self, fit_intercept=False):
+        super().__init__(loss='logistic', penalty='l1',
+                         fit_intercept=fit_intercept)
+        self.aux = BinaryClassifier(loss='logistic',penalty='l1',fit_intercept=fit_intercept)
+
+    def fit(self, X, y, lambd=0, solver='auto', tol=1e-3,
+            it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
+            restart=False, nthreads=-1, seed=0):
+        n,p = X.shape
+        if p <= 1000:
+            # no active set
+            super().fit(X,y,lambd=lambd,solver=solver,tol=tol,it0=it0,max_epochs=max_epochs,l_qning=l_qning,f_restart=f_restart,verbose=verbose,restart=restart,nthreads=nthreads,seed=seed)
+        else:
+            scaling = 4.0
+            init = min(100,p)
+            restart=True
+            num_as = math.ceil(math.log10(p/init)/math.log10(scaling))
+            active_set = []
+            n_active = 0
+            self.w = np.zeros(p, dtype=X.dtype)
+            if self.fit_intercept:
+                self.b=0
+
+            for ii in range(num_as):
+                #  log(1 + exp(-y_i pred_i))
+                # abs_grad =    sum - y_i/(1 + exp(y_i pred_i)) x_i
+                if n_active == 0:
+                    R = -0.5* y.ravel()
+                else:
+                    pred = X[:,active_set].dot(self.aux.w)
+                    if self.fit_intercept:
+                        pred += self.aux.b
+                    R = -y.ravel() / (1.0 + np.exp( y.ravel() * pred.ravel()))
+                corr = np.abs(X.transpose().dot(R).ravel())/X.shape[0]
+                if n_active > 0:
+                    corr[active_set] = -10e10
+                n_new_as = max(min(init*math.ceil(scaling ** (ii)),p) - n_active,0)
+                new_as = corr.argsort()[-n_new_as:]
+                if (len(new_as) == 0 or max(corr[new_as]) <= lambd*(1+tol)):
+                    break;
+                if len(active_set) > 0:
+                    neww = np.zeros(n_active+n_new_as,dtype=X.dtype)
+                    neww[0:n_active]=self.aux.w
+                    self.aux.w=neww
+                    active_set = np.concatenate((active_set, new_as))
+                else:
+                    active_set = new_as
+                    self.aux.w = np.zeros(len(active_set),dtype=X.dtype)
+                n_active = len(active_set)
+                if (verbose):
+                    print("Size of the active set: " + str(n_active))
+                self.aux.fit(X[:,active_set],y,lambd,tol=tol,it0=5,max_epochs=max_epochs,restart=restart,solver=solver,verbose=verbose)
+                self.w[active_set] = self.aux.w
+                if self.fit_intercept:
+                    self.b=self.aux.b
+ 
+
+

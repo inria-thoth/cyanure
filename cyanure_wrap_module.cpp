@@ -12,6 +12,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
    param.it0=it0;
    param.verbose=verbose;
    param.solver=solver_from_string(solver);
+   param.non_uniform_sampling=false; // TODO: check if needs to be activated again
    param.threads=nthreads;
    ParamModel<T> model;
    model.loss=loss_from_string(loss); 
@@ -112,7 +113,7 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
    const char* format = (const char*)"OOOO|Osssdddpdiiiippii";
    if (!PyArg_ParseTupleAndKeywords(args, keywds,format,kwlist,&X,&y,&w0,&w,&dual,&loss,&regul,&solver,&lambda,&lambda2,&lambda3,&intercept,&tol,&it0,&nepochs,&l_qning,&f_restart,&verbose,&univariate,&nthreads,&seed))
       return NULL;
-   it0=MIN(it0,nepochs);
+   it0= it0 <= 0 ? -1 : MIN(it0,nepochs);
    srandom(seed);
    int T, I;
    getTypeObject((PyObject*)X,T,I);
