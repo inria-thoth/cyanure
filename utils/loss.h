@@ -848,9 +848,9 @@ class MultiClassLogisticLoss final : public LinearLossMat<M, Vector<int> > {
         T sum = 0;
         const int n = input.n();
 #pragma omp parallel for reduction(+:sum) schedule(static) 
-        for (int i = 0; i<n; ++i) {
-           const int clas = _y[i];
-           for (int j = 0; j<_nclasses; ++j) {
+        for (long long i = 0; i<n; ++i) {
+           const long long clas = _y[i];
+           for (long long j = 0; j<_nclasses; ++j) {
               if (j == clas) {
                  sum += xlogx(input[i*_nclasses+j]+1.0);
               } else {
