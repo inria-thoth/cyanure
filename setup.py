@@ -1,5 +1,6 @@
 from setuptools import setup, Extension
 import numpy
+import platform
 
 import contextlib
 import os
@@ -21,6 +22,8 @@ def getBlas():
 
 np_blas = getBlas()
 
+LIBS = []
+INCLUDE_DIRS = []
 
 ##### setup mkl_rt
 if np_blas == 'mkl_rt':
@@ -32,7 +35,6 @@ if np_blas == 'mkl_rt':
 
         LIBS = libs_mkl
         INCLUDE_DIRS = include_dirs_mkl
-        #LIBRARY_DIRS = []
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
 ##### setup openblas
@@ -45,8 +47,8 @@ if np_blas == 'openblas':
 
         LIBS = libs_open_blass
         INCLUDE_DIRS = include_dirs_open_blass
-        #LIBRARY_DIRS = []
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blass
+        EXTRA_COMPILE_ARGS = []
 
 print("DEBUG INSTALL: " + np_blas)
 
@@ -64,8 +66,7 @@ include_dirs_mkl_no_openmp = [numpy.get_include()]
 extra_compile_args_mkl_no_openmp =[
                 '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
                 '-std=c++11']
-
-###### setup mkl windows
+n argumentss
 libs_mkl_windows = ['mkl_rt']
 include_dirs_mkl_windows = [numpy.get_include()]
 pathpython=os.path.dirname(sys.executable);
@@ -73,18 +74,12 @@ library_dirs_mkl_windows = [pathpython+'\\Library\\lib']
 extra_compile_args_mkl_windows = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
-LIBS = []
-INCLUDE_DIRS = []
-LIBRARY_DIRS = []
-EXTRA_COMPILE_ARGS = []
-
 """
 
 cyanure_wrap = Extension(
     'cyanure_wrap',
     libraries=LIBS,
     include_dirs=INCLUDE_DIRS,
-    #library_dirs=LIBRARY_DIRS,
     language='c++',
     extra_compile_args=EXTRA_COMPILE_ARGS,
     sources=['cyanure_wrap_module.cpp'])
