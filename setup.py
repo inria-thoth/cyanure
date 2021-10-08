@@ -48,6 +48,7 @@ if np_blas == 'openblas':
         #LIBRARY_DIRS = []
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blass
 
+print("DEBUG INSTALL: " + np_blas)
 
 """
 ## setup openblass no openmp
