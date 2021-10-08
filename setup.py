@@ -1,6 +1,7 @@
 from setuptools import setup, Extension
 import numpy
 import platform
+import sys 
 
 import contextlib
 import os
@@ -24,9 +25,22 @@ np_blas = getBlas()
 
 LIBS = []
 INCLUDE_DIRS = []
+EXTRA_COMPILE_ARGS = []
 
-##### setup mkl_rt
-if np_blas == 'mkl_rt':
+if platform.system() == "Windows":
+    libs_mkl_windows = ['mkl_rt']
+    include_dirs_mkl_windows = [numpy.get_include()]
+    pathpython=os.path.dirname(sys.executable)
+    library_dirs_mkl_windows = [pathpython+'\\Library\\lib']
+    extra_compile_args_mkl_windows = [
+            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+    LIBS = libs_mkl_windows
+    INCLUDE_DIRS = library_dirs_mkl_windows
+    EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
+
+else:
+            ##### setup mkl_rt
+    if 'mkl' in np_blas:
         extra_compile_args_mkl = [
                 '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
                 '-fopenmp', '-std=c++11']
@@ -37,8 +51,8 @@ if np_blas == 'mkl_rt':
         INCLUDE_DIRS = include_dirs_mkl
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
-##### setup openblas
-if np_blas == 'openblas':
+    ##### setup openblas
+    if 'blas' in np_blas:
         extra_compile_args_open_blass=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11']
@@ -48,7 +62,6 @@ if np_blas == 'openblas':
         LIBS = libs_open_blass
         INCLUDE_DIRS = include_dirs_open_blass
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blass
-        EXTRA_COMPILE_ARGS = []
 
 print("DEBUG INSTALL: " + np_blas)
 
@@ -67,12 +80,6 @@ extra_compile_args_mkl_no_openmp =[
                 '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
                 '-std=c++11']
 n argumentss
-libs_mkl_windows = ['mkl_rt']
-include_dirs_mkl_windows = [numpy.get_include()]
-pathpython=os.path.dirname(sys.executable);
-library_dirs_mkl_windows = [pathpython+'\\Library\\lib']
-extra_compile_args_mkl_windows = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
 """
 
