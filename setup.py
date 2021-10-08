@@ -39,7 +39,7 @@ if platform.system() == "Windows":
     EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
 
 else:
-            ##### setup mkl_rt
+    ##### setup mkl_rt
     if 'mkl' in np_blas:
         extra_compile_args_mkl = [
                 '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
@@ -56,7 +56,7 @@ else:
         extra_compile_args_open_blass=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11']
-        libs_open_blass = ['openblas', 'gomp']
+        libs_open_blass = [np_blas]
         include_dirs_open_blass = [numpy.get_include(), '/usr/local/lib/']
 
         LIBS = libs_open_blass
