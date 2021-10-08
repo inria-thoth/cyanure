@@ -1,0 +1,101 @@
+from setuptools import setup, Extension
+import numpy
+
+import contextlib
+import os
+
+def getBlas():
+    file_ = open("npConfg_file.txt","w")
+    with contextlib.redirect_stdout(file_):
+        numpy.show_config()
+    file_.close()
+    np_confg = open('npConfg_file.txt','r')
+    for line in np_confg:
+        if 'libraries' in line:
+            lib = line
+            break
+    np_confg.close()
+    blas = lib.split('[')[1].split(',')[0]
+    os.remove("npConfg_file.txt")
+    return blas[1:len(blas)-1]
+
+np_blas = getBlas()
+
+
+##### setup mkl_rt
+if np_blas == 'mkl_rt':
+        extra_compile_args_mkl = [
+                '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
+                '-fopenmp', '-std=c++11']
+        libs_mkl = ['mkl_rt', 'iomp5']
+        include_dirs_mkl = [numpy.get_include()]
+
+        LIBS = libs_mkl
+        INCLUDE_DIRS = include_dirs_mkl
+        #LIBRARY_DIRS = []
+        EXTRA_COMPILE_ARGS = extra_compile_args_mkl
+
+##### setup openblas
+if np_blas == 'openblas':
+        extra_compile_args_open_blass=[
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
+                '-std=c++11']
+        libs_open_blass = ['openblas', 'gomp']
+        include_dirs_open_blass = [numpy.get_include(), '/usr/local/lib/']
+
+        LIBS = libs_open_blass
+        INCLUDE_DIRS = include_dirs_open_blass
+        #LIBRARY_DIRS = []
+        EXTRA_COMPILE_ARGS = extra_compile_args_open_blass
+
+
+"""
+## setup openblass no openmp
+
+libs_open_blass_no_openmp = ['openblas']
+include_dirs_open_blass_no_openmp = [numpy.get_include()]
+extra_compile_args_open_blass_no_openmp =[
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-std=c++11']
+
+#### setup mkl no openmp
+libs_mkl_no_openmp = ['mkl_rt']
+include_dirs_mkl_no_openmp = [numpy.get_include()]
+extra_compile_args_mkl_no_openmp =[
+                '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
+                '-std=c++11']
+
+###### setup mkl windows
+libs_mkl_windows = ['mkl_rt']
+include_dirs_mkl_windows = [numpy.get_include()]
+pathpython=os.path.dirname(sys.executable);
+library_dirs_mkl_windows = [pathpython+'\\Library\\lib']
+extra_compile_args_mkl_windows = [
+            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+
+LIBS = []
+INCLUDE_DIRS = []
+LIBRARY_DIRS = []
+EXTRA_COMPILE_ARGS = []
+
+"""
+
+cyanure_wrap = Extension(
+    'cyanure_wrap',
+    libraries=LIBS,
+    include_dirs=INCLUDE_DIRS,
+    #library_dirs=LIBRARY_DIRS,
+    language='c++',
+    extra_compile_args=EXTRA_COMPILE_ARGS,
+    sources=['cyanure_wrap_module.cpp'])
+
+setup(name='cyanure setup',
+      version='0.22post2',
+      author="Julien Mairal",
+      author_email="julien.mairal@inria.fr",
+      license='bsd-3-clause',
+      url="http://julien.mairal.org/cyanure/",
+      description='optimization toolbox for machine learning',
+      install_requires=['scipy', 'numpy'],
+      ext_modules=[cyanure_wrap],
+      py_modules=['cyanure'])
+
