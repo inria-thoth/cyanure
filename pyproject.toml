@@ -16,9 +16,7 @@ before-all = "yum install -y openblas-devel lapack-devel"
 # Run multiple commands using an array
 before-all = [
   "brew install llvm",
-  "brew install openblas",
   "brew install libomp",
-  "export LDFLAGS='-L/usr/local/opt/openblas/lib, -L/usr/local/opt/llvm/lib'",
   "export CPPFLAGS='-I/usr/local/opt/openblas/include -I/usr/local/opt/llvm/include'",
   "export CXX=/usr/local/opt/llvm/bin/clang++",
   "export CC=/usr/local/opt/llvm/bin/clang",

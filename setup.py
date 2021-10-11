@@ -6,10 +6,6 @@ import sys
 import contextlib
 import os
 
-if platform.system() == "Darwin":
-    os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
-    os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
-
 def getBlas():
     file_ = open("npConfg_file.txt","w")
     with contextlib.redirect_stdout(file_):
@@ -67,7 +63,6 @@ else:
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/opt/llvm/include'] + INCLUDE_DIRS
-            EXTRA_COMPILE_ARGS = ['-L/usr/local/opt/openblas/lib', '-L/usr/local/opt/llvm/lib'] + EXTRA_COMPILE_ARGS
             LIBS = LIBS + ['libomp']
 
 print("DEBUG INSTALL: " + np_blas)
