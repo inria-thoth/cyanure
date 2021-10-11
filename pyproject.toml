@@ -1,3 +1,6 @@
+[tool.cibuildwheel]
+before-build = "/bin/bash python -m pip install numpy"
+
 # Install system library
 [tool.cibuildwheel.linux]
 before-all = "yum install -y openblas-devel lapack-devel"
