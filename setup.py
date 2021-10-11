@@ -63,7 +63,7 @@ else:
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/opt/llvm/include'] + INCLUDE_DIRS
-            EXTRA_COMPILE_ARGS = ['-Xpreprocessor', '-L/usr/local/opt/openblas/lib', '-L/usr/local/opt/llvm/lib', '-lomp'] + EXTRA_COMPILE_ARGS
+            EXTRA_COMPILE_ARGS = ['-Xpreprocessor', '-L/usr/local/opt/openblas/lib', '-L/usr/local/opt/llvm/lib'] + EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
 

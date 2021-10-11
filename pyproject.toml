@@ -20,5 +20,5 @@ before-all = [
   "brew install libomp",
   "export LDFLAGS='-L/usr/local/opt/openblas/lib, -L/usr/local/opt/llvm/lib'",
   "export CPPFLAGS='-I/usr/local/opt/openblas/include -I/usr/local/opt/llvm/include'",
-  "export CPP=/usr/local/opt/llvm/bin/clang",
+  "export CXX=/usr/local/opt/llvm/bin/clang",
 ]
