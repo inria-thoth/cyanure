@@ -18,6 +18,6 @@ before-all = [
   "brew install llvm",
   "brew install openblas",
   "brew install libomp",
-  "export LDFLAGS="-L/usr/local/opt/openblas/lib"",
-  "export CPPFLAGS="-I/usr/local/opt/openblas/include -I/usr/local/opt/llvm/include"",
+  "export LDFLAGS='-L/usr/local/opt/openblas/lib'",
+  "export CPPFLAGS='-I/usr/local/opt/openblas/include -I/usr/local/opt/llvm/include'",
 ]
