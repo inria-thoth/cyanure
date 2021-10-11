@@ -58,7 +58,7 @@ else:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11']
-        libs_open_blas = [np_blas, 'libomp']
+        libs_open_blas = [np_blas]
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
         LIBS = libs_open_blas
@@ -68,6 +68,7 @@ else:
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/opt/llvm/include'] + INCLUDE_DIRS
             EXTRA_COMPILE_ARGS = ['-L/usr/local/opt/openblas/lib', '-L/usr/local/opt/llvm/lib'] + EXTRA_COMPILE_ARGS
+            LIBS = LIBS + ['libomp']
 
 print("DEBUG INSTALL: " + np_blas)
 
