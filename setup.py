@@ -51,15 +51,19 @@ else:
 
     ##### setup openblas
     if 'blas' in np_blas:
-        extra_compile_args_open_blass=[
+        extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11']
-        libs_open_blass = [np_blas]
-        include_dirs_open_blass = [numpy.get_include(), '/usr/local/lib/']
+        libs_open_blas = [np_blas]
+        include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
-        LIBS = libs_open_blass
-        INCLUDE_DIRS = include_dirs_open_blass
-        EXTRA_COMPILE_ARGS = extra_compile_args_open_blass
+        LIBS = libs_open_blas
+        INCLUDE_DIRS = include_dirs_open_blas
+        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+
+        if platform.system() == "Darwin":
+            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/opt/llvm/include'] + INCLUDE_DIRS
+            EXTRA_COMPILE_ARGS = ['-L/usr/local/opt/openblas/lib', '/usr/local/opt/llvm/lib'] + EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
 
