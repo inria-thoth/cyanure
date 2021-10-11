@@ -6,6 +6,10 @@ import sys
 import contextlib
 import os
 
+if platform.system() == "Darwin":
+    os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
+    os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
+
 def getBlas():
     file_ = open("npConfg_file.txt","w")
     with contextlib.redirect_stdout(file_):
