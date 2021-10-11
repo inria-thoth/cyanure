@@ -15,9 +15,6 @@ before-all = "yum install -y openblas-devel lapack-devel"
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
 before-all = [
-  "brew install llvm",
   "brew install openblas",
   "brew install libomp",
-  "export LDFLAGS='-L/usr/local/opt/openblas/lib'",
-  "export CPPFLAGS='-I/usr/local/opt/openblas/include -I/usr/local/opt/llvm/include'",
 ]
