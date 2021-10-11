@@ -28,14 +28,14 @@ INCLUDE_DIRS = []
 EXTRA_COMPILE_ARGS = []
 
 if platform.system() == "Windows":
-    libs_mkl_windows = ['mkl_rt']
+    libs_mkl_windows = ['mkl_rt', 'iomp5']
     include_dirs_mkl_windows = [numpy.get_include()]
     pathpython=os.path.dirname(sys.executable)
     library_dirs_mkl_windows = [pathpython+'\\Library\\lib']
     extra_compile_args_mkl_windows = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
     LIBS = libs_mkl_windows
-    INCLUDE_DIRS = library_dirs_mkl_windows
+    INCLUDE_DIRS = include_dirs_mkl_windows
     EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
 
 else:
