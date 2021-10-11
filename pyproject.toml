@@ -1,3 +1,6 @@
+[tool.cibuildwheel]
+before-build = "pip install numpy"
+
 # Install system library
 [tool.cibuildwheel.linux]
 before-all = "yum install -y libffi-devel"
