@@ -50,7 +50,7 @@ else:
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
     ##### setup openblas
-    if 'blas' in np_blas:        
+    if 'blas' in np_blas:
         extra_compile_args_open_blass=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11']
@@ -60,10 +60,6 @@ else:
         LIBS = libs_open_blass
         INCLUDE_DIRS = include_dirs_open_blass
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blass
-
-        if platform.system() == "Darwin":
-            EXTRA_COMPILE_ARGS = ["-Xpreprocessor"] + EXTRA_COMPILE_ARGS
-
 
 print("DEBUG INSTALL: " + np_blas)
 
