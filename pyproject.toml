@@ -10,4 +10,4 @@ build-backend = "setuptools.build_meta"
 before-build = 'pip install numpy'
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y libffi-devel"
+before-all = "yum install -y openblas-devel lapack-devel"
