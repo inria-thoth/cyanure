@@ -1,0 +1,11 @@
+# Install system library
+[tool.cibuildwheel.linux]
+before-all = "yum install -y libffi-devel"
+
+[tool.cibuildwheel.macos]
+# Run multiple commands using an array
+before-all = [
+  "brew install llvm",
+  "brew install openblas",
+  "brew install libomp",
+]
