@@ -29,7 +29,8 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.2.0a1
         env:
-           CIBW_BEFORE_ALL: "yum install -y openblas-devel lapack-devel"
+           CIBW_BEFORE_ALL_LINUX: "yum install -y openblas-devel lapack-devel"
+           CIBW_BEFORE_ALL_MACOS: "brew install openblas"
            CIBW_BEFORE_BUILD: "pip install numpy"
 
       - uses: actions/upload-artifact@v2
