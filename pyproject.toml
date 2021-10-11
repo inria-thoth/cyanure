@@ -1,5 +1,5 @@
 [tool.cibuildwheel]
-before-build = "pip install --user numpy"
+before-build = "python -m pip install --user numpy"
 
 # Install system library
 [tool.cibuildwheel.linux]
