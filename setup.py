@@ -65,7 +65,8 @@ else:
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
-        if platform.system() == "Darwin":
+        if platform.system() == "Darwin":            
+            os.system("find /usr/local -xdev -name '*libopenblas*'")
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/opt/llvm/include'] + INCLUDE_DIRS
             LIBS = LIBS + ['libomp']
 
