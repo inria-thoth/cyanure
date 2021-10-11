@@ -3,7 +3,7 @@ before-build = "pip install numpy"
 
 # Install system library
 [tool.cibuildwheel.linux]
-before-all = "yum install -y libffi-devel"
+before-all = "yum install -y openblas-devel lapack-devel"
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
