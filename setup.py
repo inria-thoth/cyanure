@@ -11,6 +11,8 @@ if platform.system() == "Darwin":
     os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
     os.environ["DOpenMP_omp_LIBRARY"] = "/usr/local/lib/libomp.dylib"
     os.environ["DOpenMP_libomp_LIBRARY"] = "/usr/local/lib/libomp.dylib"
+    os.environ["LD_LIBRARY_PATH"] = "/usr/local/lib/:/opt/local/lib"
+    os.environ["LIBRARY_PATH"] = "/usr/local/lib/:/opt/local/lib"
 
 
 def getBlas():
