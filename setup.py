@@ -30,6 +30,7 @@ np_blas = getBlas()
 LIBS = []
 INCLUDE_DIRS = []
 EXTRA_COMPILE_ARGS = []
+LIBRARY_DIRS = []
 
 if platform.system() == "Windows":
     libs_mkl_windows = ['mkl_rt', 'iomp5']
@@ -66,8 +67,9 @@ else:
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
         if platform.system() == "Darwin":            
-            os.system("find / -xdev -name '*blas*' 2>/dev/null")
-            INCLUDE_DIRS = ['/usr/local/Cellar/openblas/0.3.17/include', '/usr/local/opt/llvm/include'] + INCLUDE_DIRS
+            os.system("find /usr -xdev -name '*blas*' 2>/dev/null")
+            INCLUDE_DIRS = ['/usr/local/Cellar/openblas/0.3.17/include', '/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include'] + INCLUDE_DIRS
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
             LIBS = LIBS + ['libomp']
 
 print("DEBUG INSTALL: " + np_blas)
@@ -95,6 +97,7 @@ cyanure_wrap = Extension(
     libraries=LIBS,
     include_dirs=INCLUDE_DIRS,
     language='c++',
+    library_dirs = LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
     sources=['cyanure_wrap_module.cpp'])
 
