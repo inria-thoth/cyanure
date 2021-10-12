@@ -39,9 +39,7 @@ RUNTIME_LIRABRY_DIRS = []
 
 if platform.system() == "Windows":
     libs_mkl_windows = ['mkl_rt', 'iomp5']
-    include_dirs_mkl_windows = [numpy.get_include()]
-    extra_compile_args_mkl_windows = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+            os.system("ln -s /usr/local/Cellar/llvm/12.0.1/lib/libomp.dylib libomp.dylib")sive-', '/W1']
     LIBS = libs_mkl_windows
     INCLUDE_DIRS = include_dirs_mkl_windows
     EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
@@ -74,8 +72,10 @@ else:
         if platform.system() == "Darwin":            
             os.system("find /usr -xdev -name '*libomp*' 2>/dev/null")
             os.system("brew --prefix libomp")
-            os.system("cd /usr/local/lib")
-            os.system("ln -s /usr/local/Cellar/llvm/12.0.1/lib/libomp.dylib libomp.dylib")
+            os.system("export LIBRARY_PATH=$LIBRARY_PATH: /usr/local/Cellar/llvm/12.0.1/lib/")
+            os.system("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH: /usr/local/Cellar/llvm/12.0.1/lib/")
+            os.system("export PATH= /usr/local/Cellar/llvm/12.0.1/lib/:$PATH")
+
             INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/opt/libomp/lib"]
             LIBS = LIBS + ['libomp']
