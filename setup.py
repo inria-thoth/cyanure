@@ -69,7 +69,7 @@ else:
         if platform.system() == "Darwin":            
             os.system("find /usr -xdev -name '*libomp*' 2>/dev/null")
             INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/opt/llvm/lib']
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib/']
             LIBS = LIBS + ['libomp']
 
 print("DEBUG INSTALL: " + np_blas)
