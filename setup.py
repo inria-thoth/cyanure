@@ -81,7 +81,7 @@ else:
 
             INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/Cellar/libomp/12.0.1/lib/"]
-            LIBS = LIBS + ['libomp']
+            LIBS = LIBS 
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
 
 print("DEBUG INSTALL: " + np_blas)
