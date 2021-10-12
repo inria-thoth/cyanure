@@ -39,7 +39,9 @@ RUNTIME_LIRABRY_DIRS = []
 
 if platform.system() == "Windows":
     libs_mkl_windows = ['mkl_rt', 'iomp5']
-            os.system("ln -s /usr/local/Cellar/llvm/12.0.1/lib/libomp.dylib libomp.dylib")sive-', '/W1']
+    include_dirs_mkl_windows = [numpy.get_include()]
+    extra_compile_args_mkl_windows = [
+            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
     LIBS = libs_mkl_windows
     INCLUDE_DIRS = include_dirs_mkl_windows
     EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
