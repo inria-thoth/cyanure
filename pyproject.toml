@@ -11,7 +11,7 @@ before-build = 'pip install numpy'
 skip = ["cp310-macosx_x86_64", "pp*"]
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y openblas-devel lapack-devel"
+before-all = "yum install -y openblas-devel lapack-devel || apk add openblas-dev lapack-dev"
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
