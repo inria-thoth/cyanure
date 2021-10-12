@@ -9,7 +9,9 @@ import os
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
     os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
-    os.environ["DYLD_LIBRARY_PATH"] = "/usr/local/Cellar/llvm/12.0.1/lib/libomp.dylib:/usr/local/Cellar/llvm/12.0.1/Toolchains/LLVM12.0.1.xctoolchain/usr/lib/libomp.dylib:/usr/local/Cellar/libomp/12.0.1/lib/libomp.dylib"
+    os.environ["DOpenMP_omp_LIBRARY"] = "/usr/local/lib/libomp.dylib"
+    os.environ["DOpenMP_libomp_LIBRARY"] = "/usr/local/lib/libomp.dylib"
+
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
@@ -70,9 +72,9 @@ else:
         if platform.system() == "Darwin":            
             os.system("find /usr -xdev -name '*libomp*' 2>/dev/null")
             os.system("brew --prefix libomp")
-            INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include'] + INCLUDE_DIRS
+            INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', '/usr/local/Cellar/libomp/12.0.1/lib', '/usr/local/opt/llvm/lib',
-            '/usr/local/Cellar/llvm/12.0.1/Toolchains/LLVM12.0.1.xctoolchain/usr/lib', '/usr/local/Cellar/llvm/12.0.1/lib/', "`brew --prefix libomp`/lib"]
+            '/usr/local/Cellar/llvm/12.0.1/Toolchains/LLVM12.0.1.xctoolchain/usr/lib', '/usr/local/Cellar/llvm/12.0.1/lib/', "/usr/local/opt/libomp/lib"]
             LIBS = LIBS + ['libomp']
 
 print("DEBUG INSTALL: " + np_blas)
