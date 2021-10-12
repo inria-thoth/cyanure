@@ -74,6 +74,8 @@ else:
         if platform.system() == "Darwin":            
             os.system("find /usr -xdev -name '*libomp*' 2>/dev/null")
             os.system("brew --prefix libomp")
+            os.system("cd /usr/local/lib")
+            os.system("ln -s /usr/local/Cellar/llvm/12.0.1/lib/libomp.dylib libomp.dylib")
             INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/opt/libomp/lib"]
             LIBS = LIBS + ['libomp']
