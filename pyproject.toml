@@ -17,5 +17,4 @@ before-all = "yum install -y openblas-devel lapack-devel"
 before-all = [
   "brew install llvm",
   "brew install openblas",
-  "brew install libomp",
 ]
