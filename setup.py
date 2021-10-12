@@ -36,6 +36,8 @@ LIBS = []
 INCLUDE_DIRS = []
 EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
+RUNTIME_LIRABRY_DIRS = []
+
 
 if platform.system() == "Windows":
     libs_mkl_windows = ['mkl_rt', 'iomp5']
@@ -78,6 +80,7 @@ else:
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', '/usr/local/Cellar/libomp/12.0.1/lib', '/usr/local/opt/llvm/lib',
             '/usr/local/Cellar/llvm/12.0.1/Toolchains/LLVM12.0.1.xctoolchain/usr/lib', '/usr/local/Cellar/llvm/12.0.1/lib/', "/usr/local/opt/libomp/lib"]
             LIBS = LIBS + ['libomp']
+            RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
 
 print("DEBUG INSTALL: " + np_blas)
 
@@ -106,6 +109,7 @@ cyanure_wrap = Extension(
     language='c++',
     library_dirs = LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
+    runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
     sources=['cyanure_wrap_module.cpp'])
 
 setup(name='cyanure setup',
