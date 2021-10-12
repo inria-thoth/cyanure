@@ -9,8 +9,6 @@ import os
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
     os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
-    os.environ["DOpenMP_omp_LIBRARY"] = "/usr/local/Cellar/libomp/12.0.1/lib/libomp.dylib"
-    os.environ["DOpenMP_libomp_LIBRARY"] = "/usr/local/Cellar/libomp/12.0.1/lib/libomp.dylib"
     os.environ["NPY_LAPACK_ORDER"] = "openblas,ATLAS,MKL"
 
 def getBlas():
@@ -49,7 +47,7 @@ if platform.system() == "Windows":
 else:
     ##### setup mkl_rt
     if 'mkl' in np_blas:
-        extra_compile_args_mkl = [NPY_LAPACK_ORDER=ATLAS,openblas,MKL
+        extra_compile_args_mkl = [
                 '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
                 '-fopenmp', '-std=c++11']
         libs_mkl = ['mkl_rt', 'iomp5']
