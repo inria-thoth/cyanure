@@ -61,7 +61,7 @@ else:
     if 'blas' in np_blas:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
-                '-std=c++11']
+                '-std=c++11', '-Wl,--verbose']
         libs_open_blas = [np_blas]
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
@@ -76,7 +76,7 @@ else:
             INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/Cellar/libomp/12.0.1/lib"]
             LIBS = LIBS 
-            #LIBS = LIBS + ['libomp']
+            LIBS = LIBS + ['libomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
 
 print("DEBUG INSTALL: " + np_blas)
