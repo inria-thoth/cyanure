@@ -7,7 +7,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-before-build = 'pip install --only-binary :all: numpy'
+before-build = 'pip install numpy'
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y openblas-devel lapack-devel"
