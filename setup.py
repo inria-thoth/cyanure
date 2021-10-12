@@ -9,6 +9,7 @@ import os
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
     os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
+    os.environ["DYLD_LIBRARY_PATH"] = "/usr/local/Cellar/llvm/12.0.1/lib/libomp.dylib:/usr/local/Cellar/llvm/12.0.1/Toolchains/LLVM12.0.1.xctoolchain/usr/lib/libomp.dylib:/usr/local/Cellar/libomp/12.0.1/lib/libomp.dylib"
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
