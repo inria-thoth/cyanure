@@ -9,9 +9,11 @@ build-backend = "setuptools.build_meta"
 [tool.cibuildwheel]
 before-build = 'pip install numpy'
 skip = "cp310-macosx_x86_64"
+skip = "pp37-macosx_x86_64"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y openblas-devel lapack-devel"
+manylinux-i686-image = "manylinux1"
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
