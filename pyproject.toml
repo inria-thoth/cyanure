@@ -23,7 +23,7 @@ before-all = [
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
 before-all = [
-  "powershell.exe Expand-Archive https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas.zip",
+  "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas.zip",
   "dir",
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas.zip -DestinationPath D:/a/cyanure/cyanure/openblas",
 ]
