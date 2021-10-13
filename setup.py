@@ -75,12 +75,21 @@ else:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11', '-v']
-        libs_open_blas = [np_blas, 'libgomp']
+        libs_open_blas = [np_blas]
+
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
         LIBS = libs_open_blas
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+
+        if platform.system() == "Darwin":            
+            os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
+
+            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libgomp/include"] + INCLUDE_DIRS
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/opt/libgomp/lib"] 
+            LIBS = LIBS + ['libgomp']
+            RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
 
         if platform.system() == "Darwin":            
             os.system("find /usr -xdev -name '*libomp*' 2>/dev/null")
