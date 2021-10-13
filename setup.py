@@ -48,6 +48,8 @@ if platform.system() == "Windows":
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
 
     if 'blas' in np_blas:
+        os.system("cd /")
+        os.system("dir /s openblas_info.lib")
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
