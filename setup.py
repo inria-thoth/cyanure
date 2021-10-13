@@ -60,7 +60,6 @@ if platform.system() == "Windows":
 
     INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas/include'] + INCLUDE_DIRS
     LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas/lib'] 
-    RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
     EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 else:
