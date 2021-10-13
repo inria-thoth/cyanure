@@ -23,7 +23,7 @@ before-all = [
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
 before-all = [
-  "certutil.exe -urlcache -split -f 'https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip' 'D:/a/cyanure/cyanure/openblas.zip'",
+  "powershell.exe Expand-Archive https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas.zip",
   "dir",
-  "powershell.exe Expand-Archive -Path openblas.zip -DestinationPath openblas",
+  "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas.zip -DestinationPath D:/a/cyanure/cyanure/openblas",
 ]
