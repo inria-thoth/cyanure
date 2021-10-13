@@ -24,8 +24,8 @@ before-all = [
 # Run multiple commands using an array
 before-all = [
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x86.zip -OutFile D:/a/cyanure/cyanure/openblas_86.zip",
-  "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas.zip -DestinationPath D:/a/cyanure/cyanure/openblas_86",
+  "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_86.zip -DestinationPath D:/a/cyanure/cyanure/openblas_86",
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas_64.zip",
-  "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas.zip -DestinationPath D:/a/cyanure/cyanure/openblas_64",
+  "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_64.zip -DestinationPath D:/a/cyanure/cyanure/openblas_64",
   "dir",
 ]
