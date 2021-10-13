@@ -9,7 +9,7 @@ import os
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
-    os.environ["NPY_LAPACK_ORDER"] = "openblas,ATLAS,MKL"
+    os.environ["LDFLAGS"] = '$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
@@ -84,20 +84,17 @@ else:
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
         if platform.system() == "Linux":
+            os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libgomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/opt/libgomp/lib"] 
-            LIBS = LIBS + ['libgomp']
+            LIBS = LIBS
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
-            EXTRA_COMPILE_ARGS = ['-fopenmp'] + EXTRA_COMPILE_ARGS
+            EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
         if platform.system() == "Darwin":
-            os.system("brew --prefix libomp")
-            os.system("export LDFLAGS='$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'")
-
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
             LIBS = LIBS + ['libomp']
-            RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
             EXTRA_COMPILE_ARGS = ['-Xpreprocessor -fopenmp'] + EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
