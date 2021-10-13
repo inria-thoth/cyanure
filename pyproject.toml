@@ -24,5 +24,6 @@ before-all = [
 # Run multiple commands using an array
 before-all = [
   "certutil.exe -urlcache -split -f 'https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip' openblas.zip",
+  "dir",
   "powershell.exe Expand-Archive -Path openblas.zip -DestinationPath openblas",
 ]
