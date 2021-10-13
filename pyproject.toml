@@ -19,3 +19,9 @@ before-all = [
   "brew install openblas",
   "brew install libomp",
 ]
+
+[tool.cibuildwheel.windows]
+# Run multiple commands using an array
+before-all = [
+  "dotnet add package MathNet.Numerics.Providers.OpenBLAS --version 5.0.0-alpha02",
+]
