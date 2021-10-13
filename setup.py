@@ -24,9 +24,12 @@ def getBlas():
             lib = line
             break
     np_confg.close()
-    blas = lib.split('[')[1].split(',')[0]
-    os.remove("npConfg_file.txt")
-    return blas[1:len(blas)-1]
+    if lib != "":
+        blas = lib.split('[')[1].split(',')[0]
+        os.remove("npConfg_file.txt")
+        return blas[1:len(blas)-1]
+    else:
+        return lib
 
 np_blas = getBlas()
 
