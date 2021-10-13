@@ -48,8 +48,6 @@ if platform.system() == "Windows":
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
 
     if 'blas' in np_blas:
-        os.system("cd /")
-        os.system("dir /s openblas_info.lib")
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
@@ -59,6 +57,11 @@ if platform.system() == "Windows":
         LIBS = libs_open_blas
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+
+    INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas/include'] + INCLUDE_DIRS
+    LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas/lib'] 
+    RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
+    EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 else:
     ##### setup mkl_rt
