@@ -51,7 +51,7 @@ if platform.system() == "Windows":
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
-        libs_open_blas = [np_blas[:-2]]
+        libs_open_blas = ["libopenblas"]
         include_dirs_open_blas = [numpy.get_include()]
 
         LIBS = libs_open_blas
