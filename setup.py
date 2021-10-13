@@ -7,8 +7,8 @@ import contextlib
 import os
 
 if platform.system() == "Darwin":
-    os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
-    os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
+    os.environ["CC"] = "/usr/bin/clang"
+    os.environ["CXX"] = "/usr/bin/clang++"
     os.environ["NPY_LAPACK_ORDER"] = "openblas,ATLAS,MKL"
 
 def getBlas():
@@ -83,23 +83,21 @@ else:
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
-        if platform.system() == "Darwin":            
-            os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
-
+        if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libgomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/opt/libgomp/lib"] 
             LIBS = LIBS + ['libgomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
 
-        if platform.system() == "Darwin":            
-            os.system("find /usr -xdev -name '*libomp*' 2>/dev/null")
+        if platform.system() == "Darwin":
             os.system("brew --prefix libomp")
+            os.system("export LDFLAGS='$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'")
 
-            INCLUDE_DIRS = ['/usr/local/opt/llvm/include', '/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
+            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/Cellar/libomp/12.0.1/lib"]
-            LIBS = LIBS 
-            # LIBS = LIBS + ['libomp']
+            LIBS = LIBS + ['libomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
+            EXTRA_COMPILE_ARGS = ['-Xpreprocessor'] + EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
 
