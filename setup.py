@@ -75,7 +75,7 @@ else:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
                 '-std=c++11', '-v']
-        libs_open_blas = [np_blas]
+        libs_open_blas = [np_blas, 'libgomp']
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
         LIBS = libs_open_blas
