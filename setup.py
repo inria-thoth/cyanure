@@ -18,6 +18,7 @@ def getBlas():
         numpy.show_config()
     file_.close()
     np_confg = open('npConfg_file.txt','r')
+    lib = ""
     for line in np_confg:
         if 'libraries' in line:
             lib = line
@@ -25,7 +26,6 @@ def getBlas():
     np_confg.close()
     blas = lib.split('[')[1].split(',')[0]
     os.remove("npConfg_file.txt")
-    print(blas)
     return blas[1:len(blas)-1]
 
 np_blas = getBlas()
@@ -97,14 +97,14 @@ else:
             os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libgomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/lib64', "/usr/lib/gcc/x86_64-redhat-linux/4.4.4/"] 
-            LIBS = LIBS + ['libgomp']
+            # LIBS = LIBS + ['libgomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-            LIBS = LIBS + ['libomp']
+            # LIBS = LIBS + ['libomp']
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
