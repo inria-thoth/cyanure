@@ -9,8 +9,8 @@ import os
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
-    os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
-    os.environ["CPPFLAGS"] = '-Xpreprocessor -fopenmp'
+    #os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
+    #os.environ["CPPFLAGS"] = '-Xpreprocessor -fopenmp'
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
@@ -24,9 +24,9 @@ def getBlas():
             lib = line
             break
     np_confg.close()
+    os.remove("npConfg_file.txt")
     if lib != "":
-        blas = lib.split('[')[1].split(',')[0]
-        os.remove("npConfg_file.txt")
+        blas = lib.split('[')[1].split(',')[0]        
         return blas[1:len(blas)-1]
     else:
         return lib
@@ -98,8 +98,8 @@ else:
 
         if platform.system() == "Linux":
             os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
-            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/local/include', "/usr/local/opt/libgomp/include"] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/lib64', "/usr/lib/gcc/x86_64-redhat-linux/4.4.4/"] 
+            INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib'] 
             # LIBS = LIBS + ['libgomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
