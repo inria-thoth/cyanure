@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import numpy
 import platform
-import sys 
+import struct
 
 import contextlib
 import os
@@ -58,9 +58,14 @@ if platform.system() == "Windows":
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
-    INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas/include'] + INCLUDE_DIRS
-    LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas/lib'] 
-    EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
+    if struct.calcsize("P") * 8 == 32:
+        INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib'] 
+        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
+    else:
+        INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib'] 
+        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 else:
     ##### setup mkl_rt
