@@ -24,6 +24,7 @@ def getBlas():
     np_confg.close()
     blas = lib.split('[')[1].split(',')[0]
     os.remove("npConfg_file.txt")
+    print(blas)
     return blas[1:len(blas)-1]
 
 np_blas = getBlas()
@@ -36,13 +37,25 @@ RUNTIME_LIRABRY_DIRS = []
 
 
 if platform.system() == "Windows":
-    libs_mkl_windows = ['mkl_rt', 'iomp5']
-    include_dirs_mkl_windows = [numpy.get_include()]
-    extra_compile_args_mkl_windows = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
-    LIBS = libs_mkl_windows
-    INCLUDE_DIRS = include_dirs_mkl_windows
-    EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
+    if 'mkl' in np_blas:
+        libs_mkl_windows = ['mkl_rt', 'iomp5']
+        include_dirs_mkl_windows = [numpy.get_include()]
+        extra_compile_args_mkl_windows = [
+                '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+        LIBS = libs_mkl_windows
+        INCLUDE_DIRS = include_dirs_mkl_windows
+        EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
+
+    if 'blas' in np_blas:
+        extra_compile_args_open_blas=[
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
+                '/permissive-', '/W1']
+        libs_open_blas = [np_blas]
+        include_dirs_open_blas = [numpy.get_include()]
+
+        LIBS = libs_open_blas
+        INCLUDE_DIRS = include_dirs_open_blas
+        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
 else:
     ##### setup mkl_rt
@@ -61,7 +74,7 @@ else:
     if 'blas' in np_blas:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
-                '-std=c++11', '-Wl,--verbose']
+                '-std=c++11', '-v']
         libs_open_blas = [np_blas]
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
