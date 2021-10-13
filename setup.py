@@ -10,6 +10,7 @@ if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
     os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
+    os.environ["CPPFLAGS"] = '-Xpreprocessor -fopenmp'
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
@@ -95,7 +96,7 @@ else:
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
             LIBS = LIBS + ['libomp']
-            EXTRA_COMPILE_ARGS = ['-Xpreprocessor -fopenmp'] + EXTRA_COMPILE_ARGS
+            EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
 
