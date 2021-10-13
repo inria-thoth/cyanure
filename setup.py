@@ -73,7 +73,7 @@ else:
     ##### setup openblas
     if 'blas' in np_blas:
         extra_compile_args_open_blas=[
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-fopenmp',
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
                 '-std=c++11', '-v']
         libs_open_blas = [np_blas]
 
@@ -88,16 +88,17 @@ else:
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/opt/libgomp/lib"] 
             LIBS = LIBS + ['libgomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
+            EXTRA_COMPILE_ARGS = ['-fopenmp'] + EXTRA_COMPILE_ARGS
 
         if platform.system() == "Darwin":
             os.system("brew --prefix libomp")
             os.system("export LDFLAGS='$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'")
 
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/local/lib', "/usr/local/Cellar/libomp/12.0.1/lib"]
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
             LIBS = LIBS + ['libomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
-            EXTRA_COMPILE_ARGS = ['-Xpreprocessor'] + EXTRA_COMPILE_ARGS
+            EXTRA_COMPILE_ARGS = ['-Xpreprocessor -fopenmp'] + EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
 
