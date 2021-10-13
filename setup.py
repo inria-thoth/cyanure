@@ -9,7 +9,7 @@ import os
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
-    os.environ["LDFLAGS"] = '$LDFLAGS -Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
+    os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
