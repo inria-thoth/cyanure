@@ -8,7 +8,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 before-build = 'pip install numpy'
-skip = ["cp310-macosx_x86_64", "pp*"]
+#skip = ["cp310-macosx_x86_64", "pp*"]
+build = [cp310-win*]
+
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y openblas-devel lapack-devel libgomp || apk add openblas-dev lapack-dev libgomp"
