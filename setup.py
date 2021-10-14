@@ -56,6 +56,7 @@ if platform.system() == "Windows":
                 '/permissive-', '/W1']
         libs_open_blas = ["libopenblas"]
         include_dirs_open_blas = [numpy.get_include()]
+        print(numpy.get_include())
 
         LIBS = libs_open_blas
         INCLUDE_DIRS = include_dirs_open_blas
