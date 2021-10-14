@@ -8,8 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 before-build = 'pip install numpy'
-#skip = ["cp310-macosx_x86_64", "pp*"]
-build = [cp310*]
+skip = ["cp310-macosx_x86_64", "pp*", "cp36-win*", "cp37-win*", "cp38-win*", "cp39-win*"]
 
 
 [tool.cibuildwheel.linux]
