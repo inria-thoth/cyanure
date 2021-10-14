@@ -54,6 +54,18 @@ if platform.system() == "Windows":
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
+        libs_open_blas = np_blas
+        include_dirs_open_blas = [numpy.get_include()]
+        print(numpy.get_include())
+
+        LIBS = libs_open_blas
+        INCLUDE_DIRS = include_dirs_open_blas
+        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+    
+    if np_blas == "" or "openblas" in np_blas:
+        extra_compile_args_open_blas=[
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '/permissive-', '/W1']
         libs_open_blas = ["libopenblas"]
         include_dirs_open_blas = [numpy.get_include()]
         print(numpy.get_include())
@@ -61,6 +73,7 @@ if platform.system() == "Windows":
         LIBS = libs_open_blas
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+    
 
     if struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
