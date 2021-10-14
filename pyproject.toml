@@ -29,5 +29,5 @@ before-all = [
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas_64.zip",
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_64.zip -DestinationPath D:/a/cyanure/cyanure/openblas_64",
 ]
-before-build: "pip install delvewheel"
-repair-wheel-command: "delvewheel repair -w {dest_dir} {wheel}"
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
