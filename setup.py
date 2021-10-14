@@ -50,26 +50,23 @@ if platform.system() == "Windows":
         INCLUDE_DIRS = include_dirs_mkl_windows
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
 
-    if 'blas' in np_blas:
-        extra_compile_args_open_blas=[
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-                '/permissive-', '/W1']
-        libs_open_blas = np_blas
-        include_dirs_open_blas = [numpy.get_include()]
-        print(numpy.get_include())
-
-        LIBS = libs_open_blas
-        INCLUDE_DIRS = include_dirs_open_blas
-        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
-    
     if np_blas == "" or "openblas" in np_blas:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
         libs_open_blas = ["libopenblas"]
         include_dirs_open_blas = [numpy.get_include()]
-        print(numpy.get_include())
 
+        LIBS = libs_open_blas
+        INCLUDE_DIRS = include_dirs_open_blas
+        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+
+    elif 'blas' in np_blas:
+        extra_compile_args_open_blas=[
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '/permissive-', '/W1']
+        libs_open_blas = np_blas
+        include_dirs_open_blas = [numpy.get_include()]
         LIBS = libs_open_blas
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
