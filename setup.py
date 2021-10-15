@@ -12,6 +12,9 @@ if platform.system() == "Darwin":
     #os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
     #os.environ["CPPFLAGS"] = '-Xpreprocessor -fopenmp'
 
+if platform.system() == "Windows":
+    os.environ["PATH"] = "$PATH:D:\\a\\cyanure\\cyanure\\openblas_64\\bin"
+
 def getBlas():
     file_ = open("npConfg_file.txt","w")
     with contextlib.redirect_stdout(file_):
