@@ -111,14 +111,14 @@ else:
             os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib'] 
-            # LIBS = LIBS + ['libgomp']
+            LIBS = LIBS + ['libgomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-            # LIBS = LIBS + ['libomp']
+            LIBS = LIBS + ['libomp']
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
