@@ -29,5 +29,5 @@ before-all = [
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas_64.zip",
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_64.zip -DestinationPath D:/a/cyanure/cyanure/openblas_64",
 ]
-before-build = "pip install delvewheel"
+before-build = "pip install git+https://github.com/thomasryck/delvewheel.git"
 repair-wheel-command = "if \"%processor_architecture%\"  == \"AMD64\" (delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin -w {dest_dir} {wheel}) else (delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel})"
