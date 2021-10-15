@@ -30,4 +30,4 @@ before-all = [
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_64.zip -DestinationPath D:/a/cyanure/cyanure/openblas_64",
 ]
 before-build = "pip install delvewheel"
-repair-wheel-command = "dir \"D:/a/cyanure/cyanure/openblas_86/bin\" && if \"%processor_architecture%\"  == \"AMD64\" (delvewheel repair --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin -w {dest_dir} {wheel}) else (delvewheel repair --add-path=D:\\a\\cyanure\\cyanure\\openblas_86\\bin -w {dest_dir} {wheel})"
+repair-wheel-command = "if \"%processor_architecture%\"  == \"AMD64\" (delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin -w {dest_dir} {wheel}) else (delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_86\\bin -w {dest_dir} {wheel})"
