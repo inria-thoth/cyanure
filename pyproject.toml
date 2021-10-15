@@ -12,7 +12,7 @@ skip = ["cp310-macosx_x86_64", "pp*"]
 
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y openblas-devel lapack-devel libgomp || apk add openblas-dev lapack-dev libgomp"
+before-all = "/sbin/ldconfig -p | grep gomp && yum install -y openblas-devel lapack-devel libgomp || apk add openblas-dev lapack-dev libgomp"
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
