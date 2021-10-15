@@ -98,7 +98,7 @@ else:
     if 'blas' in np_blas:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-                '-std=c++11', '-v']
+                '-fopenmp', '-std=c++11', '-v']
         libs_open_blas = [np_blas]
 
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
