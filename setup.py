@@ -13,7 +13,7 @@ if platform.system() == "Darwin":
     #os.environ["CPPFLAGS"] = '-Xpreprocessor -fopenmp'
 
 if platform.system() == "Windows":
-    os.environ["PATH"] += ";D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin"
+    os.environ["PATH"] += ";D:\a\cyanure\cyanure\openblas_64\bin;D:\a\cyanure\cyanure\openblas_86\bin"
 
 def getBlas():
     file_ = open("npConfg_file.txt","w")
