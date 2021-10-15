@@ -110,7 +110,7 @@ else:
         if platform.system() == "Linux":
             os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib'] 
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/lib64/'] 
             LIBS = LIBS + ['libgomp']
             RUNTIME_LIRABRY_DIRS=LIBRARY_DIRS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
