@@ -55,7 +55,7 @@ jobs:
           path: dist/*.tar.gz
 
       - name: version
-        run: echo "::set-output name=version::0.0.2"
+        run: echo "::set-output name=version::v0.0.2"
         id: version
       - name: release
         uses: actions/create-release@v1
@@ -103,5 +103,5 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@v1.4.2
         with:
           user: __token__
-          password: ${{ secrets.pypi_password }}
+          password: ${{ secrets.PYPI}}
           repository_url: https://test.pypi.org/legacy/
