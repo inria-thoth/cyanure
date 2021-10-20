@@ -61,19 +61,13 @@ jobs:
         uses: actions/create-release@v1
         id: create_release
         with:
-          draft: true
+          draft: false
           prerelease: false
           release_name: ${{ steps.version.outputs.version }}
           tag_name: ${{ github.ref }}
           body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - name: Fetch action
-        id: pl
-        uses: Rishabh510/Path-lister-action@master
-        with:
-          path: "/"
-          type: ".zip"
       - name: upload zip archive
         uses: actions/upload-release-asset@v1
         env:
