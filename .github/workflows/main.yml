@@ -68,6 +68,12 @@ jobs:
           body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - name: Fetch action
+        id: pl
+        uses: Rishabh510/Path-lister-action@master
+        with:
+          path: ""
+          type: ".zip"
       - name: upload zip archive
         uses: actions/upload-release-asset@v1
         env:
