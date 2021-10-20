@@ -11,7 +11,7 @@ from distutils.command.sdist import sdist as _sdist
 class sdistzip(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
-        self.formats = ['zip', 'tar']
+        self.formats = ['zip', 'gztar']
 
 
 if platform.system() == "Darwin":
