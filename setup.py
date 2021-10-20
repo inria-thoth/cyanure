@@ -98,7 +98,7 @@ else:
     if 'blas' in np_blas:
         extra_compile_args_open_blas=[
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-                '-fopenmp', '-std=c++11', '-v']
+                '-std=c++11', '-v']
         libs_open_blas = [np_blas]
 
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
@@ -118,7 +118,7 @@ else:
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-            LIBS = LIBS + ['libomp']
+            LIBS = LIBS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
@@ -151,8 +151,8 @@ cyanure_wrap = Extension(
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
     sources=['cyanure_wrap_module.cpp'])
 
-setup(name='cyanure setup',
-      version='0.22post2',
+setup(name='cyanure',
+      version='0.22.2',
       author="Julien Mairal",
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',

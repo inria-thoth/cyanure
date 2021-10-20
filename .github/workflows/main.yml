@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [mac-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -53,6 +53,39 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
+
+      - name: version
+        run: echo "::set-output name=version::0.0.1"
+        id: version
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: true
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: upload zip archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: cyanure-0.22.2.tar.gz
+          asset_name: cyanure-0.22.2.tar.gz
+        asset_content_type: application/gzip
+      - name: upload targz archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: cyanure-0.22.2.tar.gz
+          asset_name: cyanure-0.22.2.tar.gz
+          asset_content_type: application/gzip
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
