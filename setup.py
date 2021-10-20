@@ -6,6 +6,14 @@ import struct
 import contextlib
 import os
 
+# Override sdist to always produce .zip archive
+from distutils.command.sdist import sdist as _sdist
+class sdistzip(_sdist):
+    def initialize_options(self):
+        _sdist.initialize_options(self)
+        self.formats = 'zip'
+
+
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
@@ -160,5 +168,6 @@ setup(name='cyanure',
       description='optimization toolbox for machine learning',
       install_requires=['scipy', 'numpy'],
       ext_modules=[cyanure_wrap],
+      cmdclass={'sdist': sdistzip},
       py_modules=['cyanure'])
 
