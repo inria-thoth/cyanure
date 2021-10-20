@@ -73,7 +73,7 @@ jobs:
         uses: Rishabh510/Path-lister-action@master
         with:
           path: "/"
-          type: ".tar.gz"
+          type: ".zip"
       - name: upload zip archive
         uses: actions/upload-release-asset@v1
         env:
