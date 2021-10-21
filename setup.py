@@ -150,14 +150,14 @@ n argumentss
 """
 
 cyanure_wrap = Extension(
-    'cyanure_wrap',
+    'cyanure_lib.cyanure_wrap',
     libraries=LIBS,
     include_dirs=INCLUDE_DIRS,
     language='c++',
     library_dirs = LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
-    sources=['cyanure_wrap_module.cpp'])
+    sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 setup(name='cyanure',
       version='0.22.2',
