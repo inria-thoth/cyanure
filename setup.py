@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 import numpy
 import platform
 import struct
@@ -85,6 +85,7 @@ if platform.system() == "Windows":
         LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib'] 
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
     else:
+from setuptools import setup, Extension, find_packages
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib'] 
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
@@ -168,6 +169,7 @@ setup(name='cyanure',
       description='optimization toolbox for machine learning',
       install_requires=['scipy', 'numpy'],
       ext_modules=[cyanure_wrap],
+      packages=find_packages(),
       cmdclass={'sdist': sdistzip},
       py_modules=['cyanure'])
 
