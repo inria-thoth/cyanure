@@ -55,7 +55,7 @@ jobs:
           path: dist/*.tar.gz
 
       - name: version
-        run: echo "::set-output name=version::v0.0.2"
+        run: echo "::set-output name=version::v0.0.3"
         id: version
       - name: release
         uses: actions/create-release@v1
@@ -74,8 +74,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/cyanure-0.22.2.zip
-          asset_name: cyanure-0.22.2.zip
+          asset_path: dist/cyanure-0.22.3.zip
+          asset_name: cyanure-0.22.3.zip
           asset_content_type: application/gzip
       - name: upload targz archive
         uses: actions/upload-release-asset@v1
@@ -83,8 +83,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/cyanure-0.22.2.tar.gz
-          asset_name: cyanure-0.22.2.tar.gz
+          asset_path: dist/cyanure-0.22.3.tar.gz
+          asset_name: cyanure-0.22.3.tar.gz
           asset_content_type: application/gzip
 
   upload_pypi:

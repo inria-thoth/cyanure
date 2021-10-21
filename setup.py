@@ -160,7 +160,7 @@ cyanure_wrap = Extension(
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 setup(name='cyanure',
-      version='0.22.2',
+      version='0.22.3',
       author="Julien Mairal",
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',
