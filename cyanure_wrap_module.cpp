@@ -1,6 +1,6 @@
-#include "utils/linalg.h"
-#include "utils/wrapper_utils.h"
-#include "utils/solvers.h"
+#include "lib/linalg.h"
+#include "lib/wrapper_utils.h"
+#include "lib/solvers.h"
 
 template <typename T, typename I>
 static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0, PyArrayObject* inw, PyArrayObject* in_dual, const int nepochs, const int l_qning, const int f_restart, const T tol, const int it0, const bool verbose, char* solver, char* loss, char* regul, const T lambda, const T lambda2, const T lambda3, const bool intercept, const bool univariate, const int nthreads) {
