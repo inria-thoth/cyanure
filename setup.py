@@ -85,7 +85,6 @@ if platform.system() == "Windows":
         LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib'] 
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
     else:
-from setuptools import setup, Extension, find_packages
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib'] 
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
