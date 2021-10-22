@@ -16,6 +16,7 @@ before-all = "yum install -y openblas-devel lapack-devel libgomp || apk add open
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
+before-build = 'pip install --upgrade delocate'
 before-all = [
   "brew install openblas",
   "brew install libomp",
