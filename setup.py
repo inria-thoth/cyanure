@@ -3,7 +3,6 @@ import numpy
 import platform
 import struct
 
-import subprocess
 import contextlib
 import os
 
@@ -125,10 +124,11 @@ else:
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
         if platform.system() == "Darwin":
-            subprocess.check_call("find /usr/local -xdev -name '*openblas*'", stdout=subprocess.STDOUT, stderr=subprocess.STDOUT)
+            out = os.system("find /usr/local -xdev -name '*openblas*'")
+            print(out)
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-            LIBS = LIBS
+            LIBS = LIBS + ['libgomp']
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
