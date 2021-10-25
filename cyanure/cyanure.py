@@ -32,7 +32,7 @@ def preprocess(X, centering=False, normalize=True, columns=False):
         Xf = X.T
     else:
         Xf = np.asfortranarray(X.T)
-    return cyanure_wrap.preprocess_(Xf, centering, normalize, not columns)
+    return cyanure_lib.preprocess_(Xf, centering, normalize, not columns)
 
 
 class ERM:
@@ -230,7 +230,7 @@ class ERM:
                 self.dual_variable = np.zeros([n, nclasses], dtype=Xf.dtype)
 
         w = np.copy(w0)
-        optim_info = cyanure_wrap.erm_(
+        optim_info = cyanure_lib.erm_(
             Xf, yf, w0, w, dual_variable=self.dual_variable, loss=self.loss,
             penalty=self.penalty, solver=solver, lambd=float(lambd),
             lambd2=float(lambd2), lambd3=float(lambd3),

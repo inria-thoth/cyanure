@@ -1,4 +1,4 @@
-import cyanure as ars
+import cyanure.cyanure as ars
 import numpy as np
 import scipy.sparse
 import argparse
@@ -12,15 +12,15 @@ parser.add_argument("--loss");
 parser.add_argument("--lambd",type=float);
 args=parser.parse_args();
 
-dataset=args.dataset;
-penalty=args.penalty;
-solver=args.solver;
-lambd=args.lambd;
-loss=args.loss;
+dataset='ckn_mnist';
+penalty='l1l2';
+solver='auto';
+lambd=0.0001;
+loss='multiclass-logistic';
 
 nthreads=4
 datapath='/scratch/clear/mairal/large_datasets/'
-datapath='./'
+datapath='/scratch/tryckebo/Documents/Cyanure/dataset/'
 logfiles='/scratch/clear/mairal/logs_cyanure/'
 normalize=True
 centering=True
