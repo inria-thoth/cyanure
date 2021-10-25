@@ -124,7 +124,6 @@ else:
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
         if platform.system() == "Darwin":
-            out = os.system("find /usr/local -xdev -name '*openblas*'")
             print(out)
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
@@ -162,7 +161,7 @@ cyanure_wrap = Extension(
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 setup(name='cyanure',
-      version='0.22.3',
+      version='0.22.4',
       author="Julien Mairal",
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',
