@@ -5,7 +5,7 @@
 from abc import abstractmethod
 import numpy as np
 import scipy.sparse
-import cyanure_wrap
+import cyanure_lib
 import math
 
 

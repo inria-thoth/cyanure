@@ -127,8 +127,8 @@ else:
             out = os.system("find /usr/local -xdev -name '*openblas*'")
             print(out)
             INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
-            LIBRARY_DIRS = []
-            LIBS = LIBS 
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
+            LIBS = LIBS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
