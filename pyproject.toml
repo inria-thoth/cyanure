@@ -11,10 +11,9 @@ before-build = 'pip install numpy'
 skip = ["cp310-macosx_x86_64", "pp*"]
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y wget openblas-devel libgomp  || apk add openblas-dev libgomp wget"
-test-command =  [  "cd /project", 
-                    "wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
-    "python /project/test/test.py",]
+before-all = "(yum install -y wget openblas-devel libgomp  || apk add openblas-dev libgomp wget) && cd /project && wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz"
+test-command =  [  "cd  {package}",
+    "python test/test.py --datapath='/project'",]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
@@ -22,10 +21,11 @@ before-all = [
   "brew install openblas",
   "brew install libomp",
   "brew install wget",
+  "cd /Users/runner/work/cyanure/cyanure",
+  "wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
 ]
-test-command =  [  "cd /Users/runner/work/cyanure/cyanure", "ls",
-                    "wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
-    "python /project/test/test.py",]
+test-command =  [  "cd  {package}",
+    "python test/test.py --datapath='/Users/runner/work/cyanure/cyanure'",]
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
@@ -34,9 +34,9 @@ before-all = [
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_86.zip -DestinationPath D:/a/cyanure/cyanure/openblas_86",
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas_64.zip",
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_64.zip -DestinationPath D:/a/cyanure/cyanure/openblas_64",
+  "powershell.exe Invoke-WebRequest http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz -OutFile D:/a/cyanure/cyanure/ckn_mnist.npz",
 ]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel}"
-test-command =  [ "dir", "cd d:\\a\\cyanure\\cyanure", "dir d:\\a\\cyanure\\cyanure",
-                    "powershell.exe Invoke-WebRequest http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
-    "python /project/test/test.py",]
+test-command =  [ "cd  {package}",                    
+    "python test/test.py --datapath='D:/a/cyanure/cyanure'",]
