@@ -10,16 +10,22 @@ build-backend = "setuptools.build_meta"
 before-build = 'pip install numpy'
 skip = ["cp310-macosx_x86_64", "pp*"]
 
-
 [tool.cibuildwheel.linux]
-before-all = "yum install -y openblas-devel lapack-devel libgomp || apk add openblas-dev lapack-dev libgomp"
+before-all = "yum install -y wget openblas-devel libgomp  || apk add openblas-dev libgomp wget"
+test-command =  [  "cd /project", 
+                    "wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
+    "python /project/test/test.py",]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
 before-all = [
   "brew install openblas",
   "brew install libomp",
+  "brew install wget",
 ]
+test-command =  [  "cd /project", 
+                    "wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
+    "python /project/test/test.py",]
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
@@ -31,3 +37,6 @@ before-all = [
 ]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel}"
+test-command =  [ "dir", "cd /project", 
+                    "powershell.exe Invoke-WebRequest http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
+    "python /project/test/test.py",]

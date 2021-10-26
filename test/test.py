@@ -20,7 +20,7 @@ loss='multiclass-logistic';
 
 nthreads=4
 datapath='/scratch/clear/mairal/large_datasets/'
-datapath='/scratch/tryckebo/Documents/Cyanure/dataset/'
+datapath='/project/'
 logfiles='/scratch/clear/mairal/logs_cyanure/'
 normalize=True
 centering=True
