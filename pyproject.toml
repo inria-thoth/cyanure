@@ -23,7 +23,7 @@ before-all = [
   "brew install libomp",
   "brew install wget",
 ]
-test-command =  [  "cd /project", 
+test-command =  [  "cd /Users/runner/work/cyanure/cyanure", "ls",
                     "wget http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
     "python /project/test/test.py",]
 
@@ -37,6 +37,6 @@ before-all = [
 ]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel}"
-test-command =  [ "dir", "cd d:\\a\\cyanure\\cyanure", "dir",
+test-command =  [ "dir", "cd d:\\a\\cyanure\\cyanure", "dir d:\\a\\cyanure\\cyanure",
                     "powershell.exe Invoke-WebRequest http://pascal.inrialpes.fr/data2/mairal/data/ckn_mnist.npz",
     "python /project/test/test.py",]
