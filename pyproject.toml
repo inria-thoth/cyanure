@@ -38,5 +38,5 @@ before-all = [
 ]
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel}"
-test-command =  [ "cd  {package}", "dir D:\\a\\cyanure\\cyanure",                   
+test-command =  [ "cd  {package}", "dir D:\\a\\cyanure\\cyanure\\test", "dir",                  
     "python test\\test.py --datapath='D:\\a\\cyanure\\cyanure'",]
