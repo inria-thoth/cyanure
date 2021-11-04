@@ -2,3 +2,7 @@ dist/
 cyanure.egg-info/
 MANIFEST
 build/
+*__pycache__*
+.idea/
+.vscode/
+*.so
