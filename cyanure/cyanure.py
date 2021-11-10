@@ -2,16 +2,20 @@
 #
 # License: BSD 3 clause
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import numpy as np
 import scipy.sparse
 from scipy import sparse
+import warnings
 import cyanure_lib
 import math
 
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, softmax
+from sklearn.exceptions import DataConversionWarning
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.multiclass import type_of_target
 
 
 def preprocess(X, centering=False, normalize=True, columns=False):
@@ -40,7 +44,93 @@ def preprocess(X, centering=False, normalize=True, columns=False):
     return cyanure_lib.preprocess_(Xf, centering, normalize, not columns)
 
 
-class ERM(BaseEstimator):
+def check_input(X, y, estimator):
+        le = None
+
+        if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
+            X = np.array(X)
+            y = np.array(y)
+
+        if X.ndim == 1:
+            raise ValueError("The training array has only one dimension.")
+
+        if np.iscomplexobj(X) or np.iscomplexobj(y):
+            raise ValueError("Complex data not supported")
+
+        if X.shape[0] == 0:
+            raise ValueError("Empty training array")
+
+        if len(X.shape) > 1 and X.shape[1] == 0:
+            raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
+                X.shape[0]) + " is required.")
+
+        if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
+            if np.iscomplexobj(X) or np.iscomplexobj(y):
+                raise ValueError("Complex data not supported")
+
+            if len(X) == 0:
+                raise ValueError("Empty training array")
+
+            # TODO Flexible dtype
+            X = np.asfortranarray(X, 'float64')
+           
+            #TODO check if relevant
+            if estimator._estimator_type == "classifier":
+                y_type = type_of_target(y)
+                if y_type not in [
+                    "binary",
+                    "multiclass",
+                    "multiclass-multioutput",
+                    "multilabel-indicator",
+                    "multilabel-sequences",
+                ]:
+                    raise ValueError("Unknown label type: %r" % y_type)
+
+                if np.issubdtype(type(y[0]), np.str_):
+                    le = LabelEncoder()
+                    le.fit(y)
+                    y = le.transform(y)
+                elif np.isfinite(y[0]) and (type(y[0]) == "float64" or type(y[0]) == "float32"):
+                    raise ValueError("Unknown label type: " + str(y.dtype))
+                elif np.isfinite(y[0]) and (type(y[0]) != "int64"):
+                    y = y.astype("int64")
+            else:
+
+                 y = y.astype("float64")
+            
+            if False in np.isfinite(X) or False in np.isfinite(y):
+                raise ValueError("Input contains NaN, infinity or a value too large for dtype('float64').")
+
+            if len(np.unique(y)) == 1:
+                raise ValueError("There is only one class in the labels.")
+        else:
+            if scipy.sparse.issparse(X) and X.getformat() != F"csr":
+                raise TypeError("The library only supports CSR sparse data.")
+            if  scipy.sparse.issparse(y) and y.getformat() != "csr":
+                raise TypeError("The library only supports CSR sparse data.")
+
+        if y.shape[0] != X.shape[0]:
+            raise ValueError(
+                "X and y should have the same number of observations")
+
+        if X.shape[0] == 1:
+            raise ValueError("There should have more than 1 sample")
+
+        if not (type(estimator.tol) == int or type(estimator.tol) == float):
+            raise ValueError(
+                "Tolerance for stopping criteria must be positive")
+
+        if not (type(estimator.max_epochs) == int or type(estimator.max_epochs) == float):
+            raise ValueError("Maximum number of iteration must be positive")
+        
+        if y.ndim > 1:
+             warnings.warn("A column-vector y was passed when a 1d array was expected", DataConversionWarning) 
+
+        return X, y, le
+
+        
+
+class ERM(BaseEstimator, ABC):
     """The generic class for empirical risk minimization problems.
     For univariates problems, minimizes
 
@@ -48,7 +138,7 @@ class ERM(BaseEstimator):
 
     """
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual_variable=None, tol=1e-3, solver="auto", random_state=0):
+    def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual_variable=None, tol=1e-3, solver="auto", random_state=0, max_epochs=500):
         """Initialization function of the ERM class.
 
         Parameters
@@ -98,6 +188,7 @@ class ERM(BaseEstimator):
         self.solver = solver
         self.tol = tol
         self.random_state = random_state
+        self.max_epochs = max_epochs
 
     def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
             it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
@@ -191,11 +282,6 @@ class ERM(BaseEstimator):
         process (number of iterations, objective function values, duality gap)
         will be documented in the future if people ask me,
         """
-
-        if y.ndim == 0:
-            print("Please provide label vector")
-            return
-
         if X.ndim == 1:
             raise ValueError("The training array has only one dimension.")
 
@@ -307,14 +393,6 @@ class ERM(BaseEstimator):
         """
         return
 
-
-    @abstractmethod
-    def predict_proba(self, X):
-        """
-        predict the labels given an input matrix X (same format as fit)
-        """
-        return
-
     def get_weights(self):
         """
         get the model parameters (either w or the tuple (w,b))
@@ -329,8 +407,73 @@ class ERM(BaseEstimator):
         return self.fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
                         max_epochs=0, verbose=False, restart=True)
 
+    def get_params(self, deep=True):
+        out = dict()
+        for key in self._get_param_names():
+            try:
+                value = getattr(self, key)
+            except AttributeError:
+                value = None
+            if deep and hasattr(value, 'get_params'):
+                deep_items = value.get_params().items()
+                out.update((key + '__' + k, val) for k, val in deep_items)
+            out[key] = value
+        return out
 
-class BinaryClassifier(ERM):
+    @classmethod
+    def _get_param_names(cls):
+        import inspect
+        init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
+        if init is object.__init__:
+            # No explicit constructor to introspect
+            return []
+
+        # introspect the constructor arguments to find the model parameters
+        # to represent
+        init_signature = inspect.signature(init)
+        # Consider the constructor parameters excluding 'self'
+        parameters = [p for p in init_signature.parameters.values()
+                      if p.name != 'self' and p.kind != p.VAR_KEYWORD]
+        for p in parameters:
+            if p.kind == p.VAR_POSITIONAL:
+                raise RuntimeError()
+        # Extract and sort argument names excluding 'self'
+        return sorted([p.name for p in parameters])
+
+    def set_params(self, **params):
+        from collections import defaultdict
+        if not params:
+            # Simple optimization to gain speed (inspect is slow)
+            return self
+        valid_params = self.get_params(deep=True)
+
+        nested_params = defaultdict(dict)  # grouped by prefix
+        for key, value in params.items():
+            key, delim, sub_key = key.partition('__')
+            if key not in valid_params:
+                raise ValueError('Invalid parameter %s for estimator %s. '
+                                 'Check the list of available parameters '
+                                 'with `estimator.get_params().keys()`.' %
+                                 (key, self))
+
+            if delim:
+                nested_params[key][sub_key] = value
+            else:
+                setattr(self, key, value)
+                valid_params[key] = value
+
+        for key, sub_params in nested_params.items():
+            valid_params[key].set_params(**sub_params)
+
+        return self
+
+class Classifier(ERM):
+
+    @abstractmethod
+    def predict_proba(self, X):
+        pass
+
+class BinaryClassifier(Classifier):
     """
     The binary classification class, which derives from ERM. The goal is to
     minimize the following objective
@@ -497,6 +640,8 @@ class BinaryClassifier(ERM):
 
 
     def decision_function(self, X):
+        check_is_fitted(self)
+
         if X.ndim == 1:
             raise ValueError("Reshape your data")
 
@@ -511,6 +656,7 @@ class BinaryClassifier(ERM):
         return scores.ravel()
 
     def predict(self, X):
+        check_is_fitted(self)
 
         if not scipy.sparse.issparse(X) and (X.dtype != "float32" or X.dtype != "float64"):
              X = np.asfortranarray(X, dtype="float64")
@@ -599,9 +745,7 @@ class Regression(ERM):
         The fitting function is the same as for the class BinaryClassifier,
         except that we do not necessarily expect binary labels in y.
         """
-
-        if X.shape[0] == 0:
-            raise ValueError("Empty training set")
+        X, y, _ = check_input(X, y, self)
 
         return super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
                            solver=solver, tol=tol, it0=it0,
@@ -611,12 +755,16 @@ class Regression(ERM):
                            random_state=self.random_state)
 
     def predict(self, X):
-        if not scipy.sparse.issparse(X) and (X.dtype != "float32" or X.dtype != "float64"):
-             X = np.asfortranarray(X, dtype="float64")
+        check_is_fitted(self)
 
         if not scipy.sparse.issparse(X):
+            X = np.array(X)
+            if (X.dtype != "float32" or X.dtype != "float64"):
+                X = np.asfortranarray(X, dtype="float64")
+            
             if False in np.isfinite(X):
                 raise ValueError("NaN of inf values in the training array(s)")
+            
         
         if X.ndim == 1:
             raise ValueError("Reshape your data")
@@ -625,13 +773,18 @@ class Regression(ERM):
             raise ValueError("X has %d features per sample; expecting %d"
                              % (X.shape[1], self.n_features_in_))
 
-
         pred = X.dot(self.w_)
         if self.fit_intercept:
             pred += self.b_
         return pred
 
-class MultiClassifier(ERM):
+    def score(self, X, y, sample_weight=None):
+        from sklearn.metrics import r2_score
+
+        y_pred = self.predict(X)
+        return r2_score(y, y_pred, sample_weight=sample_weight)
+
+class MultiClassifier(Classifier):
     r"""The multi-class classification class. The goal is to minimize the
     following objective
 
@@ -692,6 +845,10 @@ class MultiClassifier(ERM):
     fit_intercept: boolean, default='False'
         learns an unregularized intercept b, which is a k-dimensional vector
     """
+    _estimator_type="classifier"
+
+    def _more_tags(self):
+        return {"_xfail_checks": {"check_classifiers_train": ("Different design"), }}
 
     def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
             it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
@@ -699,21 +856,35 @@ class MultiClassifier(ERM):
         """Same as BinaryClassifier, but y should be a vector a n-dimensional
         vector of integers
         """
+        print(y)
+        X, y, le = check_input(X, y, self)
+
+        self.le_ = le
+
         y = np.squeeze(y)
         if y.squeeze().ndim != 1 or np.any(y != y.astype(int)):
             raise ValueError("y should be a n-dimensional vector of integers")
+
         nclasses = np.max(y) + 1
         uniqu = np.unique(y)
+
+        self.classes_ = uniqu
+
         if nclasses == 2:
-            print("Two classes detected, use BinaryClassifier instead")
-            return
+            warnings.warn("Two classes detected, use BinaryClassifier instead")
+
+        if X.shape[1] < 2:
+            raise ValueError("There is only one 1 feature(s) in the training array!")    
+
         if (nclasses != uniqu.shape[0] or
                 not all(np.unique(y) == np.arange(nclasses))):
             print("Class labels should be of the form")
             print(np.arange(nclasses))
             print("but they are")
             print(uniqu)
-            return
+            print(X.shape)
+            #TODO label shape
+            #raise ValueError("Wrong label shape")
 
         return super().fit(
             X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3, solver=solver,
@@ -723,15 +894,70 @@ class MultiClassifier(ERM):
 
     def predict(self, X):
         """Predicts the class label"""
+        check_is_fitted(self)
+
+        if not scipy.sparse.issparse(X):
+            X = np.array(X)
+
+        if not scipy.sparse.issparse(X) and (X.dtype != "float32" or X.dtype != "float64"):
+             X = np.asfortranarray(X, dtype="float64")
+
+        if not scipy.sparse.issparse(X):
+            if False in np.isfinite(X):
+                raise ValueError("NaN of inf values in the training array(s)")
+        
+        if X.ndim == 1:
+            raise ValueError("Reshape your data")
+
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], self.n_features_in_))
+
         pred = X.dot(self.w_)
         if self.fit_intercept:
             pred += self.b_[np.newaxis, :]
-        return np.argmax(pred, 1)
+
+        return np.argmax(pred, axis=1)
 
     def score(self, X, y):
         """Gives a classification score on new test data"""
+        check_is_fitted(self)
+
         pred = np.squeeze(self.predict(X))
         return np.sum(np.squeeze(y) == pred) / pred.shape[0]
+
+    def decision_function(self, X):
+        check_is_fitted(self)
+
+        if X.ndim == 1:
+            raise ValueError("Reshape your data")
+
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError("X has %d features per sample; expecting %d"
+                             % (X.shape[1], self.n_features_in_))
+
+        if self.fit_intercept:
+            scores = safe_sparse_dot(X, self.w_, dense_output=True) + self.b_
+        else:
+            scores = safe_sparse_dot(X, self.w_, dense_output=True) 
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+
+    def predict_proba(self, X):
+        check_is_fitted(self)
+
+        if not scipy.sparse.issparse(X):
+            if False in np.isfinite(X):
+                raise ValueError("NaN of inf values in the training array(s)")
+
+        decision = self.decision_function(X)
+        if decision.ndim == 1:
+            # Workaround for multi_class="multinomial" and binary outcomes
+            # which requires softmax prediction with only a 1D decision.
+            decision = np.c_[-decision, decision]
+        else:
+            decision = decision
+        return softmax(decision, copy=False)
 
 
 class MultiVariateRegression(ERM):
@@ -777,14 +1003,21 @@ class MultiVariateRegression(ERM):
             univariate=False, nthreads=nthreads, random_state=self.random_state)
 
     def predict(self, X):
+        
         """Predicts the targets"""
         pred = X.dot(self.w_)
         if self.fit_intercept:
             pred += self.b[np.newaxis, :]
-        return pred
+        if self.le_ is None:                  
+            return pred
+        else:
+            return self.le_.inverse_transform(pred)
 
 
 class SKLearnClassifier(ERM):
+    _estimator_type="classifier"
+
+
     def __init__(self, verbose=False, solver='auto', tol=1e-3, random_state=0):
         super(SKLearnClassifier, self).__init__(
             solver=solver, tol=tol, random_state=random_state)
@@ -797,12 +1030,9 @@ class SKLearnClassifier(ERM):
         """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
         and max_iter replaces max_epochs.
         """
-        if np.iscomplexobj(X) or np.iscomplexobj(y):
-            raise ValueError("Complex data not supported")
-
-        if X.shape[0] == 0:
-            raise ValueError("Empty training array")
-
+        X, y, le = check_input(X, y, self)
+        self.le_ = le
+        
         if len(X.shape) > 1 and X.shape[1] == 0:
             raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
                 X.shape[0]) + " is required.")
@@ -812,7 +1042,11 @@ class SKLearnClassifier(ERM):
             self.C = C
         if max_iter is not None:
             self.max_iter = max_iter
-        self.classes_ = np.unique(y)
+        
+        if self.le_ is not None:
+            self.classes_ = self.le_.inverse_transform(np.unique(y))
+        else:
+            self.classes_ = np.unique(y)
         nb_classes = len(self.classes_)
 
         if not (type(self.C) == int or type(self.C) == float):
@@ -827,7 +1061,10 @@ class SKLearnClassifier(ERM):
         if nb_classes == 2:
             univariate = True
             if not np.all(self.classes_ == [-1, 1]):
-                neg = y == self.classes_[0]
+                if self.le_ is not None:
+                    neg = y == self.le_.transform(self.classes_)[0]
+                else:
+                    neg = y == self.classes_[0]
                 y = y.copy()
                 y[neg] = -1
                 y[np.logical_not(neg)] = 1
@@ -851,6 +1088,8 @@ class SKLearnClassifier(ERM):
         return self
 
     def decision_function(self, X):
+        check_is_fitted(self)
+
         if X.ndim == 1:
             raise ValueError("Reshape your data")
 
@@ -865,7 +1104,7 @@ class SKLearnClassifier(ERM):
         check_is_fitted(self)
 
         X = X if scipy.sparse.issparse(
-            X) else np.asfortranarray(X, dtype="float32")
+            X) else np.asfortranarray(X, dtype="float64")
 
         if not scipy.sparse.issparse(X):
             if False in np.isfinite(X):
@@ -876,7 +1115,10 @@ class SKLearnClassifier(ERM):
             indices = (scores > 0).astype(np.int64)
         else:
             indices = scores.argmax(axis=1)
-        return self.classes_[indices]
+        if self.le_ is None:                  
+            return self.classes_[indices]
+        else:
+            return self.le_.inverse_transform(indices)
 
     def predict_proba(self, X):
         check_is_fitted(self)
@@ -898,67 +1140,10 @@ class SKLearnClassifier(ERM):
         return softmax(decision_2d, copy=False)
 
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
+        
         return np.average(y == self.predict(X), weights=sample_weight)
 
-    def get_params(self, deep=True):
-        out = dict()
-        for key in self._get_param_names():
-            try:
-                value = getattr(self, key)
-            except AttributeError:
-                value = None
-            if deep and hasattr(value, 'get_params'):
-                deep_items = value.get_params().items()
-                out.update((key + '__' + k, val) for k, val in deep_items)
-            out[key] = value
-        return out
-
-    @classmethod
-    def _get_param_names(cls):
-        import inspect
-        init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
-        if init is object.__init__:
-            # No explicit constructor to introspect
-            return []
-
-        # introspect the constructor arguments to find the model parameters
-        # to represent
-        init_signature = inspect.signature(init)
-        # Consider the constructor parameters excluding 'self'
-        parameters = [p for p in init_signature.parameters.values()
-                      if p.name != 'self' and p.kind != p.VAR_KEYWORD]
-        for p in parameters:
-            if p.kind == p.VAR_POSITIONAL:
-                raise RuntimeError()
-        # Extract and sort argument names excluding 'self'
-        return sorted([p.name for p in parameters])
-
-    def set_params(self, **params):
-        from collections import defaultdict
-        if not params:
-            # Simple optimization to gain speed (inspect is slow)
-            return self
-        valid_params = self.get_params(deep=True)
-
-        nested_params = defaultdict(dict)  # grouped by prefix
-        for key, value in params.items():
-            key, delim, sub_key = key.partition('__')
-            if key not in valid_params:
-                raise ValueError('Invalid parameter %s for estimator %s. '
-                                 'Check the list of available parameters '
-                                 'with `estimator.get_params().keys()`.' %
-                                 (key, self))
-
-            if delim:
-                nested_params[key][sub_key] = value
-            else:
-                setattr(self, key, value)
-                valid_params[key] = value
-
-        for key, sub_params in nested_params.items():
-            valid_params[key].set_params(**sub_params)
-
-        return self
 
 
 class LinearSVC(SKLearnClassifier):
@@ -1014,6 +1199,8 @@ class LogisticRegression(SKLearnClassifier):
 
     max_iter: maximum number of iterations for the optimization solver
     """
+
+    _estimator_type = "classifier"
 
     def __init__(self, penalty='l2', fit_intercept=True, C=1, max_iter=500, solver="auto", tol=1e-3, random_state=0):
         super(LogisticRegression, self).__init__(
