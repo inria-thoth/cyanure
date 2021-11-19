@@ -56,8 +56,8 @@ def process(arguments, X, y, multiclass):
     if arguments.penalty=='l2':
         lambd=arguments.lambd/(X.shape[0])
         
-    classifier.fit(X,y,it0=arguments.it0,lambd=arguments.lambd,lambd2=arguments.lambd,nthreads=arguments.nthreads,tol=1e-3,solver=arguments.solver,restart=False,seed=0,max_epochs=100)
-    sparsity=np.count_nonzero(classifier.w.ravel())/len(classifier.w.ravel())
+    classifier.fit(X,y,it0=arguments.it0,lambd=arguments.lambd,lambd2=arguments.lambd,nthreads=arguments.nthreads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
+    sparsity=np.count_nonzero(classifier.w_.ravel())/len(classifier.w_.ravel())
     print(sparsity)
 
 def main(arguments):
