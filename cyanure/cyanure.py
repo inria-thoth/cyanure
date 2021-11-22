@@ -44,91 +44,93 @@ def preprocess(X, centering=False, normalize=True, columns=False):
 
 
 def check_input(X, y, estimator):
-        le = None
+    le = None
 
-        if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
-            X = np.array(X)
-            y = np.array(y)
+    if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
+        X = np.array(X)
+        y = np.array(y)
 
-        if X.ndim == 1:
-            raise ValueError("The training array has only one dimension.")
+    if X.ndim == 1:
+        raise ValueError("The training array has only one dimension.")
 
+    if np.iscomplexobj(X) or np.iscomplexobj(y):
+        raise ValueError("Complex data not supported")
+
+    if X.shape[0] == 0:
+        raise ValueError("Empty training array")
+
+    if len(X.shape) > 1 and X.shape[1] == 0:
+        raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
+            X.shape[0]) + " is required.")
+
+    if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
         if np.iscomplexobj(X) or np.iscomplexobj(y):
-            raise ValueError("Complex data not supported")
+            raise ValueError(
+                "Complex data not supported!")
 
-        if X.shape[0] == 0:
+        if len(X) == 0:
             raise ValueError("Empty training array")
 
-        if len(X.shape) > 1 and X.shape[1] == 0:
-            raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
-                X.shape[0]) + " is required.")
+        # TODO Flexible dtype
+        X = np.asfortranarray(X, 'float64')
 
-        if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
-            if np.iscomplexobj(X) or np.iscomplexobj(y):
-                raise ValueError("Complex data not supportescores.ravel() if scores.shape[1] == 1d")
+        # TODO check if relevant
+        if estimator._estimator_type == "classifier":
+            y_type = type_of_target(y)
+            if y_type not in [
+                "binary",
+                "multiclass",
+                "multiclass-multioutput",
+                "multilabel-indicator",
+                "multilabel-sequences",
+            ]:
+                raise ValueError("Unknown label type: %r" % y_type)
 
-            if len(X) == 0:
-                raise ValueError("Empty training array")
-
-            # TODO Flexible dtype
-            X = np.asfortranarray(X, 'float64')
-           
-            #TODO check if relevant
-            if estimator._estimator_type == "classifier":
-                y_type = type_of_target(y)
-                if y_type not in [
-                    "binary",
-                    "multiclass",
-                    "multiclass-multioutput",
-                    "multilabel-indicator",
-                    "multilabel-sequences",
-                ]:
-                    raise ValueError("Unknown label type: %r" % y_type)
-
-                if np.issubdtype(type(y[0]), np.str_):
-                    le = LabelEncoder()
-                    le.fit(y)
-                    y = le.transform(y)
-                elif np.isfinite(y[0]) and (type(y[0]) == "float64" or type(y[0]) == "float32"):
-                    raise ValueError("Unknown label type: " + str(y.dtype))
-                elif np.isfinite(y[0]) and (type(y[0]) != "int64"):
-                    y = y.astype("int64")
-            else:
-
-                 y = y.astype("float64")
-            
-            if False in np.isfinite(X) or False in np.isfinite(y):
-                raise ValueError("Input contains NaN, infinity or a value too large for dtype('float64').")
-
-            if len(np.unique(y)) == 1:
-                raise ValueError("There is only one class in the labels.")
+            if np.issubdtype(type(y[0]), np.str_):
+                le = LabelEncoder()
+                le.fit(y)
+                y = le.transform(y)
+            elif np.isfinite(y[0]) and (type(y[0]) == "float64" or type(y[0]) == "float32"):
+                raise ValueError("Unknown label type: " + str(y.dtype))
+            elif np.isfinite(y[0]) and (type(y[0]) != "int64"):
+                y = y.astype("int64")
         else:
-            if scipy.sparse.issparse(X) and X.getformat() != "csr":
-                raise TypeError("The library only supports CSR sparse data.")
-            if  scipy.sparse.issparse(y) and y.getformat() != "csr":
-                raise TypeError("The library only supports CSR sparse data.")
 
-        if y.shape[0] != X.shape[0]:
+            y = y.astype("float64")
+
+        if False in np.isfinite(X) or False in np.isfinite(y):
             raise ValueError(
-                "X and y should have the same number of observations")
+                "Input contains NaN, infinity or a value too large for dtype('float64').")
 
-        if X.shape[0] == 1:
-            raise ValueError("There should have more than 1 sample")
+        if len(np.unique(y)) == 1:
+            raise ValueError("There is only one class in the labels.")
+    else:
+        if scipy.sparse.issparse(X) and X.getformat() != "csr":
+            raise TypeError("The library only supports CSR sparse data.")
+        if scipy.sparse.issparse(y) and y.getformat() != "csr":
+            raise TypeError("The library only supports CSR sparse data.")
 
-        if not (type(estimator.tol) == int or type(estimator.tol) == float):
-            raise ValueError(
-                "Tolerance for stopping criteria must be positive")
+    if y.shape[0] != X.shape[0]:
+        raise ValueError(
+            "X and y should have the same number of observations")
 
-        if not (type(estimator.max_epochs) == int or type(estimator.max_epochs) == float):
-            raise ValueError("Maximum number of iteration must be positive")
-        
-        if not estimator._get_tags()["multioutput"]  and not estimator._get_tags()["multioutput_only"]:
-            if y.ndim > 1:
-                warnings.warn("A column-vector y was passed when a 1d array was expected", DataConversionWarning) 
+    if X.shape[0] == 1:
+        raise ValueError("There should have more than 1 sample")
 
-        return X, y, le
+    if not (type(estimator.tol) == int or type(estimator.tol) == float):
+        raise ValueError(
+            "Tolerance for stopping criteria must be positive")
 
-        
+    if not (type(estimator.max_epochs) == int or type(estimator.max_epochs) == float):
+        raise ValueError("Maximum number of iteration must be positive")
+
+    if not estimator._get_tags()["multioutput"] and not estimator._get_tags()["multioutput_only"]:
+        if y.ndim > 1:
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was expected", DataConversionWarning)
+
+    return X, y, le
+
 
 class ERM(BaseEstimator, ABC):
     """The generic class for empirical risk minimization problems.
@@ -311,7 +313,7 @@ class ERM(BaseEstimator, ABC):
         else:
             if scipy.sparse.issparse(X) and X.getformat() != "csr":
                 raise TypeError("The library only supports CSR sparse data.")
-            if  scipy.sparse.issparse(y) and y.getformat() != "csr":
+            if scipy.sparse.issparse(y) and y.getformat() != "csr":
                 raise TypeError("The library only supports CSR sparse data.")
 
         if y.shape[0] != X.shape[0]:
@@ -367,7 +369,6 @@ class ERM(BaseEstimator, ABC):
                 self.dual_variable = np.zeros([n, nclasses], dtype=Xf.dtype)
 
         w = np.copy(w0)
-        print(self.penalty)
         cyanure_lib.erm_(
             Xf, yf, w0, w, dual_variable=self.dual_variable, loss=self.loss,
             penalty=self.penalty, solver=self.solver, lambd=float(lambd),
@@ -392,7 +393,6 @@ class ERM(BaseEstimator, ABC):
         """
         predict the labels given an input matrix X (same format as fit)
         """
-        return
 
     def get_weights(self):
         """
@@ -424,6 +424,7 @@ class ERM(BaseEstimator, ABC):
     @classmethod
     def _get_param_names(cls):
         import inspect
+
         init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
         if init is object.__init__:
             # No explicit constructor to introspect
@@ -468,13 +469,14 @@ class ERM(BaseEstimator, ABC):
 
         return self
 
+
 class Classifier(ERM):
 
     @abstractmethod
     def predict_proba(self, X):
         pass
 
-#TODO Merged with multiclass class classifier
+# TODO Merged with multiclass class classifier
 # class BinaryClassifier(Classifier):
 #     """
 #     The binary classification class, which derives from ERM. The goal is to
@@ -611,7 +613,7 @@ class Classifier(ERM):
 #             objective function values, duality gap) will be documented in the
 #             future if people ask me.
 #         """
-        
+
 #         X, y, le = check_input(X, y, self)
 #         if le_parameter is not None:
 #              self.le_ = le_parameter
@@ -624,13 +626,13 @@ class Classifier(ERM):
 
 #         if self.le_ is not None:
 #             self.classes_ =  self.le_.classes_
-#         else:            
-#             self.classes_ = uniq    
+#         else:
+#             self.classes_ = uniq
 
 #         if nb_classes != 2:
 #             raise ValueError(
 #                 "{} classes detected; use MulticlassClassifier instead".format(nb_classes))
-        
+
 #         return super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
 #                            solver=solver, tol=tol, it0=it0,
 #                            max_epochs=max_epochs, l_qning=l_qning,
@@ -652,7 +654,7 @@ class Classifier(ERM):
 #         if self.fit_intercept:
 #             scores = safe_sparse_dot(X, self.w_, dense_output=True) + self.b_
 #         else:
-#             scores = safe_sparse_dot(X, self.w_, dense_output=True)    
+#             scores = safe_sparse_dot(X, self.w_, dense_output=True)
 #         return scores.ravel()
 
 #     def predict(self, X):
@@ -664,7 +666,7 @@ class Classifier(ERM):
 #         if not scipy.sparse.issparse(X):
 #             if False in np.isfinite(X):
 #                 raise ValueError("NaN of inf values in the training array(s)")
-        
+
 #         if X.ndim == 1:
 #             raise ValueError("Reshape your data")
 
@@ -675,12 +677,12 @@ class Classifier(ERM):
 #         pred = self.decision_function(X)
 #         if self.le_ is None:
 #             output = np.sign(pred)
-#             output[output == -1.0] = self.classes_[0]   
-#             output = output.astype(np.int32)      
+#             output[output == -1.0] = self.classes_[0]
+#             output = output.astype(np.int32)
 #             return output
 #         else:
 #             output = np.sign(pred)
-#             output[output == -1.0] = 0   
+#             output[output == -1.0] = 0
 #             output = output.astype(np.int32)
 #             return self.le_.inverse_transform(output)
 
@@ -776,11 +778,10 @@ class Regression(ERM):
             X = np.array(X)
             if (X.dtype != "float32" or X.dtype != "float64"):
                 X = np.asfortranarray(X, dtype="float64")
-            
+
             if False in np.isfinite(X):
                 raise ValueError("NaN of inf values in the training array(s)")
-            
-        
+
         if X.ndim == 1:
             raise ValueError("Reshape your data")
 
@@ -798,6 +799,7 @@ class Regression(ERM):
 
         y_pred = self.predict(X)
         return r2_score(y, y_pred, sample_weight=sample_weight)
+
 
 class MultiClassifier(Classifier):
     r"""The multi-class classification class. The goal is to minimize the
@@ -860,7 +862,7 @@ class MultiClassifier(Classifier):
     fit_intercept: boolean, default='False'
         learns an unregularized intercept b, which is a k-dimensional vector
     """
-    _estimator_type="classifier"
+    _estimator_type = "classifier"
 
     def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
             it0=5, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
@@ -870,19 +872,18 @@ class MultiClassifier(Classifier):
         """
         X, y, le = check_input(X, y, self)
         if le_parameter is not None:
-              self.le_ = le_parameter
+            self.le_ = le_parameter
         else:
             self.le_ = le
 
         y = np.squeeze(y)
         unique = np.unique(y)
         nb_classes = len(unique)
-        
 
         if self.le_ is not None:
-            self.classes_ =  self.le_.classes_
-        else:            
-            self.classes_ = unique       
+            self.classes_ = self.le_.classes_
+        else:
+            self.classes_ = unique
 
         if (nb_classes != unique.shape[0] or
                 not all(np.unique(y) == np.arange(nb_classes))):
@@ -891,9 +892,9 @@ class MultiClassifier(Classifier):
             print("but they are")
             print(unique)
 
-            #TODO label shape
+            # TODO label shape
             #raise ValueError("Wrong label shape")
-        
+
         if nb_classes == 2:
             self.univariate_ = True
             if self.le_ is not None:
@@ -920,36 +921,34 @@ class MultiClassifier(Classifier):
             X = np.array(X)
 
         if not scipy.sparse.issparse(X) and (X.dtype != "float32" or X.dtype != "float64"):
-             X = np.asfortranarray(X, dtype="float64")
+            X = np.asfortranarray(X, dtype="float64")
 
         if not scipy.sparse.issparse(X):
             if False in np.isfinite(X):
                 raise ValueError("NaN of inf values in the training array(s)")
-        
+
         if X.ndim == 1:
             raise ValueError("Reshape your data")
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError("X has %d features per sample; expecting %d"
                              % (X.shape[1], self.n_features_in_))
-                         
+
         pred = self.decision_function(X)
 
         if len(self.classes_) == 2:
             if self.le_ is None:
                 output = np.sign(pred)
-                output[output == -1.0] = self.classes_[0]   
-                output = output.astype(np.int32)      
+                output[output == -1.0] = self.classes_[0]
+                output = output.astype(np.int32)
                 return output
             else:
                 output = np.sign(pred)
-                output[output == -1.0] = 0   
+                output[output == -1.0] = 0
                 output = output.astype(np.int32)
                 return self.le_.inverse_transform(output)
         else:
-            print(np.argmax(pred, axis=1))
-            print(pred)
-            if self.le_ is None:                  
+            if self.le_ is None:
                 return np.argmax(pred, axis=1)
             else:
                 return self.le_.inverse_transform(np.argmax(pred, axis=1))
@@ -974,12 +973,11 @@ class MultiClassifier(Classifier):
         if self.fit_intercept:
             scores = safe_sparse_dot(X, self.w_, dense_output=True) + self.b_
         else:
-            scores = safe_sparse_dot(X, self.w_, dense_output=True) 
+            scores = safe_sparse_dot(X, self.w_, dense_output=True)
         if len(self.classes_) == 2:
             return scores.ravel()
         else:
             return scores.ravel() if scores.shape[1] == 1 else scores
-
 
     def predict_proba(self, X):
         check_is_fitted(self)
@@ -997,7 +995,8 @@ class MultiClassifier(Classifier):
             decision = decision
         return softmax(decision, copy=False)
 
-#TODO Merged with Regression
+
+# TODO Merged with Regression
 # class MultiVariateRegression(ERM):
 #     """
 #     The multivariate regression class. The objective is the same as for the
@@ -1045,20 +1044,19 @@ class MultiClassifier(Classifier):
 #             univariate=False, nthreads=nthreads, random_state=self.random_state)
 
 #     def predict(self, X):
-        
+
 #         """Predicts the targets"""
 #         pred = X.dot(self.w_)
 #         if self.fit_intercept:
 #             pred += self.b[np.newaxis, :]
-#         if self.le_ is None:                  
+#         if self.le_ is None:
 #             return pred
 #         else:
 #             return self.le_.inverse_transform(pred)
 
 
 class SKLearnClassifier(ERM):
-    _estimator_type="classifier"
-
+    _estimator_type = "classifier"
 
     def __init__(self, verbose=False, solver='auto', tol=1e-3, random_state=0):
         super(SKLearnClassifier, self).__init__(
@@ -1074,7 +1072,7 @@ class SKLearnClassifier(ERM):
         """
         X, y, le = check_input(X, y, self)
         self.le_ = le
-        
+
         if len(X.shape) > 1 and X.shape[1] == 0:
             raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
                 X.shape[0]) + " is required.")
@@ -1084,7 +1082,7 @@ class SKLearnClassifier(ERM):
             self.C = C
         if max_iter is not None:
             self.max_iter = max_iter
-        
+
         if self.le_ is not None:
             self.classes_ = self.le_.inverse_transform(np.unique(y))
         else:
@@ -1157,7 +1155,7 @@ class SKLearnClassifier(ERM):
             indices = (scores > 0).astype(np.int64)
         else:
             indices = scores.argmax(axis=1)
-        if self.le_ is None:                  
+        if self.le_ is None:
             return self.classes_[indices]
         else:
             return self.le_.inverse_transform(indices)
@@ -1183,9 +1181,8 @@ class SKLearnClassifier(ERM):
 
     def score(self, X, y, sample_weight=None):
         check_is_fitted(self)
-        
-        return np.average(y == self.predict(X), weights=sample_weight)
 
+        return np.average(y == self.predict(X), weights=sample_weight)
 
 
 class LinearSVC(SKLearnClassifier):
@@ -1259,7 +1256,6 @@ class Lasso(Regression):
     def __init__(self, fit_intercept=False, random_state=0):
         super().__init__(loss='square', penalty='l1',
                          fit_intercept=fit_intercept, random_state=random_state)
-        
 
     def fit(self, X, y, lambd=0, solver='auto', tol=1e-3,
             it0=10, max_epochs=500, l_qning=20, f_restart=50, verbose=True,
@@ -1268,7 +1264,7 @@ class Lasso(Regression):
         X, y, _ = check_input(X, y, self)
 
         self.aux_ = Regression(loss='square', penalty='l1',
-                              fit_intercept=self.fit_intercept, random_state=random_state)
+                               fit_intercept=self.fit_intercept, random_state=random_state)
 
         n, p = X.shape
         if p <= 1000:
@@ -1312,7 +1308,7 @@ class Lasso(Regression):
                 if (verbose):
                     print("Size of the active set: " + str(n_active))
                 self.aux_.fit(X[:, active_set], y, lambd, tol=tol, it0=5, max_epochs=max_epochs, restart=restart,
-                             solver=solver, verbose=verbose)
+                              solver=solver, verbose=verbose)
                 self.w_[active_set] = self.aux_.w
                 if self.fit_intercept:
                     self.b_ = self.aux_.b
@@ -1383,7 +1379,7 @@ class L1Logistic(MultiClassifier):
                 if verbose:
                     print("Size of the active set: " + str(n_active))
                 self.aux_.fit(X[:, active_set], y, lambd, tol=tol, it0=5, max_epochs=max_epochs, restart=restart,
-                             solver=solver, verbose=verbose)
+                              solver=solver, verbose=verbose)
                 self.w_[active_set] = self.aux_.w
                 if self.fit_intercept:
                     self.b_ = self.aux_.b
