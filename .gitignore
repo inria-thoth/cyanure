@@ -6,3 +6,7 @@ build/
 .idea/
 .vscode/
 *.so
+.coverage
+coverage.xml
+*.npy
+.scannerwork/
