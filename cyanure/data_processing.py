@@ -101,7 +101,7 @@ def check_positive_parameter(parameter, message):
     if not isinstance(parameter, (int, float)):
         raise ValueError(message)
 
-    if isinstance(parameter, (int, float)) and parameter <= 0:
+    if isinstance(parameter, (int, float)) and parameter < 0:
         raise ValueError(message)
 
 
@@ -111,6 +111,8 @@ def check_parameters(estimator):
         estimator.tol, "Tolerance for stopping criteria must be positive")
     check_positive_parameter(estimator.max_iter,
                              "Maximum number of iteration must be positive")
+    check_positive_parameter(estimator.lambd,
+                             "Penalty term must be positive")
 
 
 def check_input(X, y, estimator):

@@ -31,7 +31,7 @@ class ERM(BaseEstimator, ABC):
     """
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual=None, tol=1e-3, solver="auto", random_state=0, max_iter=500, fista_restart=50,
-                 verbose=True, restart=False, limited_memory_qning=20, binary_problem=True, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
+                 verbose=True, restart=False, limited_memory_qning=20, _binary_problem=True, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
         """Initialization function of the ERM class.
 
         Parameters
@@ -90,7 +90,7 @@ class ERM(BaseEstimator, ABC):
         self.fista_restart = fista_restart
         self.verbose = verbose
         self.restart = restart
-        self.binary_problem = binary_problem
+        self._binary_problem = _binary_problem
         self.duality_gap_interval = duality_gap_interval
         self.n_threads = n_threads
 
@@ -191,19 +191,13 @@ class ERM(BaseEstimator, ABC):
         else:
             self.le_ = le
 
-        multiclass = None
-        if "univariate_" in self.__dict__:
-            multiclass = self.univariate_
-        else:
-            multiclass = self.binary_problem
-
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
         p = X.shape[1] + \
             1 if self.fit_intercept else X.shape[1]
         y = np.squeeze(y)
 
-        if multiclass:
+        if self._binary_problem:
             w0 = np.zeros(p, dtype=training_data_fortran.dtype)
             yf = np.squeeze(y.astype(training_data_fortran.dtype))
         else:
@@ -229,13 +223,13 @@ class ERM(BaseEstimator, ABC):
                              self.solver == 'catalyst-miso' or self.solver == 'qning-miso'):
             n = X.shape[0]
             reset_dual = np.any(self.dual is None)
-            if not reset_dual and multiclass:
+            if not reset_dual and self._binary_problem:
                 reset_dual = self.dual.shape[0] != n
-            if not reset_dual and not multiclass:
+            if not reset_dual and not self._binary_problem:
                 reset_dual = np.any(self.dual.shape != [n, nclasses])
-            if reset_dual and multiclass:
+            if reset_dual and self._binary_problem:
                 self.dual = np.zeros(n, dtype=training_data_fortran.dtype)
-            if reset_dual and not multiclass:
+            if reset_dual and not self._binary_problem:
                 self.dual = np.zeros(
                     [n, nclasses], dtype=training_data_fortran.dtype)
 
@@ -247,7 +241,7 @@ class ERM(BaseEstimator, ABC):
             intercept=bool(self.fit_intercept), tol=float(self.tol), duality_gap_interval=int(self.duality_gap_interval),
             max_iter=int(self.max_iter), limited_memory_qning=int(self.limited_memory_qning),
             fista_restart=int(self.fista_restart), verbose=bool(self.verbose),
-            univariate=bool(multiclass), n_threads=int(self.n_threads), seed=int(self.random_state)
+            univariate=bool(self._binary_problem), n_threads=int(self.n_threads), seed=int(self.random_state)
         )
 
         # TODO fix onevsall bug in c++ (optim_info.add(optim_info_col);)
@@ -395,9 +389,9 @@ class Regression(ERM):
         X, y, _ = check_input(X, y, self)
 
         if y.squeeze().ndim <= 1:
-            self.univariate_ = True
+            self._binary_problem = True
         else:
-            self.univariate_ = False
+            self._binary_problem = False
 
         return super().fit(X, y)
 
@@ -531,7 +525,7 @@ class MultiClassifier(Classifier):
                     "The y have been converted to respect the expected format.")
 
         if nb_classes == 2:
-            self.univariate_ = True
+            self._binary_problem = True
             if self.le_ is not None:
                 neg = y == self.le_.transform(self.classes_)[0]
             else:
@@ -540,7 +534,7 @@ class MultiClassifier(Classifier):
             y[neg] = -1
             y[np.logical_not(neg)] = 1
         else:
-            self.univariate_ = False
+            self._binary_problem = False
 
         return super().fit(
             X, y, le_parameter=self.le_)
@@ -640,12 +634,15 @@ class SKLearnClassifier(ERM):
             duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning,
             fista_restart=fista_restart, restart=restart, n_threads=n_threads)
 
-    def fit(self, X, y, C=None):
+    def fit(self, X, y, le_parameter=None):
         """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
         and max_iter replaces max_iter.
         """
         X, y, le = check_input(X, y, self)
-        self.le_ = le
+        if le_parameter is not None:
+            self.le_ = le_parameter
+        else:
+            self.le_ = le
 
         if len(X.shape) > 1 and X.shape[1] == 0:
             raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
@@ -659,7 +656,7 @@ class SKLearnClassifier(ERM):
 
         n = X.shape[0]
         if nb_classes == 2:
-            self.univariate_ = True
+            self._binary_problem = True
             if not np.all(self.classes_ == [-1, 1]):
                 if self.le_ is not None:
                     neg = y == self.le_.transform(self.classes_)[0]
@@ -669,7 +666,7 @@ class SKLearnClassifier(ERM):
                 y[neg] = -1
                 y[np.logical_not(neg)] = 1
         else:
-            self.univariate_ = False
+            self._binary_problem = False
         super().fit(X, y, le_parameter=self.le_)
 
         self.w_ = self.w_.reshape(self.w_.shape[0], -1)
@@ -798,10 +795,10 @@ class LogisticRegression(SKLearnClassifier):
 
     _estimator_type = "classifier"
 
-    def __init__(self, penalty='l2', fit_intercept=True, C=1, max_iter=500, solver="auto", tol=1e-3, random_state=0):
+    def __init__(self, penalty='l2', fit_intercept=True, lambd=0, max_iter=500, solver="auto", tol=1e-3, random_state=0):
         super(LogisticRegression, self).__init__(
             solver=solver, tol=tol, random_state=random_state)
-        self.C = C
+        self.lambd = lambd
         self.max_iter = max_iter
         self.loss = 'logistic'
         self.penalty = penalty

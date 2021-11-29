@@ -45,8 +45,8 @@ def test_predict_2_classes():
     check_predictions(LogisticRegression(), X, Y1)
     check_predictions(LogisticRegression(), X_sp, Y1)
 
-    check_predictions(LogisticRegression(C=100), X, Y1)
-    check_predictions(LogisticRegression(C=100), X_sp, Y1)
+    check_predictions(LogisticRegression(lambd=0.001), X, Y1)
+    check_predictions(LogisticRegression(lambd=0.001), X_sp, Y1)
 
     check_predictions(LogisticRegression(fit_intercept=False), X, Y1)
     check_predictions(LogisticRegression(fit_intercept=False), X_sp, Y1)
@@ -57,10 +57,10 @@ def test_error():
     msg = "Penalty term must be positive"
 
     with pytest.raises(ValueError, match=msg):
-        LogisticRegression(C=-1).fit(X, Y1)
+        LogisticRegression(lambd=-1).fit(X, Y1)
 
     with pytest.raises(ValueError, match=msg):
-        LogisticRegression(C="test").fit(X, Y1)
+        LogisticRegression(lambd="test").fit(X, Y1)
 
     for LR in [LogisticRegression]:
         msg = "Tolerance for stopping criteria must be positive"
@@ -81,8 +81,8 @@ def test_error():
 
 
 def test_predict_3_classes():
-    check_predictions(LogisticRegression(C=10), X, Y2)
-    check_predictions(LogisticRegression(C=10), X_sp, Y2)
+    check_predictions(LogisticRegression(lambd=0.1), X, Y2)
+    check_predictions(LogisticRegression(lambd=0.1), X_sp, Y2)
 
 
 def test_predict_iris():
@@ -95,15 +95,15 @@ def test_predict_iris():
     # multiclass data correctly and give good accuracy
     # score (>0.95) for the training data.
     for clf in [
-        LogisticRegression(C=len(iris.data), solver="catalyst-miso"),
-        LogisticRegression(C=len(iris.data), solver="qning-ista"),
+        LogisticRegression(lambd=1/(2*len(iris.data)*iris.data.shape[0]), solver="catalyst-miso"),
+        LogisticRegression(lambd=1/(2*len(iris.data)*iris.data.shape[0]), solver="qning-ista"),
         LogisticRegression(
-            C=len(iris.data), solver="catalyst-svrg"),
+            lambd=1/(2*len(iris.data)*iris.data.shape[0]), solver="catalyst-svrg"),
         LogisticRegression(
-            C=len(iris.data), solver="catalyst-miso", tol=1e-2, random_state=42
+            lambd=1/(2*len(iris.data)*iris.data.shape[0]), solver="catalyst-miso", tol=1e-2, random_state=42
         ),
         LogisticRegression(
-            C=len(iris.data),
+            lambd=1/(2*len(iris.data)*iris.data.shape[0]),
             solver="qning-ista",
             tol=1e-2,
             random_state=42,
