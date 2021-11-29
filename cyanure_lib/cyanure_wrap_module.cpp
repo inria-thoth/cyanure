@@ -4,18 +4,18 @@
 #include "lib/exception.h"
 
 template <typename T, typename I>
-static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0, PyArrayObject *inw, PyArrayObject *in_dual, const int nepochs, const int l_qning, const int f_restart, const T tol, const int it0, const bool verbose, char *solver, char *loss, char *regul, const T lambda, const T lambda2, const T lambda3, const bool intercept, const bool univariate, const int nthreads)
+static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0, PyArrayObject* inw, PyArrayObject* in_dual, const int max_iter, const int limited_memory_qning, const int fista_restart, const T tol, const int duality_gap_interval, const bool verbose, char* solver, char* loss, char* regul, const T lambda, const T lambda2, const T lambda3, const bool intercept, const bool univariate, const int n_threads)
 {
     ParamSolver<T> param;
-    param.nepochs = nepochs;
-    param.l_memory = l_qning;
-    param.freq_restart = f_restart;
+    param.max_iter = max_iter;
+    param.l_memory = limited_memory_qning;
+    param.freq_restart = fista_restart;
     param.tol = tol;
-    param.it0 = it0;
+    param.duality_gap_interval = duality_gap_interval;
     param.verbose = verbose;
     param.solver = solver_from_string(solver);
     param.non_uniform_sampling = false; // TODO: check if needs to be activated again
-    param.threads = nthreads;
+    param.threads = n_threads;
     ParamModel<T> model;
     model.loss = loss_from_string(loss);
     model.regul = regul_from_string(regul);
@@ -36,7 +36,7 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
                 ;
             if (!npyToVector<T>(inw, w, "x"))
                 ;
-            if (reinterpret_cast<PyObject *>(in_dual) != Py_None && !npyToVector<T>(in_dual, dual_variable, "dual"))
+            if (reinterpret_cast<PyObject*>(in_dual) != Py_None && !npyToVector<T>(in_dual, dual_variable, "dual"))
                 ;
             if (w0.n() != w.n())
             {
@@ -55,7 +55,7 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
             {
                 Matrix<T> X;
                 param.minibatch = 1;
-                if (!npyToMatrix<T>((PyArrayObject *)inX, X, "Data X"))
+                if (!npyToMatrix<T>((PyArrayObject*)inX, X, "Data X"))
                     ;
                 simple_erm(X, y, w0, w, dual_variable, optim_info, param, model);
             }
@@ -67,7 +67,7 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
                 ;
             if (!npyToMatrix<T>(inw, w, "x"))
                 ;
-            if (reinterpret_cast<PyObject *>(in_dual) != Py_None && !npyToMatrix<T>(in_dual, dual_variable, "dual"))
+            if (reinterpret_cast<PyObject*>(in_dual) != Py_None && !npyToMatrix<T>(in_dual, dual_variable, "dual"))
                 ;
             if (isSparseMatrix(inX))
             {
@@ -94,7 +94,7 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
             {
                 Matrix<T> X;
                 param.minibatch = 1;
-                if (!npyToMatrix<T>((PyArrayObject *)inX, X, "Data X"))
+                if (!npyToMatrix<T>((PyArrayObject*)inX, X, "Data X"))
                     ;
                 if (array_type(inY) == getTypeNumber<int>())
                 {
@@ -113,7 +113,7 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
                 }
             }
         }
-        PyArrayObject *out = create_np_matrix<T>(optim_info.m(), optim_info.n());
+        PyArrayObject* out = create_np_matrix<T>(optim_info.m(), optim_info.n());
         Matrix<T> outm;
         npyToMatrix(out, outm, "optim info");
         outm.copy(optim_info);
@@ -121,7 +121,7 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
     }
     catch (NotImplementedException e)
     {
-        PyObject *tuple = PyTuple_New(2);
+        PyObject* tuple = PyTuple_New(2);
         PyTuple_SetItem(tuple, 0, PyBytes_FromString(e.what()));
         PyTuple_SetItem(tuple, 1, PyBytes_FromString(solver));
         PyErr_SetObject(PyExc_NotImplementedError, tuple);
@@ -139,53 +139,53 @@ static PyArrayObject *erm(PyObject *inX, PyArrayObject *inY, PyArrayObject *inw0
     }
 };
 
-static PyObject *erm_(PyObject *self, PyObject *args, PyObject *keywds)
+static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
 {
-    PyObject *X = NULL;
-    PyArrayObject *y = NULL;
-    PyArrayObject *w0 = NULL;
-    PyArrayObject *w = NULL;
-    PyArrayObject *dual = NULL;
-    PyArrayObject *optim_info = NULL;
-    int nepochs = 1000;
-    int l_qning = 20;
-    int f_restart = 50;
+    PyObject* X = NULL;
+    PyArrayObject* y = NULL;
+    PyArrayObject* w0 = NULL;
+    PyArrayObject* w = NULL;
+    PyArrayObject* dual = NULL;
+    PyArrayObject* optim_info = NULL;
+    int max_iter = 1000;
+    int limited_memory_qning = 20;
+    int fista_restart = 50;
     double tol = 1e-3;
-    int it0 = 10;
+    int duality_gap_interval = 10;
     int verbose = 1;
     int univariate = 1;
-    int nthreads = 1;
+    int n_threads = 1;
     int seed = 0;
     double lambda = 0;
     double lambda2 = 0;
     double lambda3 = 0;
     int intercept = 0;
-    char *regul = (char *)"none";
-    char *solver = (char *)"ista";
-    char *loss = (char *)"square";
-    static char *kwlist[] = {(char *)"", (char *)"", (char *)"", (char *)"", (char *)"dual_variable", (char *)"loss", (char *)"penalty", (char *)"solver", (char *)"lambd", (char *)"lambd2", (char *)"lambd3", (char *)"intercept", (char *)"tol", (char *)"it0", (char *)"nepochs", (char *)"l_qning", (char *)"f_restart", (char *)"verbose", (char *)"univariate", (char *)"nthreads", (char *)"seed", NULL};
-    const char *format = (const char *)"OOOO|Osssdddpdiiiippii";
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &X, &y, &w0, &w, &dual, &loss, &regul, &solver, &lambda, &lambda2, &lambda3, &intercept, &tol, &it0, &nepochs, &l_qning, &f_restart, &verbose, &univariate, &nthreads, &seed))
+    char* regul = (char*)"none";
+    char* solver = (char*)"ista";
+    char* loss = (char*)"square";
+    static char* kwlist[] = { (char*)"", (char*)"", (char*)"", (char*)"", (char*)"dual_variable", (char*)"loss", (char*)"penalty", (char*)"solver", (char*)"lambd", (char*)"lambd2", (char*)"lambd3", (char*)"intercept", (char*)"tol", (char*)"duality_gap_interval", (char*)"max_iter", (char*)"limited_memory_qning", (char*)"fista_restart", (char*)"verbose", (char*)"univariate", (char*)"n_threads", (char*)"seed", NULL };
+    const char* format = (const char*)"OOOO|Osssdddpdiiiippii";
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &X, &y, &w0, &w, &dual, &loss, &regul, &solver, &lambda, &lambda2, &lambda3, &intercept, &tol, &duality_gap_interval, &max_iter, &limited_memory_qning, &fista_restart, &verbose, &univariate, &n_threads, &seed))
         return NULL;
-    it0 = it0 <= 0 ? -1 : MIN(it0, nepochs);
+    duality_gap_interval = duality_gap_interval <= 0 ? -1 : MIN(duality_gap_interval, max_iter);
     srandom(seed);
     int T, I;
-    getTypeObject((PyObject *)X, T, I);
+    getTypeObject((PyObject*)X, T, I);
     if (T == getTypeNumber<float>() && I == getTypeNumber<int>())
     {
-        optim_info = erm<float, int>(X, y, w0, w, dual, nepochs, l_qning, f_restart, tol, it0, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, nthreads);
+        optim_info = erm<float, int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
     }
     else if (T == getTypeNumber<float>() && I == getTypeNumber<long long int>())
     {
-        optim_info = erm<float, long long int>(X, y, w0, w, dual, nepochs, l_qning, f_restart, tol, it0, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, nthreads);
+        optim_info = erm<float, long long int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
     }
     else if (T == getTypeNumber<double>() && I == getTypeNumber<int>())
     {
-        optim_info = erm<double, int>(X, y, w0, w, dual, nepochs, l_qning, f_restart, tol, it0, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, nthreads);
+        optim_info = erm<double, int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
     }
     else if (T == getTypeNumber<double>() && I == getTypeNumber<long long int>())
     {
-        optim_info = erm<double, long long int>(X, y, w0, w, dual, nepochs, l_qning, f_restart, tol, it0, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, nthreads);
+        optim_info = erm<double, long long int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
     }
     else
     {
@@ -197,7 +197,7 @@ static PyObject *erm_(PyObject *self, PyObject *args, PyObject *keywds)
 };
 
 template <typename T, typename I>
-static void preprocess_generic(PyObject *in, const bool centering, const bool normalize, const bool columns = true)
+static void preprocess_generic(PyObject* in, const bool centering, const bool normalize, const bool columns = true)
 {
     if (isSparseMatrix(in))
     {
@@ -218,7 +218,7 @@ static void preprocess_generic(PyObject *in, const bool centering, const bool no
     else
     {
         Matrix<T> X;
-        if (!npyToMatrix<T>((PyArrayObject *)in, X, "Data"))
+        if (!npyToMatrix<T>((PyArrayObject*)in, X, "Data"))
             ;
         if (columns)
         {
@@ -237,14 +237,14 @@ static void preprocess_generic(PyObject *in, const bool centering, const bool no
     }
 };
 
-static PyObject *preprocess_(PyObject *self, PyObject *args, PyObject *keywds)
+static PyObject* preprocess_(PyObject* self, PyObject* args, PyObject* keywds)
 {
-    PyObject *Ip = NULL;
+    PyObject* Ip = NULL;
     int centering = false;
     int normalize = false;
     int columns = true;
-    static char *kwlist[] = {(char *)"", (char *)"centering", (char *)"normalize", (char *)"columns", NULL};
-    const char *format = (const char *)"O|ppp";
+    static char* kwlist[] = { (char*)"", (char*)"centering", (char*)"normalize", (char*)"columns", NULL };
+    const char* format = (const char*)"O|ppp";
     if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &Ip, &centering, &normalize, &columns))
         return NULL;
 
@@ -290,11 +290,11 @@ static struct PyModuleDef module = {
     NULL,           /* module documentation, may be NULL */
     -1,             /* size of per-interpreter state of the module,
                        or -1 if the module keeps state in global variables. */
-    methods};
+    methods };
 
 PyMODINIT_FUNC PyInit_cyanure_wrap(void)
 {
-    PyObject *m = PyModule_Create(&module);
+    PyObject* m = PyModule_Create(&module);
     if (m == NULL)
         return NULL;
     import_array();

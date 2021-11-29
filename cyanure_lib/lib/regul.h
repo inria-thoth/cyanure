@@ -437,7 +437,7 @@ public:
         T sum = T();
         const int maxn = this->_intercept ? x.n() - 1 : x.n();
         for (int i = 0; i < maxn - 1; ++i)
-            sum += _lambda * abs(x[i + 1] - x[i]) + _lambda2 * abs(x[i]) + T(0.5) * _lambda3 * x[i] * x[i];
+            sum += _lambda3 * abs(x[i + 1] - x[i]) + _lambda * abs(x[i]) + T(0.5) * _lambda2 * x[i] * x[i];
         sum += _lambda2 * abs(x[maxn - 1]) + 0.5 * _lambda3 * x[maxn - 1] * x[maxn - 1];
         return sum;
     };

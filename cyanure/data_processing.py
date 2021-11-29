@@ -10,13 +10,13 @@ from sklearn.utils.multiclass import type_of_target
 import cyanure_lib
 
 
-def preprocess(training_data, centering=False, normalize=True, columns=False):
+def preprocess(X, centering=False, normalize=True, columns=False):
     """Perform in-place centering or normalization, either of columns or rows
-    of the input matrix training_data
+    of the input matrix X
 
     Parameters
     ----------
-    training_data : numpy array, or scipy sparse CSR matrix
+    X : numpy array, or scipy sparse CSR matrix
         input matrix
 
     centering : boolean, default=False
@@ -29,67 +29,72 @@ def preprocess(training_data, centering=False, normalize=True, columns=False):
         operates on rows (False) or columns (True).
     """
 
-    if scipy.sparse.issparse(training_data):
-        training_data_fortran = training_data.T
+    if scipy.sparse.issparse(X):
+        training_data_fortran = X.T
     else:
-        training_data_fortran = np.asfortranarray(training_data.T)
+        training_data_fortran = np.asfortranarray(X.T)
     return cyanure_lib.preprocess_(training_data_fortran, centering, normalize, not columns)
 
 
-def check_input_type(training_data, labels, estimator):
+def check_labels(y, estimator):
     le = None
 
-    if np.iscomplexobj(training_data) or np.iscomplexobj(labels):
+    # TODO check if relevant
+    if estimator._estimator_type == "classifier":
+        y_type = type_of_target(y)
+        if y_type not in [
+            "binary",
+            "multiclass",
+            "multiclass-multioutput",
+            "multilabel-indicator",
+            "multilabel-sequences",
+        ]:
+            raise ValueError("Unknown label type: %r" % y_type)
+
+        if np.issubdtype(type(y[0]), np.str_):
+            le = LabelEncoder()
+            le.fit(y)
+            y = le.transform(y)
+        elif np.isfinite(y[0]) and (type(y[0]) == "float64" or type(y[0]) == "float32"):
+            raise ValueError("Unknown label type: " + str(y.dtype))
+        elif np.isfinite(y[0]) and (type(y[0]) != "int64"):
+            y = y.astype("int64")
+    else:
+        y = np.asfortranarray(y, 'float64')
+
+    if False in np.isfinite(y):
+        raise ValueError(
+            "Input contains NaN, infinity or a value too large for dtype('float64').")
+
+    if len(np.unique(y)) == 1:
+        raise ValueError("There is only one class in the y.")
+
+    return y, le
+
+
+def check_input_type(X, y, estimator):
+    le = None
+
+    if np.iscomplexobj(X) or np.iscomplexobj(y):
         raise ValueError("Complex data not supported")
 
-    if not scipy.sparse.issparse(training_data) and not scipy.sparse.issparse(labels):
-        if np.iscomplexobj(training_data) or np.iscomplexobj(labels):
-            raise ValueError(
-                "Complex data not supported!")
-
-        if len(training_data) == 0:
-            raise ValueError("Empty training array")
-
+    if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
         # TODO Flexible dtype
-        training_data = np.asfortranarray(training_data, 'float64')
+        X = np.asfortranarray(X, 'float64')
 
-        # TODO check if relevant
-        if estimator._estimator_type == "classifier":
-            y_type = type_of_target(labels)
-            if y_type not in [
-                "binary",
-                "multiclass",
-                "multiclass-multioutput",
-                "multilabel-indicator",
-                "multilabel-sequences",
-            ]:
-                raise ValueError("Unknown label type: %r" % y_type)
+        y, le = check_labels(y, estimator)
 
-            if np.issubdtype(type(labels[0]), np.str_):
-                le = LabelEncoder()
-                le.fit(labels)
-                labels = le.transform(labels)
-            elif np.isfinite(labels[0]) and (type(labels[0]) == "float64" or type(labels[0]) == "float32"):
-                raise ValueError("Unknown label type: " + str(labels.dtype))
-            elif np.isfinite(labels[0]) and (type(labels[0]) != "int64"):
-                labels = labels.astype("int64")
-        else:
-
-            labels = labels.astype("float64")
-
-        if False in np.isfinite(training_data) or False in np.isfinite(labels):
+        if False in np.isfinite(X):
             raise ValueError(
                 "Input contains NaN, infinity or a value too large for dtype('float64').")
 
-        if len(np.unique(labels)) == 1:
-            raise ValueError("There is only one class in the labels.")
     else:
-        if scipy.sparse.issparse(training_data) and training_data.getformat() != "csr":
+        if scipy.sparse.issparse(X) and X.getformat() != "csr":
             raise TypeError("The library only supports CSR sparse data.")
-        if scipy.sparse.issparse(labels) and labels.getformat() != "csr":
+        if scipy.sparse.issparse(y) and y.getformat() != "csr":
             raise TypeError("The library only supports CSR sparse data.")
 
-    return training_data, labels, le
+    return X, y, le
 
 
 def check_positive_parameter(parameter, message):
@@ -108,34 +113,35 @@ def check_parameters(estimator):
                              "Maximum number of iteration must be positive")
 
 
-def check_input(training_data, labels, estimator):
-    if not scipy.sparse.issparse(training_data) and not scipy.sparse.issparse(labels):
-        training_data = np.array(training_data)
-        labels = np.array(labels)
+def check_input(X, y, estimator):
+    if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
+        X = np.array(X)
+        y = np.array(y)
 
-    if training_data.ndim == 1:
+    if X.ndim == 1:
         raise ValueError("The training array has only one dimension.")
 
-    if training_data.shape[0] == 0:
+    if X.shape[0] == 0:
         raise ValueError("Empty training array")
 
-    if len(training_data.shape) > 1 and training_data.shape[1] == 0:
-        raise ValueError("0 feature(s) (shape=(" + str(training_data.shape[0]) + ", 0)) while a minimum of " + str(
-            training_data.shape[0]) + " is required.")
+    if len(X.shape) > 1 and X.shape[1] == 0:
+        raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
+            X.shape[0]) + " is required.")
 
-    if labels.shape[0] != training_data.shape[0]:
+    if y.shape[0] != X.shape[0]:
         raise ValueError(
-            "training_data and y should have the same number of observations")
+            "X and y should have the same number of observations")
 
-    if training_data.shape[0] == 1:
+    if X.shape[0] == 1:
         raise ValueError("There should have more than 1 sample")
 
-    if not estimator._get_tags()["multioutput"] and not estimator._get_tags()["multioutput_only"] and labels.ndim > 1:
+    if not estimator._get_tags()["multioutput"] and not estimator._get_tags()["multioutput_only"] and y.ndim > 1:
         warnings.warn(
             "A column-vector y was passed when a 1d array was expected", DataConversionWarning)
 
-    training_data, labels, le = check_input_type(training_data, labels, estimator)
+    X, y, le = check_input_type(
+        X, y, estimator)
 
     check_parameters(estimator)
 
-    return training_data, labels, le
+    return X, y, le

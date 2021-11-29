@@ -154,7 +154,7 @@ The regularization function~$\psi$ is chosen among the following choices
       \hline
       \texttt{elastic-net} &   $\lambda\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
       \hline
-      \texttt{fused-lasso} &   $\lambda\sum_{j=2}^p|\w[j]-\w[j-1]| + \lambda_2\|\w\|_1 + \frac{\lambda_3}{2}\|\w\|_2^2$ \\ 
+      \texttt{fused-lasso} &   $\lambda_3\sum_{j=2}^p|\w[j]-\w[j-1]| + \lambda\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
       \hline
       \texttt{none} &   $0$ \\ 
       \hline
@@ -260,7 +260,7 @@ ars.preprocess(X,normalize=True,columns=False)
 #declare a binary classifier for l2-logistic regression
 classifier=ars.BinaryClassifier(loss='logistic',penalty='l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.1/X.shape[0],nepochs=500,tol=1e-3,it0=5) 
+classifier.fit(X,y,lambd=0.1/X.shape[0],max_iter=500,tol=1e-3,duality_gap_interval=5) 
 \end{minted}
 
 Before we comment the previous choices, let us 
@@ -315,7 +315,7 @@ ars.preprocess(X,normalize=True,columns=False)
 #declare a binary classifier for squared hinge loss + l1 regularization
 classifier=ars.BinaryClassifier(loss='sqhinge',penalty='l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.000005,nepochs=500,tol=1e-3) 
+classifier.fit(X,y,lambd=0.000005,max_iter=500,tol=1e-3) 
 \end{minted}
 which yields
 \begin{verbatim}
@@ -352,7 +352,7 @@ ars.preprocess(X,centering=True,normalize=True,columns=False)
 #declare a multinomial logistic classifier with group Lasso regularization
 classifier=ars.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.0001,nepochs=500,tol=1e-3,it0=5) 
+classifier.fit(X,y,lambd=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5) 
 \end{minted}
 \begin{verbatim}
 Matrix X, n=60000, p=2304
@@ -391,7 +391,7 @@ ars.preprocess(X,centering=True,normalize=True,columns=False)
 #declare a multinomial logistic classifier with group Lasso regularization
 classifier=ars.MultiClassifier(loss='logistic',penalty='l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.01/X.shape[0],nepochs=500,tol=1e-3) 
+classifier.fit(X,y,lambd=0.01/X.shape[0],max_iter=500,tol=1e-3) 
 \end{minted}
 Then, the $10$ classifiers are learned in parallel using the four cpu cores
 (still on the same laptop), which gives the following output after about $1$mn

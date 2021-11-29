@@ -56,7 +56,7 @@ def process(arguments, X, y, multiclass):
     if arguments.penalty=='l2':
         lambd=arguments.lambd/(X.shape[0])
         
-    classifier.fit(X,y,it0=arguments.it0,lambd=arguments.lambd,lambd2=arguments.lambd,nthreads=arguments.nthreads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
+    classifier.fit(X,y,duality_gap_interval=arguments.duality_gap_interval,lambd=arguments.lambd,lambd2=arguments.lambd,n_threads=arguments.n_threads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
     sparsity=np.count_nonzero(classifier.w_.ravel())/len(classifier.w_.ravel())
     print(sparsity)
 
@@ -72,8 +72,8 @@ if __name__ == "__main__":
     parser.add_argument("--solver", default="auto")
     parser.add_argument("--loss", default="multiclass-logistic")
     parser.add_argument("--lambd", type=float, default=0.0001)
-    parser.add_argument("--nthreads", type=int, default=4)
-    parser.add_argument("--it0", type=int, default=10)
+    parser.add_argument("--n_threads", type=int, default=4)
+    parser.add_argument("--duality_gap_interval", type=int, default=10)
     parser.add_argument("--normalize", type=bool, default=True)
     parser.add_argument("--centering", type=bool, default=True)
     parser.add_argument("--intercept", type=bool, default=False)

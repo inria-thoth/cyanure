@@ -30,7 +30,8 @@ class ERM(BaseEstimator, ABC):
 
     """
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual_variable=None, tol=1e-3, solver="auto", random_state=0, max_iter=500):
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual=None, tol=1e-3, solver="auto", random_state=0, max_iter=500, fista_restart=50,
+                 verbose=True, restart=False, limited_memory_qning=20, binary_problem=True, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
         """Initialization function of the ERM class.
 
         Parameters
@@ -44,19 +45,19 @@ class ERM(BaseEstimator, ABC):
                                  and 0 otherwise
             - 'multiclass-logistic' => multinomial logistic (see Latex
                                        documentation).
-            Note that for binary classification, we assume the labels to be of
+            Note that for binary classification, we assume the y to be of
             the form {-1,+1}
 
         penalty: string, default='none'
             Regularization function psi. Possible choices are
 
-            For univariate problems
+            For binary_problem problems
             - 'none' => psi(w) = 0
             - 'l2' =>  psi{w) = (lambd/2) ||w||_2^2
             - 'l1' =>  psi{w) = lambd ||w||_1
             - 'elastic-net' =>  psi{w) = lambd ||w||_1 + (lambd2/2)||w||_2^2
-            - 'fused-lasso' => psi(w) = lambd sum_{i=2}^p |w[i]-w[i-1]|
-                                      + lambd2||w||_1 + (lambd3/2)||w||_2^2
+            - 'fused-lasso' => psi(w) = lambd3 sum_{i=2}^p |w[i]-w[i-1]|
+                                      + lambd||w||_1 + (lambd2/2)||w||_2^2
             - 'l1-ball'     => encodes the constraint ||w||_1 <= lambd
             - 'l2-ball'     => encodes the constraint ||w||_2 <= lambd
 
@@ -76,15 +77,24 @@ class ERM(BaseEstimator, ABC):
             self.loss = 'sqhinge'
         self.penalty = penalty
         self.fit_intercept = fit_intercept
-        self.dual_variable = dual_variable
+        self.dual = dual
         self.solver = solver
         self.tol = tol
         self.random_state = random_state
         self.max_iter = max_iter
+        # TODO change regularization names
+        self.lambd = lambd
+        self.lambd2 = lambd2
+        self.lambd3 = lambd3
+        self.limited_memory_qning = limited_memory_qning
+        self.fista_restart = fista_restart
+        self.verbose = verbose
+        self.restart = restart
+        self.binary_problem = binary_problem
+        self.duality_gap_interval = duality_gap_interval
+        self.n_threads = n_threads
 
-    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
-            it0=10, max_iter=500, l_qning=20, f_restart=50, verbose=True,
-            restart=False, univariate=True, nthreads=-1, random_state=0, fit_intercept=True, le_parameter=None):
+    def fit(self, X, y, le_parameter=None):
         """
         The fitting function (the one that does the job)
 
@@ -92,14 +102,14 @@ class ERM(BaseEstimator, ABC):
         ----------
 
         X : numpy array, or scipy sparse CSR matrix
-            input n x p numpy matrix; the samples are on the rows
+            input n X p numpy matrix; the samples are on the rows
 
-        y : labels, numpy array.
+        y : y, numpy array.
             - vector of size n with real values for regression
-            - vector of size n with {-1,+1} labels for binary classification,
-              which will be automatically converted if labels in {0,1} are
+            - vector of size n with {-1,+1} y for binary classification,
+              which will be automatically converted if y in {0,1} are
               provided
-            - matrix of size n x k for multivariate regression
+            - matrix of size n X k for multivariate regression
             - vector of size n with entries in {0,1,k-1} for classification
               with k classes
 
@@ -141,13 +151,13 @@ class ERM(BaseEstimator, ABC):
             Maximum number of iteration of the algorithm in terms of passes
             over the data
 
-         it0: int, default=10
+         duality_gap_interval: int, default=10
             Frequency of duality-gap computation
 
          verbose: boolean, default=True
             Display information or not
 
-         nthreads: int, default=-1
+         n_threads: int, default=-1
             maximum number of cores the method may use (-1 = all cores).
             Note that more cores is not always better.
 
@@ -157,13 +167,13 @@ class ERM(BaseEstimator, ABC):
          restart: boolean, default=False
             use a restart strategy (useful for computing regularization path)
 
-         univariate: boolean, default=True
-            univariate or multivariate problems
+         binary_problem: boolean, default=True
+            binary_problem or multivariate problems
 
-         l_qning: int, default=20
+         limited_memory_qning: int, default=20
             memory paramter for the qning method
 
-         f_restart: int, default=50
+         fista_restart: int, default=50
             restart strategy for fista
 
 
@@ -174,19 +184,28 @@ class ERM(BaseEstimator, ABC):
         process (number of iterations, objective function values, duality gap)
         will be documented in the future if people ask me,
         """
+
         X, y, le = check_input(X, y, self)
         if le_parameter is not None:
             self.le_ = le_parameter
         else:
             self.le_ = le
 
-        Xf = X.T if scipy.sparse.issparse(X) else np.asfortranarray(X.T)
-        p = X.shape[1] + 1 if self.fit_intercept else X.shape[1]
+        multiclass = None
+        if "univariate_" in self.__dict__:
+            multiclass = self.univariate_
+        else:
+            multiclass = self.binary_problem
+
+        training_data_fortran = X.T if scipy.sparse.issparse(
+            X) else np.asfortranarray(X.T)
+        p = X.shape[1] + \
+            1 if self.fit_intercept else X.shape[1]
         y = np.squeeze(y)
 
-        if univariate:
-            w0 = np.zeros(p, dtype=Xf.dtype)
-            yf = np.squeeze(y.astype(Xf.dtype))
+        if multiclass:
+            w0 = np.zeros(p, dtype=training_data_fortran.dtype)
+            yf = np.squeeze(y.astype(training_data_fortran.dtype))
         else:
             if y.squeeze().ndim > 1:
                 nclasses = y.squeeze().shape[1]
@@ -194,10 +213,11 @@ class ERM(BaseEstimator, ABC):
             else:
                 nclasses = int(np.max(y) + 1)
                 yf = np.squeeze(np.int32(y))
-            w0 = np.zeros([p, nclasses], dtype=Xf.dtype, order='F')
+            w0 = np.zeros(
+                [p, nclasses], dtype=training_data_fortran.dtype, order='F')
 
-        if restart and np.any(self.w_ != 0):
-            if verbose:
+        if self.restart and np.any(self.w_ != 0):
+            if self.verbose:
                 logger.info("Restart")
             if self.fit_intercept:
                 w0[-1, ] = self.b_
@@ -205,29 +225,34 @@ class ERM(BaseEstimator, ABC):
             else:
                 w0 = self.w_
 
-        if restart and (solver == 'auto' or solver == 'miso' or
-                        solver == 'catalyst-miso' or solver == 'qning-miso'):
+        if self.restart and (self.solver == 'auto' or self.solver == 'miso' or
+                             self.solver == 'catalyst-miso' or self.solver == 'qning-miso'):
             n = X.shape[0]
-            reset_dual = np.any(self.dual_variable is None)
-            if not reset_dual and univariate:
-                reset_dual = self.dual_variable.shape[0] != n
-            if not reset_dual and not univariate:
-                reset_dual = np.any(self.dual_variable.shape != [n, nclasses])
-            if reset_dual and univariate:
-                self.dual_variable = np.zeros(n, dtype=Xf.dtype)
-            if reset_dual and not univariate:
-                self.dual_variable = np.zeros([n, nclasses], dtype=Xf.dtype)
+            reset_dual = np.any(self.dual is None)
+            if not reset_dual and multiclass:
+                reset_dual = self.dual.shape[0] != n
+            if not reset_dual and not multiclass:
+                reset_dual = np.any(self.dual.shape != [n, nclasses])
+            if reset_dual and multiclass:
+                self.dual = np.zeros(n, dtype=training_data_fortran.dtype)
+            if reset_dual and not multiclass:
+                self.dual = np.zeros(
+                    [n, nclasses], dtype=training_data_fortran.dtype)
 
         w = np.copy(w0)
-        cyanure_lib.erm_(
-            Xf, yf, w0, w, dual_variable=self.dual_variable, loss=self.loss,
-            penalty=self.penalty, solver=self.solver, lambd=float(lambd),
-            lambd2=float(lambd2), lambd3=float(lambd3),
-            intercept=bool(self.fit_intercept), tol=float(self.tol), it0=int(it0),
-            nepochs=int(max_iter), l_qning=int(l_qning),
-            f_restart=int(f_restart), verbose=bool(verbose),
-            univariate=bool(univariate), nthreads=int(nthreads), seed=int(self.random_state)
+        optimization_info = cyanure_lib.erm_(
+            training_data_fortran, yf, w0, w, dual_variable=self.dual, loss=self.loss,
+            penalty=self.penalty, solver=self.solver, lambd=float(self.lambd),
+            lambd2=float(self.lambd2), lambd3=float(self.lambd3),
+            intercept=bool(self.fit_intercept), tol=float(self.tol), duality_gap_interval=int(self.duality_gap_interval),
+            max_iter=int(self.max_iter), limited_memory_qning=int(self.limited_memory_qning),
+            fista_restart=int(self.fista_restart), verbose=bool(self.verbose),
+            univariate=bool(multiclass), n_threads=int(self.n_threads), seed=int(self.random_state)
         )
+
+        # TODO fix onevsall bug in c++ (optim_info.add(optim_info_col);)
+        self.n_iter_ = optimization_info[0][-1]
+
         if self.fit_intercept:
             self.b_ = w[-1, ]
             self.w_ = w[0:-1, ]
@@ -239,9 +264,10 @@ class ERM(BaseEstimator, ABC):
         return self
 
     @abstractmethod
+    # TODO indeference data
     def predict(self, X):
         """
-        predict the labels given an input matrix X (same format as fit)
+        predict the y given an input matrix X (same format as fit)
         """
 
     def get_weights(self):
@@ -250,13 +276,12 @@ class ERM(BaseEstimator, ABC):
         """
         return (self.w_, self.b_) if self.fit_intercept else self.w_
 
-    def eval(self, X, y, lambd=0, lambd2=0, lambd3=0):
+    def eval(self, X, y):
         """
         get the value of the objective function and computes a relative
         duality gap, see function fit for the format of parameters.
         """
-        return self.fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
-                        max_iter=0, verbose=False, restart=True)
+        return self.fit(X, y)
 
     def get_params(self, deep=True):
         out = dict()
@@ -272,7 +297,7 @@ class ERM(BaseEstimator, ABC):
         return out
 
     @classmethod
-    def _get_param_names(cls):
+    def _get_param_namesrestart(cls):
         import inspect
 
         init = getattr(cls.__init__, 'deprecated_original', cls.__init__)
@@ -352,15 +377,17 @@ class Regression(ERM):
     def _more_tags(self):
         return {"multioutput": True}
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0):
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+                 duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
+                 restart=False, n_threads=-1):
         if loss != 'square':
             raise ValueError("square loss should be used")
         super().__init__(loss=loss, penalty=penalty,
-                         fit_intercept=fit_intercept, random_state=random_state)
+                         fit_intercept=fit_intercept, random_state=random_state, lambd=lambd, lambd2=lambd2, lambd3=lambd3, solver=solver, tol=tol,
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
+                         restart=restart, n_threads=n_threads)
 
-    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
-            it0=10, max_iter=500, l_qning=20, f_restart=50, verbose=True,
-            restart=False, nthreads=-1, random_state=0):
+    def fit(self, X, y):
         """
         The fitting function is the same as for the class BinaryClassifier,
         except that we do not necessarily expect binary labels in y.
@@ -368,16 +395,11 @@ class Regression(ERM):
         X, y, _ = check_input(X, y, self)
 
         if y.squeeze().ndim <= 1:
-            univariate = True
+            self.univariate_ = True
         else:
-            univariate = False
+            self.univariate_ = False
 
-        return super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
-                           solver=solver, tol=tol, it0=it0,
-                           max_iter=max_iter, l_qning=l_qning,
-                           f_restart=f_restart, verbose=verbose,
-                           restart=restart, univariate=univariate, nthreads=nthreads,
-                           random_state=self.random_state)
+        return super().fit(X, y)
 
     def predict(self, X):
         check_is_fitted(self)
@@ -385,7 +407,8 @@ class Regression(ERM):
         if not scipy.sparse.issparse(X):
             X = np.array(X)
             if (X.dtype != "float32" or X.dtype != "float64"):
-                X = np.asfortranarray(X, dtype="float64")
+                X = np.asfortranarray(
+                    X, dtype="float64")
 
             if False in np.isfinite(X):
                 raise ValueError("NaN of inf values in the training array(s)")
@@ -472,9 +495,11 @@ class MultiClassifier(Classifier):
     """
     _estimator_type = "classifier"
 
-    def fit(self, X, y, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
-            it0=10, max_iter=500, l_qning=20, f_restart=50, verbose=True,
-            restart=False, nthreads=-1, random_state=0, le_parameter=None):
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=0.001, solver="auto", random_state=0, max_iter=500, fista_restart=50, verbose=True, restart=False, limited_memory_qning=20, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
+        super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept, tol=tol, solver=solver, random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
+                         verbose=verbose, restart=restart, limited_memory_qning=limited_memory_qning, lambd=lambd, lambd2=lambd2, lambd3=lambd3, duality_gap_interval=duality_gap_interval, n_threads=n_threads)
+
+    def fit(self, X, y, le_parameter=None):
         """Same as BinaryClassifier, but y should be a vector a n-dimensional
         vector of integers
         """
@@ -495,7 +520,7 @@ class MultiClassifier(Classifier):
 
         if (nb_classes != unique.shape[0] or
                 not all(np.unique(y) == np.arange(nb_classes))):
-            logger.info("Class labels should be of the form")
+            logger.info("Class y should be of the form")
             logger.info(np.arange(nb_classes))
             logger.info("but they are")
             logger.info(unique)
@@ -503,7 +528,7 @@ class MultiClassifier(Classifier):
                 raise Warning("Wrong label format!")
             else:
                 logger.info(
-                    "The labels have been converted to respect the expected format.")
+                    "The y have been converted to respect the expected format.")
 
         if nb_classes == 2:
             self.univariate_ = True
@@ -518,10 +543,7 @@ class MultiClassifier(Classifier):
             self.univariate_ = False
 
         return super().fit(
-            X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3, solver=solver,
-            tol=tol, it0=it0, max_iter=max_iter, l_qning=l_qning,
-            f_restart=f_restart, verbose=verbose, restart=restart,
-            univariate=self.univariate_, nthreads=nthreads, random_state=self.random_state, fit_intercept=self.fit_intercept, le_parameter=self.le_)
+            X, y, le_parameter=self.le_)
 
     def predict(self, X):
         """Predicts the class label"""
@@ -581,7 +603,8 @@ class MultiClassifier(Classifier):
                              % (X.shape[1], self.n_features_in_))
 
         if self.fit_intercept:
-            scores = safe_sparse_dot(X, self.w_, dense_output=True) + self.b_
+            scores = safe_sparse_dot(
+                X, self.w_, dense_output=True) + self.b_
         else:
             scores = safe_sparse_dot(X, self.w_, dense_output=True)
         if len(self.classes_) == 2:
@@ -609,15 +632,15 @@ class MultiClassifier(Classifier):
 class SKLearnClassifier(ERM):
     _estimator_type = "classifier"
 
-    def __init__(self, verbose=False, solver='auto', tol=1e-3, random_state=0):
-        super(SKLearnClassifier, self).__init__(
-            solver=solver, tol=tol, random_state=random_state)
-        if verbose is not None:
-            self.verbose = verbose
+    def __init__(self, verbose=False, lambd=0, lambd2=0, lambd3=0,
+                 solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=None, limited_memory_qning=20,
+                 fista_restart=50, restart=False, n_threads=-1, random_state=0):
+        super().__init__(
+            solver=solver, tol=tol, random_state=random_state, verbose=verbose, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+            duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning,
+            fista_restart=fista_restart, restart=restart, n_threads=n_threads)
 
-    def fit(self, X, y, C=None, lambd2=0, lambd3=0,
-            solver='auto', tol=1e-3, it0=10, max_iter=None, l_qning=20,
-            f_restart=50, restart=False, nthreads=-1, random_state=0):
+    def fit(self, X, y, C=None):
         """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
         and max_iter replaces max_iter.
         """
@@ -628,29 +651,15 @@ class SKLearnClassifier(ERM):
             raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
                 X.shape[0]) + " is required.")
 
-        n = X.shape[0]
-        if C is not None:
-            self.C = C
-        if max_iter is not None:
-            self.max_iter = max_iter
-
         if self.le_ is not None:
             self.classes_ = self.le_.inverse_transform(np.unique(y))
         else:
             self.classes_ = np.unique(y)
         nb_classes = len(self.classes_)
 
-        if not (type(self.C) == int or type(self.C) == float):
-            raise ValueError("Penalty term must be positive")
-
-        if self.loss == 'sqhinge':
-            lambd = 1. / (2. * n * self.C)
-        elif self.loss == 'logistic':
-            lambd = 1. / (n * self.C)
-        else:
-            lambd = 1. / (2. * n * self.C)
+        n = X.shape[0]
         if nb_classes == 2:
-            univariate = True
+            self.univariate_ = True
             if not np.all(self.classes_ == [-1, 1]):
                 if self.le_ is not None:
                     neg = y == self.le_.transform(self.classes_)[0]
@@ -660,13 +669,8 @@ class SKLearnClassifier(ERM):
                 y[neg] = -1
                 y[np.logical_not(neg)] = 1
         else:
-            univariate = False
-        super().fit(X, y, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
-                    solver=solver, tol=tol, it0=it0,
-                    max_iter=self.max_iter, l_qning=l_qning,
-                    f_restart=f_restart, verbose=self.verbose,
-                    restart=restart, univariate=univariate, nthreads=nthreads,
-                    random_state=self.random_state, le_parameter=self.le_)
+            self.univariate_ = False
+        super().fit(X, y, le_parameter=self.le_)
 
         self.w_ = self.w_.reshape(self.w_.shape[0], -1)
         if self.fit_intercept:
@@ -688,7 +692,8 @@ class SKLearnClassifier(ERM):
             raise ValueError("X has %d features per sample; expecting %d"
                              % (X.shape[1], self.n_features_in_))
 
-        scores = safe_sparse_dot(X, self.w_, dense_output=True) + self.b_
+        scores = safe_sparse_dot(
+            X, self.w_, dense_output=True) + self.b_
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def predict(self, X):
@@ -723,7 +728,7 @@ class SKLearnClassifier(ERM):
 
         decision = self.decision_function(X)
         if decision.ndim == 1:
-            # Workaround for multi_class="multinomial" and binary outcomes
+            # Workaround for binary_problem="multinomial" and binary outcomes
             # which requires softmax prediction with only a 1D decision.
             decision_2d = np.c_[-decision, decision]
         else:
@@ -804,28 +809,29 @@ class LogisticRegression(SKLearnClassifier):
 
 
 class Lasso(Regression):
-    def __init__(self, fit_intercept=True, random_state=0):
-        super().__init__(loss='square', penalty='l1',
-                         fit_intercept=fit_intercept, random_state=random_state)
+    def __init__(self, lambd=0, solver='auto', tol=1e-3,
+                 duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
+                 restart=False, n_threads=-1, random_state=0, fit_intercept=True):
+        super().__init__(loss='square', penalty='l1', lambd=lambd, solver=solver, tol=tol,
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
+                         restart=restart, n_threads=n_threads, random_state=random_state,
+                         fit_intercept=fit_intercept)
 
-    def fit(self, X, y, lambd=0, solver='auto', tol=1e-3,
-            it0=10, max_iter=500, l_qning=20, f_restart=50, verbose=True,
-            restart=False, nthreads=-1, random_state=0):
+    def fit(self, X, y):
 
         X, y, _ = check_input(X, y, self)
 
         aux = Regression(loss='square', penalty='l1',
-                         fit_intercept=self.fit_intercept, random_state=random_state)
+                         fit_intercept=self.fit_intercept, random_state=self.random_state)
 
         n, p = X.shape
         if p <= 1000:
             # no active set
-            super().fit(X, y, lambd=lambd, solver=solver, tol=tol, it0=it0, max_iter=max_iter, l_qning=l_qning,
-                        f_restart=f_restart, verbose=verbose, restart=restart, nthreads=nthreads, random_state=random_state)
+            super().fit(X, y)
         else:
             scaling = 4.0
             init = min(100, p)
-            restart = True
+            self._restart = True
             num_as = math.ceil(math.log10(p / init) / math.log10(scaling))
             active_set = []
             n_active = 0
@@ -845,21 +851,22 @@ class Lasso(Regression):
                 n_new_as = max(
                     min(init * math.ceil(scaling ** ii), p) - n_active, 0)
                 new_as = corr.argsort()[-n_new_as:]
-                if len(new_as) == 0 or max(corr[new_as]) <= lambd * (1 + tol):
+                if len(new_as) == 0 or max(corr[new_as]) <= self.lambd * (1 + self.tol):
                     break
                 if len(active_set) > 0:
-                    neww = np.zeros(n_active + n_new_as, dtype=X.dtype)
+                    neww = np.zeros(n_active + n_new_as,
+                                    dtype=X.dtype)
                     neww[0:n_active] = aux.w
                     aux.w = neww
                     active_set = np.concatenate((active_set, new_as))
                 else:
                     active_set = new_as
-                    aux.w = np.zeros(len(active_set), dtype=X.dtype)
+                    aux.w = np.zeros(
+                        len(active_set), dtype=X.dtype)
                 n_active = len(active_set)
-                if verbose:
+                if self.verbose:
                     logger.info("Size of the active set: " + str(n_active))
-                aux.fit(X[:, active_set], y, lambd, tol=tol, it0=5, max_iter=max_iter, restart=restart,
-                        solver=solver, verbose=verbose)
+                aux.fit(X[:, active_set], y)
                 self.w_[active_set] = aux.w
                 if self.fit_intercept:
                     self.b_ = aux.b
@@ -872,13 +879,15 @@ class L1Logistic(MultiClassifier):
 
     _estimator_type = "classifier"
 
-    def __init__(self, fit_intercept=True):
-        super().__init__(loss='logistic', penalty='l1',
+    def __init__(self, lambd=0, solver='auto', tol=1e-3,
+                 duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
+                 restart=False, n_threads=-1, random_state=0, fit_intercept=True):
+        super().__init__(loss='logistic', penalty='l1', lambd=lambd, solver=solver, tol=tol,
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
+                         restart=restart, n_threads=n_threads, random_state=random_state,
                          fit_intercept=fit_intercept)
 
-    def fit(self, X, y, lambd=0, solver='auto', tol=1e-3,
-            it0=10, max_iter=500, l_qning=20, f_restart=50, verbose=True,
-            restart=False, nthreads=-1, random_state=0):
+    def fit(self, X, y):
 
         X, y, le = check_input(X, y, self)
         self.le_ = le
@@ -889,8 +898,7 @@ class L1Logistic(MultiClassifier):
         n, p = X.shape
         if p <= 1000:
             # no active set
-            super().fit(X, y, lambd=lambd, solver=solver, tol=tol, it0=it0, max_iter=max_iter, l_qning=l_qning,
-                        f_restart=f_restart, verbose=verbose, restart=restart, nthreads=nthreads, random_state=random_state, le_parameter=self.le_)
+            super().fit(X, y, le_parameter=self.le_)
         else:
             scaling = 4.0
             init = min(100, p)
@@ -912,27 +920,29 @@ class L1Logistic(MultiClassifier):
                     if self.fit_intercept:
                         pred += aux.b
                     R = -y.ravel() / (1.0 + np.exp(y.ravel() * pred.ravel()))
-                corr = np.abs(X.transpose().dot(R).ravel()) / X.shape[0]
+                corr = np.abs(X.transpose().dot(
+                    R).ravel()) / X.shape[0]
                 if n_active > 0:
                     corr[active_set] = -10e10
                 n_new_as = max(
                     min(init * math.ceil(scaling ** (ii)), p) - n_active, 0)
                 new_as = corr.argsort()[-n_new_as:]
-                if len(new_as) == 0 or max(corr[new_as]) <= lambd * (1 + tol):
+                if len(new_as) == 0 or max(corr[new_as]) <= self.lambd * (1 + self.tol):
                     break
                 if len(active_set) > 0:
-                    neww = np.zeros(n_active + n_new_as, dtype=X.dtype)
+                    neww = np.zeros(n_active + n_new_as,
+                                    dtype=X.dtype)
                     neww[0:n_active] = aux.w
                     aux.w = neww
                     active_set = np.concatenate((active_set, new_as))
                 else:
                     active_set = new_as
-                    aux.w = np.zeros(len(active_set), dtype=X.dtype)
+                    aux.w = np.zeros(
+                        len(active_set), dtype=X.dtype)
                 n_active = len(active_set)
-                if verbose:
+                if self.verbose:
                     logger.info("Size of the active set: " + str(n_active))
-                aux.fit(X[:, active_set], y, lambd, tol=tol, it0=5, max_iter=max_iter, restart=restart,
-                        solver=solver, verbose=verbose)
+                aux.fit(X[:, active_set], y)
                 self.w_[active_set] = aux.w
                 if self.fit_intercept:
                     self.b_ = aux.b

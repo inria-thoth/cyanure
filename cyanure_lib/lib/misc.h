@@ -287,7 +287,7 @@ inline float sqr_alt(const float x) {
 
 #ifdef HAVE_MKL
 extern "C" {
-   void MKL_Set_Num_Threads(int nthreads);
+   void MKL_Set_Num_Threads(int n_threads);
    int MKL_Get_Max_Threads();
 }
 #endif
