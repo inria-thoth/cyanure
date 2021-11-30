@@ -30,8 +30,13 @@ class ERM(BaseEstimator, ABC):
 
     """
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual=None, tol=1e-3, solver="auto", random_state=0, max_iter=500, fista_restart=50,
-                 verbose=True, restart=False, limited_memory_qning=20, _binary_problem=True, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
+    def _more_tags(self):
+        return {"requires_y": True}
+
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual=None, tol=1e-3, solver="auto",
+                 random_state=0, max_iter=500, fista_restart=50,
+                 verbose=True, restart=False, limited_memory_qning=20, _binary_problem=True,
+                 lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
         """Initialization function of the ERM class.
 
         Parameters
@@ -244,8 +249,8 @@ class ERM(BaseEstimator, ABC):
             univariate=bool(self._binary_problem), n_threads=int(self.n_threads), seed=int(self.random_state)
         )
 
-        # TODO fix onevsall bug in c++ (optim_info.add(optim_info_col);)
-        self.n_iter_ = optimization_info[0][-1]
+        # TODO fix onevsall bug in c++ (optim_info.add(optim_info_col)) + remove ternary
+        self.n_iter_ = optimization_info[0][-1] if optimization_info[0][-1] >= 1 else 1
 
         if self.fit_intercept:
             self.b_ = w[-1, ]
@@ -258,7 +263,6 @@ class ERM(BaseEstimator, ABC):
         return self
 
     @abstractmethod
-    # TODO indeference data
     def predict(self, X):
         """
         predict the y given an input matrix X (same format as fit)
@@ -318,7 +322,8 @@ class ERM(BaseEstimator, ABC):
             return self
         valid_params = self.get_params(deep=True)
 
-        nested_params = defaultdict(dict)  # grouped by prefix
+        # Grouped by prefix
+        nested_params = defaultdict(dict)
         for key, value in params.items():
             key, delim, sub_key = key.partition('__')
             if key not in valid_params:
@@ -371,14 +376,17 @@ class Regression(ERM):
     def _more_tags(self):
         return {"multioutput": True}
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0, lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0,
+                 lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  restart=False, n_threads=-1):
         if loss != 'square':
             raise ValueError("square loss should be used")
         super().__init__(loss=loss, penalty=penalty,
-                         fit_intercept=fit_intercept, random_state=random_state, lambd=lambd, lambd2=lambd2, lambd3=lambd3, solver=solver, tol=tol,
-                         duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
+                         fit_intercept=fit_intercept, random_state=random_state, lambd=lambd,
+                         lambd2=lambd2, lambd3=lambd3, solver=solver, tol=tol,
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter,
+                         limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
                          restart=restart, n_threads=n_threads)
 
     def fit(self, X, y):
@@ -400,7 +408,7 @@ class Regression(ERM):
 
         if not scipy.sparse.issparse(X):
             X = np.array(X)
-            if (X.dtype != "float32" or X.dtype != "float64"):
+            if X.dtype != "float32" or X.dtype != "float64":
                 X = np.asfortranarray(
                     X, dtype="float64")
 
@@ -489,9 +497,14 @@ class MultiClassifier(Classifier):
     """
     _estimator_type = "classifier"
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=0.001, solver="auto", random_state=0, max_iter=500, fista_restart=50, verbose=True, restart=False, limited_memory_qning=20, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
-        super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept, tol=tol, solver=solver, random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
-                         verbose=verbose, restart=restart, limited_memory_qning=limited_memory_qning, lambd=lambd, lambd2=lambd2, lambd3=lambd3, duality_gap_interval=duality_gap_interval, n_threads=n_threads)
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=0.001, solver="auto",
+                 random_state=0, max_iter=500, fista_restart=50, verbose=True, restart=False,
+                 limited_memory_qning=20, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
+        super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept, tol=tol, solver=solver,
+                         random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
+                         verbose=verbose, restart=restart, limited_memory_qning=limited_memory_qning,
+                         lambd=lambd, lambd2=lambd2, lambd3=lambd3, duality_gap_interval=duality_gap_interval,
+                         n_threads=n_threads)
 
     def fit(self, X, y, le_parameter=None):
         """Same as BinaryClassifier, but y should be a vector a n-dimensional
@@ -519,7 +532,7 @@ class MultiClassifier(Classifier):
             logger.info("but they are")
             logger.info(unique)
             if nb_classes != 2:
-                raise Warning("Wrong label format!")
+                raise Warning("Wrong label format for a multiclass problem!")
             else:
                 logger.info(
                     "The y have been converted to respect the expected format.")
@@ -549,9 +562,8 @@ class MultiClassifier(Classifier):
         if not scipy.sparse.issparse(X) and (X.dtype != "float32" or X.dtype != "float64"):
             X = np.asfortranarray(X, dtype="float64")
 
-        if not scipy.sparse.issparse(X):
-            if False in np.isfinite(X):
-                raise ValueError("NaN of inf values in the training array(s)")
+        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
+            raise ValueError("NaN of inf values in the training array(s)")
 
         if X.ndim == 1:
             raise ValueError("Reshape your data")
@@ -562,22 +574,24 @@ class MultiClassifier(Classifier):
 
         pred = self.decision_function(X)
 
+        output = None
         if len(self.classes_) == 2:
             if self.le_ is None:
                 output = np.sign(pred)
                 output[output == -1.0] = self.classes_[0]
                 output = output.astype(np.int32)
-                return output
             else:
                 output = np.sign(pred)
                 output[output == -1.0] = 0
                 output = output.astype(np.int32)
-                return self.le_.inverse_transform(output)
+                output = self.le_.inverse_transform(output)
         else:
             if self.le_ is None:
-                return np.argmax(pred, axis=1)
+                output = np.argmax(pred, axis=1)
             else:
-                return self.le_.inverse_transform(np.argmax(pred, axis=1))
+                output = self.le_.inverse_transform(np.argmax(pred, axis=1))
+
+        return output
 
     def score(self, X, y):
         """Gives a classification score on new test data"""
@@ -601,36 +615,41 @@ class MultiClassifier(Classifier):
                 X, self.w_, dense_output=True) + self.b_
         else:
             scores = safe_sparse_dot(X, self.w_, dense_output=True)
+
+        output = None
         if len(self.classes_) == 2:
-            return scores.ravel()
+            output = scores.ravel()
         else:
-            return scores.ravel() if scores.shape[1] == 1 else scores
+            output = scores.ravel() if scores.shape[1] == 1 else scores
+
+        return output
 
     def predict_proba(self, X):
         check_is_fitted(self)
 
-        if not scipy.sparse.issparse(X):
-            if False in np.isfinite(X):
-                raise ValueError("NaN of inf values in the training array(s)")
+        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
+
+            raise ValueError("NaN of inf values in the training array(s)")
 
         decision = self.decision_function(X)
         if decision.ndim == 1:
             # Workaround for binary outcomes
             # which requires softmax prediction with only a 1D decision.
             decision = np.c_[-decision, decision]
-        else:
-            decision = decision
         return softmax(decision, copy=False)
 
 
 class SKLearnClassifier(ERM):
     _estimator_type = "classifier"
 
-    def __init__(self, verbose=False, lambd=0, lambd2=0, lambd3=0,
+    def __init__(self, loss, penalty, fit_intercept=True,
+                 verbose=False, lambd=0, lambd2=0, lambd3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=None, limited_memory_qning=20,
                  fista_restart=50, restart=False, n_threads=-1, random_state=0):
         super().__init__(
-            solver=solver, tol=tol, random_state=random_state, verbose=verbose, lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+            loss=loss, penalty=penalty, fit_intercept=fit_intercept,
+            solver=solver, tol=tol, random_state=random_state, verbose=verbose,
+            lambd=lambd, lambd2=lambd2, lambd3=lambd3,
             duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning,
             fista_restart=fista_restart, restart=restart, n_threads=n_threads)
 
@@ -654,7 +673,6 @@ class SKLearnClassifier(ERM):
             self.classes_ = np.unique(y)
         nb_classes = len(self.classes_)
 
-        n = X.shape[0]
         if nb_classes == 2:
             self._binary_problem = True
             if not np.all(self.classes_ == [-1, 1]):
@@ -699,19 +717,22 @@ class SKLearnClassifier(ERM):
         X = X if scipy.sparse.issparse(
             X) else np.asfortranarray(X, dtype="float64")
 
-        if not scipy.sparse.issparse(X):
-            if False in np.isfinite(X):
-                raise ValueError("NaN of inf values in the training array(s)")
+        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
+            raise ValueError("NaN of inf values in the training array(s)")
 
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
             indices = (scores > 0).astype(np.int64)
         else:
             indices = scores.argmax(axis=1)
+
+        output = None
         if self.le_ is None:
-            return self.classes_[indices]
+            output = self.classes_[indices]
         else:
-            return self.le_.inverse_transform(indices)
+            output = self.le_.inverse_transform(indices)
+
+        return output
 
     def predict_proba(self, X):
         check_is_fitted(self)
@@ -719,9 +740,8 @@ class SKLearnClassifier(ERM):
         X = X if scipy.sparse.issparse(
             X) else np.asfortranarray(X, dtype="float32")
 
-        if not scipy.sparse.issparse(X):
-            if False in np.isfinite(X):
-                raise ValueError("NaN of inf values in the training array(s)")
+        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
+            raise ValueError("NaN of inf values in the training array(s)")
 
         decision = self.decision_function(X)
         if decision.ndim == 1:
@@ -759,15 +779,21 @@ class LinearSVC(SKLearnClassifier):
     max_iter: maximum number of iterations for the optimization solver
     """
 
-    def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True, C=1,
-                 max_iter=500):
-        if loss != 'sqhinge' and loss != 'squared_hinge':
+    def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True,
+                 verbose=False, lambd=0.1, lambd2=0, lambd3=0,
+                 solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
+                 fista_restart=50, restart=False, n_threads=-1, random_state=0):
+        if loss not in ['squared_hinge', 'sqhinge']:
             logger.error("LinearSVC is only compatible with squared hinge loss at "
                          "the moment")
-        super(SKLearnClassifier, self).__init__(
-            loss='sqhinge', penalty=penalty,
-            fit_intercept=fit_intercept)
-        self.C = C
+        super().__init__(
+            loss=loss, penalty=penalty, fit_intercept=fit_intercept,
+            solver=solver, tol=tol, random_state=random_state, verbose=verbose,
+            lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+            duality_gap_interval=duality_gap_interval, max_iter=max_iter,
+            limited_memory_qning=limited_memory_qning,
+            fista_restart=fista_restart, restart=restart, n_threads=n_threads)
+        self.lambd = lambd
         self.max_iter = max_iter
         self.verbose = False
 
@@ -795,14 +821,77 @@ class LogisticRegression(SKLearnClassifier):
 
     _estimator_type = "classifier"
 
-    def __init__(self, penalty='l2', fit_intercept=True, lambd=0, max_iter=500, solver="auto", tol=1e-3, random_state=0):
-        super(LogisticRegression, self).__init__(
-            solver=solver, tol=tol, random_state=random_state)
-        self.lambd = lambd
-        self.max_iter = max_iter
-        self.loss = 'logistic'
-        self.penalty = penalty
-        self.fit_intercept = fit_intercept
+    def __init__(self, penalty='l2', loss='logistic', fit_intercept=True,
+                 verbose=False, lambd=0, lambd2=0, lambd3=0,
+                 solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
+                 fista_restart=50, restart=False, n_threads=-1, random_state=0):
+        super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept,
+                         solver=solver, tol=tol, random_state=random_state, verbose=verbose,
+                         lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter,
+                         limited_memory_qning=limited_memory_qning,
+                         fista_restart=fista_restart, restart=restart, n_threads=n_threads)
+
+
+def compute_r(estimator_name, aux, X, y, active_set, n_active):
+    R = None
+
+    pred = aux.predict(X[:, active_set])
+    if estimator_name == "Lasso":
+        if n_active == 0:
+            R = y
+        else:
+            R = y.ravel() - pred.ravel()
+    elif estimator_name == "L1Logistic":
+        if n_active == 0:
+            R = -0.5 * y.ravel()
+        else:
+            R = -y.ravel() / (1.0 + np.exp(y.ravel() * pred.ravel()))
+
+    return R
+
+
+def fit_large_feature_number(estimator, aux, X, y):
+    n, p = X.shape
+
+    scaling = 4.0
+    init = min(100, p)
+    estimator.restart = True
+    num_as = math.ceil(math.log10(p / init) / math.log10(scaling))
+    active_set = []
+    n_active = 0
+    estimator.w_ = np.zeros(p, dtype=X.dtype)
+    if estimator.fit_intercept:
+        estimator.b_ = 0
+
+    for ii in range(num_as):
+        R = compute_r(estimator.__name__, aux, X, y, active_set, n_active)
+
+        corr = np.abs(X.transpose().dot(R).ravel()) / n
+        if n_active > 0:
+            corr[active_set] = -10e10
+        n_new_as = max(
+            min(init * math.ceil(scaling ** ii), p) - n_active, 0)
+        new_as = corr.argsort()[-n_new_as:]
+        if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambd * (1 + estimator.tol):
+            break
+        if len(active_set) > 0:
+            neww = np.zeros(n_active + n_new_as,
+                            dtype=X.dtype)
+            neww[0:n_active] = aux.w_
+            aux.w_ = neww
+            active_set = np.concatenate((active_set, new_as))
+        else:
+            active_set = new_as
+            aux.w_ = np.zeros(
+                len(active_set), dtype=X.dtype)
+        n_active = len(active_set)
+        if estimator.verbose:
+            logger.info("Size of the active set: {%d}", n_active)
+        aux.fit(X[:, active_set], y)
+        estimator.w_[active_set] = aux.w_
+        if estimator.fit_intercept:
+            estimator.b_ = aux.b_
 
 
 class Lasso(Regression):
@@ -810,77 +899,42 @@ class Lasso(Regression):
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  restart=False, n_threads=-1, random_state=0, fit_intercept=True):
         super().__init__(loss='square', penalty='l1', lambd=lambd, solver=solver, tol=tol,
-                         duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
-                         restart=restart, n_threads=n_threads, random_state=random_state,
-                         fit_intercept=fit_intercept)
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter,
+                         limited_memory_qning=limited_memory_qning, fista_restart=fista_restart,
+                         verbose=verbose, restart=restart, n_threads=n_threads,
+                         random_state=random_state, fit_intercept=fit_intercept)
 
     def fit(self, X, y):
 
         X, y, _ = check_input(X, y, self)
 
-        aux = Regression(loss='square', penalty='l1',
-                         fit_intercept=self.fit_intercept, random_state=self.random_state)
-
-        n, p = X.shape
+        _, p = X.shape
         if p <= 1000:
             # no active set
             super().fit(X, y)
         else:
-            scaling = 4.0
-            init = min(100, p)
-            self._restart = True
-            num_as = math.ceil(math.log10(p / init) / math.log10(scaling))
-            active_set = []
-            n_active = 0
-            self.w_ = np.zeros(p, dtype=X.dtype)
-            if self.fit_intercept:
-                self.b_ = 0
+            aux = Regression(loss='square', penalty='l1',
+                             fit_intercept=self.fit_intercept, random_state=self.random_state)
 
-            for ii in range(num_as):
-                if n_active == 0:
-                    R = y
-                else:
-                    pred = aux.predict(X[:, active_set])
-                    R = y.ravel() - pred.ravel()
-                corr = np.abs(X.transpose().dot(R).ravel()) / n
-                if n_active > 0:
-                    corr[active_set] = -10e10
-                n_new_as = max(
-                    min(init * math.ceil(scaling ** ii), p) - n_active, 0)
-                new_as = corr.argsort()[-n_new_as:]
-                if len(new_as) == 0 or max(corr[new_as]) <= self.lambd * (1 + self.tol):
-                    break
-                if len(active_set) > 0:
-                    neww = np.zeros(n_active + n_new_as,
-                                    dtype=X.dtype)
-                    neww[0:n_active] = aux.w
-                    aux.w = neww
-                    active_set = np.concatenate((active_set, new_as))
-                else:
-                    active_set = new_as
-                    aux.w = np.zeros(
-                        len(active_set), dtype=X.dtype)
-                n_active = len(active_set)
-                if self.verbose:
-                    logger.info("Size of the active set: " + str(n_active))
-                aux.fit(X[:, active_set], y)
-                self.w_[active_set] = aux.w
-                if self.fit_intercept:
-                    self.b_ = aux.b
+            fit_large_feature_number(self, aux, X, y)
 
         return self
 
 
-# TODO: remove code duplication with Lasso
 class L1Logistic(MultiClassifier):
 
     _estimator_type = "classifier"
+
+    def _more_tags(self):
+        return {"requires_y": True}
 
     def __init__(self, lambd=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  restart=False, n_threads=-1, random_state=0, fit_intercept=True):
         super().__init__(loss='logistic', penalty='l1', lambd=lambd, solver=solver, tol=tol,
-                         duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
+                         duality_gap_interval=duality_gap_interval, max_iter=max_iter,
+                         limited_memory_qning=limited_memory_qning,
+                         fista_restart=fista_restart, verbose=verbose,
                          restart=restart, n_threads=n_threads, random_state=random_state,
                          fit_intercept=fit_intercept)
 
@@ -889,59 +943,14 @@ class L1Logistic(MultiClassifier):
         X, y, le = check_input(X, y, self)
         self.le_ = le
 
-        aux = MultiClassifier(
-            loss='logistic', penalty='l1', fit_intercept=self.fit_intercept)
-
-        n, p = X.shape
+        _, p = X.shape
         if p <= 1000:
             # no active set
             super().fit(X, y, le_parameter=self.le_)
         else:
-            scaling = 4.0
-            init = min(100, p)
-            restart = True
-            num_as = math.ceil(math.log10(p / init) / math.log10(scaling))
-            active_set = []
-            n_active = 0
-            self.w_ = np.zeros(p, dtype=X.dtype)
-            if self.fit_intercept:
-                self.b_ = 0
+            aux = MultiClassifier(
+                loss='logistic', penalty='l1', fit_intercept=self.fit_intercept)
 
-            for ii in range(num_as):
-                #  log(1 + exp(-y_i pred_i))
-                # abs_grad =    sum - y_i/(1 + exp(y_i pred_i)) x_i
-                if n_active == 0:
-                    R = -0.5 * y.ravel()
-                else:
-                    pred = X[:, active_set].dot(aux.w)
-                    if self.fit_intercept:
-                        pred += aux.b
-                    R = -y.ravel() / (1.0 + np.exp(y.ravel() * pred.ravel()))
-                corr = np.abs(X.transpose().dot(
-                    R).ravel()) / X.shape[0]
-                if n_active > 0:
-                    corr[active_set] = -10e10
-                n_new_as = max(
-                    min(init * math.ceil(scaling ** (ii)), p) - n_active, 0)
-                new_as = corr.argsort()[-n_new_as:]
-                if len(new_as) == 0 or max(corr[new_as]) <= self.lambd * (1 + self.tol):
-                    break
-                if len(active_set) > 0:
-                    neww = np.zeros(n_active + n_new_as,
-                                    dtype=X.dtype)
-                    neww[0:n_active] = aux.w
-                    aux.w = neww
-                    active_set = np.concatenate((active_set, new_as))
-                else:
-                    active_set = new_as
-                    aux.w = np.zeros(
-                        len(active_set), dtype=X.dtype)
-                n_active = len(active_set)
-                if self.verbose:
-                    logger.info("Size of the active set: " + str(n_active))
-                aux.fit(X[:, active_set], y)
-                self.w_[active_set] = aux.w
-                if self.fit_intercept:
-                    self.b_ = aux.b
+            fit_large_feature_number(self, aux, X, y)
 
         return self
