@@ -60,7 +60,7 @@ def check_labels(y, estimator):
         elif np.isfinite(y[0]) and (type(y[0]) != "int64"):
             y = y.astype("int64")
     else:
-        y = np.asfortranarray(y, 'float64')
+        y = y.astype('float64')
 
     if False in np.isfinite(y):
         raise ValueError(
@@ -125,6 +125,9 @@ def check_input(X, y, estimator):
 
     if X.shape[0] == 0:
         raise ValueError("Empty training array")
+    
+    if y is None or True in np.array(np.equal(y, None)):
+        raise ValueError("y should be a 1d array")
 
     if len(X.shape) > 1 and X.shape[1] == 0:
         raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
