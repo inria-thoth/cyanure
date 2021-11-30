@@ -1,3 +1,5 @@
+#include <string>
+
 #include "lib/linalg.h"
 #include "lib/wrapper_utils.h"
 #include "lib/solvers.h"
