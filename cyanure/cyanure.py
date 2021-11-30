@@ -15,7 +15,7 @@ from sklearn.utils.extmath import safe_sparse_dot, softmax
 
 import cyanure_lib
 
-from cyanure.data_processing import check_input
+from cyanure.data_processing import check_input_fit, check_input_inference
 
 from cyanure.logger import setup_custom_logger
 
@@ -190,7 +190,7 @@ class ERM(BaseEstimator, ABC):
         will be documented in the future if people ask me,
         """
 
-        X, y, le = check_input(X, y, self)
+        X, y, le = check_input_fit(X, y, self)
         if le_parameter is not None:
             self.le_ = le_parameter
         else:
@@ -394,7 +394,7 @@ class Regression(ERM):
         The fitting function is the same as for the class BinaryClassifier,
         except that we do not necessarily expect binary labels in y.
         """
-        X, y, _ = check_input(X, y, self)
+        X, y, _ = check_input_fit(X, y, self)
 
         if y.squeeze().ndim <= 1:
             self._binary_problem = True
@@ -406,21 +406,7 @@ class Regression(ERM):
     def predict(self, X):
         check_is_fitted(self)
 
-        if not scipy.sparse.issparse(X):
-            X = np.array(X)
-            if X.dtype != "float32" or X.dtype != "float64":
-                X = np.asfortranarray(
-                    X, dtype="float64")
-
-            if False in np.isfinite(X):
-                raise ValueError("NaN of inf values in the training array(s)")
-
-        if X.ndim == 1:
-            raise ValueError("Reshape your data")
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], self.n_features_in_))
+        X = check_input_inference(X, self)
 
         pred = X.dot(self.w_)
         if self.fit_intercept:
@@ -510,7 +496,7 @@ class MultiClassifier(Classifier):
         """Same as BinaryClassifier, but y should be a vector a n-dimensional
         vector of integers
         """
-        X, y, le = check_input(X, y, self)
+        X, y, le = check_input_fit(X, y, self)
         if le_parameter is not None:
             self.le_ = le_parameter
         else:
@@ -556,21 +542,7 @@ class MultiClassifier(Classifier):
         """Predicts the class label"""
         check_is_fitted(self)
 
-        if not scipy.sparse.issparse(X):
-            X = np.array(X)
-
-        if not scipy.sparse.issparse(X) and (X.dtype != "float32" or X.dtype != "float64"):
-            X = np.asfortranarray(X, dtype="float64")
-
-        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
-            raise ValueError("NaN of inf values in the training array(s)")
-
-        if X.ndim == 1:
-            raise ValueError("Reshape your data")
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], self.n_features_in_))
+        X = check_input_inference(X, self)
 
         pred = self.decision_function(X)
 
@@ -597,18 +569,15 @@ class MultiClassifier(Classifier):
         """Gives a classification score on new test data"""
         check_is_fitted(self)
 
+        X = check_input_inference(X, self)
+
         pred = np.squeeze(self.predict(X))
         return np.sum(np.squeeze(y) == pred) / pred.shape[0]
 
     def decision_function(self, X):
         check_is_fitted(self)
 
-        if X.ndim == 1:
-            raise ValueError("Reshape your data")
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], self.n_features_in_))
+        X = check_input_inference(X, self)
 
         if self.fit_intercept:
             scores = safe_sparse_dot(
@@ -627,9 +596,7 @@ class MultiClassifier(Classifier):
     def predict_proba(self, X):
         check_is_fitted(self)
 
-        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
-
-            raise ValueError("NaN of inf values in the training array(s)")
+        X = check_input_inference(X, self)
 
         decision = self.decision_function(X)
         if decision.ndim == 1:
@@ -657,7 +624,7 @@ class SKLearnClassifier(ERM):
         """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
         and max_iter replaces max_iter.
         """
-        X, y, le = check_input(X, y, self)
+        X, y, le = check_input_fit(X, y, self)
         if le_parameter is not None:
             self.le_ = le_parameter
         else:
@@ -700,12 +667,7 @@ class SKLearnClassifier(ERM):
     def decision_function(self, X):
         check_is_fitted(self)
 
-        if X.ndim == 1:
-            raise ValueError("Reshape your data")
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError("X has %d features per sample; expecting %d"
-                             % (X.shape[1], self.n_features_in_))
+        X = check_input_inference(X, self)
 
         scores = safe_sparse_dot(
             X, self.w_, dense_output=True) + self.b_
@@ -714,11 +676,7 @@ class SKLearnClassifier(ERM):
     def predict(self, X):
         check_is_fitted(self)
 
-        X = X if scipy.sparse.issparse(
-            X) else np.asfortranarray(X, dtype="float64")
-
-        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
-            raise ValueError("NaN of inf values in the training array(s)")
+        X = check_input_inference(X, self)
 
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
@@ -737,11 +695,7 @@ class SKLearnClassifier(ERM):
     def predict_proba(self, X):
         check_is_fitted(self)
 
-        X = X if scipy.sparse.issparse(
-            X) else np.asfortranarray(X, dtype="float32")
-
-        if not scipy.sparse.issparse(X) and False in np.isfinite(X):
-            raise ValueError("NaN of inf values in the training array(s)")
+        X = check_input_inference(X, self)
 
         decision = self.decision_function(X)
         if decision.ndim == 1:
@@ -906,7 +860,7 @@ class Lasso(Regression):
 
     def fit(self, X, y):
 
-        X, y, _ = check_input(X, y, self)
+        X, y, _ = check_input_fit(X, y, self)
 
         _, p = X.shape
         if p <= 1000:
@@ -940,7 +894,7 @@ class L1Logistic(MultiClassifier):
 
     def fit(self, X, y):
 
-        X, y, le = check_input(X, y, self)
+        X, y, le = check_input_fit(X, y, self)
         self.le_ = le
 
         _, p = X.shape

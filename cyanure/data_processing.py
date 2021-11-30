@@ -115,7 +115,7 @@ def check_parameters(estimator):
                              "Penalty term must be positive")
 
 
-def check_input(X, y, estimator):
+def check_input_fit(X, y, estimator):
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
         X = np.array(X)
         y = np.array(y)
@@ -150,3 +150,22 @@ def check_input(X, y, estimator):
     check_parameters(estimator)
 
     return X, y, le
+
+
+def check_input_inference(X, estimator):
+    if not scipy.sparse.issparse(X):
+        X = np.array(X)
+        if X.dtype != "float32" or X.dtype != "float64":
+            X = np.asfortranarray(X, dtype="float64")
+
+        if False in np.isfinite(X):
+            raise ValueError("NaN of inf values in the training array(s)")
+
+    if X.ndim == 1:
+        raise ValueError("Reshape your data")
+
+    if X.shape[1] != estimator.n_features_in_:
+        raise ValueError("X has %d features per sample; expecting %d"
+                            % (X.shape[1], estimator.n_features_in_))
+
+    return X
