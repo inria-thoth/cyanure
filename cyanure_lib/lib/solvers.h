@@ -56,7 +56,7 @@ enum solver_t
     QNING_MISO,
     AUTO,
     INCORRECT_SOLVER
-};y
+};
 
 solver_t solver_from_string(char* regul)
 {
