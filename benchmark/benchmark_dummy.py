@@ -1,8 +1,10 @@
-import cyanure.cyanure as ars
+import os
+import argparse
+
 import numpy as np
 import scipy.sparse
-import argparse
-import os
+
+import cyanure.cyanure as ars
 
 def get_data(datapath, dataset):
     multiclass = False
@@ -24,25 +26,26 @@ def get_data(datapath, dataset):
         data = np.load(datapath+'rcv1.npz',allow_pickle=True)
         y=data['y']
         X=data['X']
-        X = scipy.sparse.csc_matrix(X.all()).T # n x p matrix, csr format 
+        # n x p matrix, csr format
+        X = scipy.sparse.csc_matrix(X.all()).T
         X=X.astype('float64')
 
-    if dataset=='alpha' or dataset=='covtype' or dataset=='epsilon' or dataset=='ocr':
+    if dataset in ('alpha', 'covtype', 'epsilon', 'ocr'):
         data=np.load(os.path.join(datapath, dataset+'.npz'))
         y=data['arr_1']
         X=data['arr_0']
         y=np.squeeze(y)
 
-    if dataset=='real-sim' or dataset=='webspam' or dataset=='kddb' or dataset=='criteo':
+    if dataset in ('real-sim', 'webspam', 'kddb', 'criteo'):
         dataY=np.load(datapath+dataset+'_y.npz',allow_pickle=True)
         y=dataY['arr_0']
         X = scipy.sparse.load_npz(datapath+dataset+'_X.npz')
         y=np.squeeze(y)
-    
+
     return X, y, multiclass
 
 def process(arguments, X, y, multiclass):
-    ars.preprocess(X,centering=arguments.centering,normalize=arguments.normalize,columns=False) 
+    ars.preprocess(X,centering=arguments.centering,normalize=arguments.normalize,columns=False)
 
     if arguments.classif:
         if multiclass:
@@ -52,11 +55,11 @@ def process(arguments, X, y, multiclass):
     else:
         classifier=ars.Regression(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
 
-
+    lambd = arguments.lambd
     if arguments.penalty=='l2':
         lambd=arguments.lambd/(X.shape[0])
-        
-    classifier.fit(X,y,duality_gap_interval=arguments.duality_gap_interval,lambd=arguments.lambd,lambd2=arguments.lambd,n_threads=arguments.n_threads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
+
+    classifier.fit(X,y,duality_gap_interval=arguments.duality_gap_interval,lambd=lambd,lambd2=lambd,n_threads=arguments.n_threads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
     sparsity=np.count_nonzero(classifier.w_.ravel())/len(classifier.w_.ravel())
     print(sparsity)
 
