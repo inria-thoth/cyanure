@@ -9,6 +9,10 @@ from sklearn.utils.multiclass import type_of_target
 
 import cyanure_lib
 
+from cyanure.logger import setup_custom_logger
+
+logger = setup_custom_logger('project', "INFO")
+
 
 def preprocess(X, centering=False, normalize=True, columns=False):
     """Perform in-place centering or normalization, either of columns or rows
@@ -39,15 +43,11 @@ def preprocess(X, centering=False, normalize=True, columns=False):
 def check_labels(y, estimator):
     le = None
 
-    # TODO check if relevant
     if estimator._estimator_type == "classifier":
         y_type = type_of_target(y)
         if y_type not in [
             "binary",
-            "multiclass",
-            "multiclass-multioutput",
-            "multilabel-indicator",
-            "multilabel-sequences",
+            "multiclass"
         ]:
             raise ValueError("Unknown label type: %r" % y_type)
 
@@ -55,12 +55,10 @@ def check_labels(y, estimator):
             le = LabelEncoder()
             le.fit(y)
             y = le.transform(y)
-        elif np.isfinite(y[0]) and (type(y[0]) == "float64" or type(y[0]) == "float32"):
-            raise ValueError("Unknown label type: " + str(y.dtype))
-        elif np.isfinite(y[0]) and (type(y[0]) != "int64"):
-            y = y.astype("int64")
     else:
-        y = y.astype('float64')
+        if not isinstance(y[0], float):
+            logger.info("The labels have been converted in float64")
+            y = y.astype('float64')
 
     if False in np.isfinite(y):
         raise ValueError(
@@ -79,8 +77,11 @@ def check_input_type(X, y, estimator):
         raise ValueError("Complex data not supported")
 
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
-        # TODO Flexible dtype
-        X = np.asfortranarray(X, 'float64')
+        if not isinstance(y[0], float):
+            logger.info("The labels have been converted in float64")
+            X = np.asfortranarray(X, 'float64')
+        else:
+            X = np.asfortranarray(X)
 
         y, le = check_labels(y, estimator)
 
@@ -125,7 +126,7 @@ def check_input_fit(X, y, estimator):
 
     if X.shape[0] == 0:
         raise ValueError("Empty training array")
-    
+
     if y is None or True in np.array(np.equal(y, None)):
         raise ValueError("y should be a 1d array")
 
@@ -144,9 +145,7 @@ def check_input_fit(X, y, estimator):
         warnings.warn(
             "A column-vector y was passed when a 1d array was expected", DataConversionWarning)
 
-    X, y, le = check_input_type(
-        X, y, estimator)
-
+    X, y, le = check_input_type(X, y, estimator)
     check_parameters(estimator)
 
     return X, y, le
