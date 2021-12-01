@@ -630,10 +630,6 @@ class SKLearnClassifier(ERM):
         else:
             self.le_ = le
 
-        if len(X.shape) > 1 and X.shape[1] == 0:
-            raise ValueError("0 feature(s) (shape=(" + str(X.shape[0]) + ", 0)) while a minimum of " + str(
-                X.shape[0]) + " is required.")
-
         if self.le_ is not None:
             self.classes_ = self.le_.inverse_transform(np.unique(y))
         else:
