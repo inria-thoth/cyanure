@@ -60,7 +60,7 @@ def process(arguments, X, y, multiclass):
         lambd=arguments.lambd/(X.shape[0])
 
     classifier.fit(X,y,duality_gap_interval=arguments.duality_gap_interval,lambd=lambd,lambd2=lambd,n_threads=arguments.n_threads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
-    sparsity=np.count_nonzero(classifier.w_.ravel())/len(classifier.w_.ravel())
+    sparsity=np.count_nonzero(classifier.coef_.ravel())/len(classifier.coef_.ravel())
     print(sparsity)
 
 def main(arguments):

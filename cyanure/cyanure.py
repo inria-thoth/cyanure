@@ -5,13 +5,16 @@
 from abc import abstractmethod, ABC
 
 import math
+import warnings
 
 import numpy as np
 import scipy.sparse
 
 from sklearn.base import BaseEstimator
+from sklearn.linear_model._base import SparseCoefMixin  
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, softmax
+from sklearn.exceptions import ConvergenceWarning
 
 import cyanure_lib
 
@@ -35,7 +38,7 @@ class ERM(BaseEstimator, ABC):
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual=None, tol=1e-3, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50,
-                 verbose=True, restart=False, limited_memory_qning=20, _binary_problem=True,
+                 verbose=True, warm_start=False, limited_memory_qning=20, multi_class="auto",
                  lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
         """Initialization function of the ERM class.
 
@@ -94,8 +97,8 @@ class ERM(BaseEstimator, ABC):
         self.limited_memory_qning = limited_memory_qning
         self.fista_restart = fista_restart
         self.verbose = verbose
-        self.restart = restart
-        self._binary_problem = _binary_problem
+        self.warm_start = warm_start
+        self.multi_class = multi_class
         self.duality_gap_interval = duality_gap_interval
         self.n_threads = n_threads
 
@@ -189,12 +192,20 @@ class ERM(BaseEstimator, ABC):
         process (number of iterations, objective function values, duality gap)
         will be documented in the future if people ask me,
         """
+        loss = None
 
         X, y, le = check_input_fit(X, y, self)
         if le_parameter is not None:
             self.le_ = le_parameter
         else:
             self.le_ = le
+
+        if (self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic":
+            loss = "multiclass-logistic"
+            logger.info("Loss has been set to multiclass-logistic because the multiclass paramter is set to multinomial!")
+
+        if loss is None:
+            loss = self.loss
 
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
@@ -203,7 +214,7 @@ class ERM(BaseEstimator, ABC):
         y = np.squeeze(y)
 
         if self._binary_problem:
-            w0 = np.zeros(p, dtype=training_data_fortran.dtype)
+            w0 = np.zeros((p), dtype=training_data_fortran.dtype)
             yf = np.squeeze(y.astype(training_data_fortran.dtype))
         else:
             if y.squeeze().ndim > 1:
@@ -215,16 +226,16 @@ class ERM(BaseEstimator, ABC):
             w0 = np.zeros(
                 [p, nclasses], dtype=training_data_fortran.dtype, order='F')
 
-        if self.restart and np.any(self.w_ != 0):
+        if self.warm_start and hasattr(self, "coef_"):
             if self.verbose:
                 logger.info("Restart")
             if self.fit_intercept:
-                w0[-1, ] = self.b_
-                w0[0:-1, ] = self.w_
+                w0[-1, ] = self.intercept_
+                w0[0:-1, ] = np.squeeze(self.coef_)
             else:
-                w0 = self.w_
-
-        if self.restart and (self.solver == 'auto' or self.solver == 'miso' or
+                w0 = np.squeeze(self.coef_)
+                    
+        if self.warm_start and (self.solver == 'auto' or self.solver == 'miso' or
                              self.solver == 'catalyst-miso' or self.solver == 'qning-miso'):
             n = X.shape[0]
             reset_dual = np.any(self.dual is None)
@@ -240,7 +251,7 @@ class ERM(BaseEstimator, ABC):
 
         w = np.copy(w0)
         optimization_info = cyanure_lib.erm_(
-            training_data_fortran, yf, w0, w, dual_variable=self.dual, loss=self.loss,
+            training_data_fortran, yf, w0, w, dual_variable=self.dual, loss=loss,
             penalty=self.penalty, solver=self.solver, lambd=float(self.lambd),
             lambd2=float(self.lambd2), lambd3=float(self.lambd3),
             intercept=bool(self.fit_intercept), tol=float(self.tol), duality_gap_interval=int(self.duality_gap_interval),
@@ -250,15 +261,22 @@ class ERM(BaseEstimator, ABC):
         )
 
         # TODO fix onevsall bug in c++ (optim_info.add(optim_info_col)) + remove ternary
-        self.n_iter_ = optimization_info[0][-1] if optimization_info[0][-1] >= 1 else 1
+        print(optimization_info)
+        print(optimization_info.shape)
+        self.n_iter_ = np.array([optimization_info[0][-1] if optimization_info[0][-1] >= 1 else 1])
+
+        # TODO Vérifier avec Julien
+        if self.n_iter_ == self.max_iter:
+            warnings.warn("The max_iter was reached which means the coef_ did not converge", ConvergenceWarning)
+        print(self.n_iter_)
 
         if self.fit_intercept:
-            self.b_ = w[-1, ]
-            self.w_ = w[0:-1, ]
+            self.intercept_ = w[-1, ]
+            self.coef_ = w[0:-1, ]
         else:
-            self.w_ = w
+            self.coef_ = w
 
-        self.n_features_in_ = self.w_.shape[0]
+        self.n_features_in_ = self.coef_.shape[0]
 
         return self
 
@@ -272,7 +290,7 @@ class ERM(BaseEstimator, ABC):
         """
         get the model parameters (either w or the tuple (w,b))
         """
-        return (self.w_, self.b_) if self.fit_intercept else self.w_
+        return (self.coef_, self.intercept_) if self.fit_intercept else self.coef_
 
     def eval(self, X, y):
         """
@@ -316,6 +334,7 @@ class ERM(BaseEstimator, ABC):
         return sorted([p.name for p in parameters])
 
     def set_params(self, **params):
+        
         from collections import defaultdict
         if not params:
             # Simple optimization to gain speed (inspect is slow)
@@ -340,7 +359,52 @@ class ERM(BaseEstimator, ABC):
 
         for key, sub_params in nested_params.items():
             valid_params[key].set_params(**sub_params)
+        return self
+    
+    def densify(self):
+        """
+        Convert coefficient matrix to dense array format.
+        Converts the ``coef_`` member (back) to a numpy.ndarray. This is the
+        default format of ``coef_`` and is required for fitting, so calling
+        this method is only required on models that have previously been
+        sparsified; otherwise, it is a no-op.
+        Returns
+        -------
+        self
+            Fitted estimator.
+        """
+        msg = "Estimator, %(name)s, must be fitted before densifying."
+        check_is_fitted(self, msg=msg)
+        if scipy.sparse.issparse(self.coef_):
+            self.coef_ = self.coef_.toarray()
+        return self
 
+    def sparsify(self):
+        """
+        Convert coefficient matrix to sparse format.
+        Converts the ``coef_`` member to a scipy.sparse matrix, which for
+        L1-regularized models can be much more memory- and storage-efficient
+        than the usual numpy.ndarray representation.
+        The ``intercept_`` member is not converted.
+        Returns
+        -------
+        self
+            Fitted estimator.
+        Notes
+        -----
+        For non-sparse models, i.e. when there are not many zeros in ``coef_``,
+        this may actually *increase* memory usage, so use this method with
+        care. A rule of thumb is that the number of zero elements, which can
+        be computed with ``(coef_ == 0).sum()``, must be more than 50% for this
+        to provide significant benefits.
+        After calling this method, further fitting with the partial_fit
+        method (if any) will not work until you call densify.
+        """
+        msg = "Estimator, %(name)s, must be fitted before sparsifying."
+        check_is_fitted(self, msg=msg)
+        self.coef_ = scipy.sparse.csr_matrix(self.coef_)
+        if self.coef_.shape[0] == 1:
+            self.coef_ = self.coef_.T
         return self
 
 
@@ -379,7 +443,7 @@ class Regression(ERM):
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0,
                  lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
-                 restart=False, n_threads=-1):
+                 warm_start=False, n_threads=-1):
         if loss != 'square':
             raise ValueError("square loss should be used")
         super().__init__(loss=loss, penalty=penalty,
@@ -387,7 +451,7 @@ class Regression(ERM):
                          lambd2=lambd2, lambd3=lambd3, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
-                         restart=restart, n_threads=n_threads)
+                         warm_start=warm_start, n_threads=n_threads)
 
     def fit(self, X, y):
         """
@@ -408,16 +472,18 @@ class Regression(ERM):
 
         X = check_input_inference(X, self)
 
-        pred = X.dot(self.w_)
-        if self.fit_intercept:
-            pred += self.b_
-        return pred
+        X = self._validate_data(X, accept_sparse="csr", reset=False)
+        pred = safe_sparse_dot(
+                X, self.coef_, dense_output=False) + self.intercept_
+        
+        return pred.squeeze()
 
     def score(self, X, y, sample_weight=None):
         from sklearn.metrics import r2_score
 
         y_pred = self.predict(X)
         return r2_score(y, y_pred, sample_weight=sample_weight)
+
 
 
 class MultiClassifier(Classifier):
@@ -484,13 +550,13 @@ class MultiClassifier(Classifier):
     _estimator_type = "classifier"
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=0.001, solver="auto",
-                 random_state=0, max_iter=500, fista_restart=50, verbose=True, restart=False,
+                 random_state=0, max_iter=500, fista_restart=50, verbose=True, warm_start=False, multi_class="auto",
                  limited_memory_qning=20, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept, tol=tol, solver=solver,
                          random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
-                         verbose=verbose, restart=restart, limited_memory_qning=limited_memory_qning,
+                         verbose=verbose, warm_start=warm_start, limited_memory_qning=limited_memory_qning,
                          lambd=lambd, lambd2=lambd2, lambd3=lambd3, duality_gap_interval=duality_gap_interval,
-                         n_threads=n_threads)
+                         n_threads=n_threads, multi_class= multi_class)
 
     def fit(self, X, y, le_parameter=None):
         """Same as BinaryClassifier, but y should be a vector a n-dimensional
@@ -518,7 +584,7 @@ class MultiClassifier(Classifier):
             logger.info("but they are")
             logger.info(unique)
             if nb_classes != 2:
-                raise Warning("Wrong label format for a multiclass problem!")
+                warnings.warn("Wrong label format for a multiclass problem!")
             else:
                 logger.info(
                     "The y have been converted to respect the expected format.")
@@ -581,9 +647,9 @@ class MultiClassifier(Classifier):
 
         if self.fit_intercept:
             scores = safe_sparse_dot(
-                X, self.w_, dense_output=True) + self.b_
+                X, self.coef_, dense_output=False) + self.intercept_
         else:
-            scores = safe_sparse_dot(X, self.w_, dense_output=True)
+            scores = safe_sparse_dot(X, self.coef_, dense_output=False)
 
         output = None
         if len(self.classes_) == 2:
@@ -612,13 +678,13 @@ class SKLearnClassifier(ERM):
     def __init__(self, loss, penalty, fit_intercept=True,
                  verbose=False, lambd=0, lambd2=0, lambd3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=None, limited_memory_qning=20,
-                 fista_restart=50, restart=False, n_threads=-1, random_state=0):
+                 fista_restart=50, warm_start=False, n_threads=-1, random_state=0 ,multi_class="auto"):
         super().__init__(
             loss=loss, penalty=penalty, fit_intercept=fit_intercept,
             solver=solver, tol=tol, random_state=random_state, verbose=verbose,
-            lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+            lambd=lambd, lambd2=lambd2, lambd3=lambd3, multi_class= multi_class,
             duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning,
-            fista_restart=fista_restart, restart=restart, n_threads=n_threads)
+            fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads)
 
     def fit(self, X, y, le_parameter=None):
         """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
@@ -643,20 +709,23 @@ class SKLearnClassifier(ERM):
                     neg = y == self.le_.transform(self.classes_)[0]
                 else:
                     neg = y == self.classes_[0]
-                y = y.copy()
+                y = y.astype(int)
                 y[neg] = -1
                 y[np.logical_not(neg)] = 1
         else:
+            # TODO Find a better solution for label formatting + maybe cf jmairal cyanure
+            if 0 not in y:
+                y =y -1
             self._binary_problem = False
         super().fit(X, y, le_parameter=self.le_)
 
-        self.w_ = self.w_.reshape(self.w_.shape[0], -1)
+        self.coef_ = self.coef_.reshape(self.coef_.shape[0], -1)
         if self.fit_intercept:
-            self.b_ = self.b_.reshape(1, -1)
+            self.intercept_ = self.intercept_.reshape(1, -1)
         else:
-            self.b_ = 0.
+            self.intercept_ = 0.
 
-        self.n_features_in_ = self.w_.shape[0]
+        self.n_features_in_ = self.coef_.shape[0]
 
         return self
 
@@ -666,7 +735,7 @@ class SKLearnClassifier(ERM):
         X = check_input_inference(X, self)
 
         scores = safe_sparse_dot(
-            X, self.w_, dense_output=True) + self.b_
+            X, self.coef_, dense_output=False) + self.intercept_
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def predict(self, X):
@@ -682,6 +751,7 @@ class SKLearnClassifier(ERM):
 
         output = None
         if self.le_ is None:
+            print(indices)
             output = self.classes_[indices]
         else:
             output = self.le_.inverse_transform(indices)
@@ -732,7 +802,7 @@ class LinearSVC(SKLearnClassifier):
     def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True,
                  verbose=False, lambd=0.1, lambd2=0, lambd3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
-                 fista_restart=50, restart=False, n_threads=-1, random_state=0):
+                 fista_restart=50, warm_start=False, n_threads=-1, random_state=0):
         if loss not in ['squared_hinge', 'sqhinge']:
             logger.error("LinearSVC is only compatible with squared hinge loss at "
                          "the moment")
@@ -742,7 +812,7 @@ class LinearSVC(SKLearnClassifier):
             lambd=lambd, lambd2=lambd2, lambd3=lambd3,
             duality_gap_interval=duality_gap_interval, max_iter=max_iter,
             limited_memory_qning=limited_memory_qning,
-            fista_restart=fista_restart, restart=restart, n_threads=n_threads)
+            fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads)
         self.lambd = lambd
         self.max_iter = max_iter
         self.verbose = False
@@ -774,13 +844,13 @@ class LogisticRegression(SKLearnClassifier):
     def __init__(self, penalty='l2', loss='logistic', fit_intercept=True,
                  verbose=False, lambd=0, lambd2=0, lambd3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
-                 fista_restart=50, restart=False, n_threads=-1, random_state=0):
+                 fista_restart=50, warm_start=False, n_threads=-1, random_state=0, multi_class="auto"):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept,
                          solver=solver, tol=tol, random_state=random_state, verbose=verbose,
                          lambd=lambd, lambd2=lambd2, lambd3=lambd3,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
-                         limited_memory_qning=limited_memory_qning,
-                         fista_restart=fista_restart, restart=restart, n_threads=n_threads)
+                         limited_memory_qning=limited_memory_qning, multi_class= multi_class,
+                         fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads)
 
 
 def compute_r(estimator_name, aux, X, y, active_set, n_active):
@@ -810,9 +880,9 @@ def fit_large_feature_number(estimator, aux, X, y):
     num_as = math.ceil(math.log10(p / init) / math.log10(scaling))
     active_set = []
     n_active = 0
-    estimator.w_ = np.zeros(p, dtype=X.dtype)
+    estimator.coef_ = np.zeros(p, dtype=X.dtype)
     if estimator.fit_intercept:
-        estimator.b_ = 0
+        estimator.intercept_ = 0
 
     for ii in range(num_as):
         R = compute_r(estimator.__name__, aux, X, y, active_set, n_active)
@@ -828,30 +898,30 @@ def fit_large_feature_number(estimator, aux, X, y):
         if len(active_set) > 0:
             neww = np.zeros(n_active + n_new_as,
                             dtype=X.dtype)
-            neww[0:n_active] = aux.w_
-            aux.w_ = neww
+            neww[0:n_active] = aux.coef_
+            aux.coef_ = neww
             active_set = np.concatenate((active_set, new_as))
         else:
             active_set = new_as
-            aux.w_ = np.zeros(
+            aux.coef_ = np.zeros(
                 len(active_set), dtype=X.dtype)
         n_active = len(active_set)
         if estimator.verbose:
             logger.info("Size of the active set: {%d}", n_active)
         aux.fit(X[:, active_set], y)
-        estimator.w_[active_set] = aux.w_
+        estimator.coef_[active_set] = aux.coef_
         if estimator.fit_intercept:
-            estimator.b_ = aux.b_
+            estimator.intercept_ = aux.intercept_
 
 
 class Lasso(Regression):
     def __init__(self, lambd=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
-                 restart=False, n_threads=-1, random_state=0, fit_intercept=True):
+                 warm_start=False, n_threads=-1, random_state=0, fit_intercept=True):
         super().__init__(loss='square', penalty='l1', lambd=lambd, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart,
-                         verbose=verbose, restart=restart, n_threads=n_threads,
+                         verbose=verbose, warm_start=warm_start, n_threads=n_threads,
                          random_state=random_state, fit_intercept=fit_intercept)
 
     def fit(self, X, y):
@@ -880,13 +950,17 @@ class L1Logistic(MultiClassifier):
 
     def __init__(self, lambd=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
-                 restart=False, n_threads=-1, random_state=0, fit_intercept=True):
+                 warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, multi_class="auto"):
         super().__init__(loss='logistic', penalty='l1', lambd=lambd, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning,
                          fista_restart=fista_restart, verbose=verbose,
-                         restart=restart, n_threads=n_threads, random_state=random_state,
-                         fit_intercept=fit_intercept)
+                         warm_start=warm_start, n_threads=n_threads, random_state=random_state,
+                         fit_intercept=fit_intercept, multi_class= multi_class)
+
+        if multi_class == "multinomial":
+            self.loss = "multiclass-logistic"
+            logger.info("Loss has been set to multiclass-logistic because the multiclass paramter is set to multinomial!")
 
     def fit(self, X, y):
 

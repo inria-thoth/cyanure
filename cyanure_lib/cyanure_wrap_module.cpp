@@ -16,7 +16,8 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
     param.duality_gap_interval = duality_gap_interval;
     param.verbose = verbose;
     param.solver = solver_from_string(solver);
-    param.non_uniform_sampling = false; // TODO: check if needs to be activated again
+    // TODO: check if needs to be activated again
+    param.non_uniform_sampling = false; 
     param.threads = n_threads;
     ParamModel<T> model;
     model.loss = loss_from_string(loss);

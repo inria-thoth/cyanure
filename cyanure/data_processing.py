@@ -1,4 +1,5 @@
 import warnings
+import numbers
 
 import numpy as np
 import scipy.sparse
@@ -56,7 +57,7 @@ def check_labels(y, estimator):
             le.fit(y)
             y = le.transform(y)
     else:
-        if not isinstance(y[0], float):
+        if type(y[0]) != np.float32 and type(y[0]) != np.float64:
             logger.info("The labels have been converted in float64")
             y = y.astype('float64')
 
@@ -69,6 +70,11 @@ def check_labels(y, estimator):
 
     return y, le
 
+def get_element(array):
+    element = array[0]
+    for i in range(len(array.shape) - 1):
+        element = element[0]
+    return element
 
 def check_input_type(X, y, estimator):
     le = None
@@ -77,8 +83,10 @@ def check_input_type(X, y, estimator):
         raise ValueError("Complex data not supported")
 
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
-        if not isinstance(y[0], float):
-            logger.info("The labels have been converted in float64")
+        x_element = get_element(X)
+        if type(x_element) != np.float32 and type(x_element) != np.float64:
+            
+            logger.info("The features have been converted in float64")
             X = np.asfortranarray(X, 'float64')
         else:
             X = np.asfortranarray(X)
@@ -99,10 +107,10 @@ def check_input_type(X, y, estimator):
 
 
 def check_positive_parameter(parameter, message):
-    if not isinstance(parameter, (int, float)):
+    if not isinstance(parameter, numbers.Number):
         raise ValueError(message)
 
-    if isinstance(parameter, (int, float)) and parameter < 0:
+    if isinstance(parameter, numbers.Number) and parameter < 0:
         raise ValueError(message)
 
 
@@ -114,6 +122,10 @@ def check_parameters(estimator):
                              "Maximum number of iteration must be positive")
     check_positive_parameter(estimator.lambd,
                              "Penalty term must be positive")
+
+    # Verify that it is not the default value
+    if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambd != 0.1:
+        warnings.warn("Setting penalty='none' will ignore the lambd")
 
 
 def check_input_fit(X, y, estimator):
