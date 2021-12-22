@@ -30,44 +30,44 @@ struct ParamModel
     ParamModel()
     {
         regul = NONE;
-        lambda = 0;
-        lambda2 = 0;
-        lambda3 = 0;
+        lambda_1 = 0;
+        lambda_2 = 0;
+        lambda_3 = 0;
         intercept = false;
         loss = SQUARE;
     };
     loss_t loss;
     regul_t regul;
-    T lambda;
-    T lambda2;
-    T lambda3;
+    T lambda_1;
+    T lambda_2;
+    T lambda_3;
     bool intercept;
 };
 
 template <typename T>
 void clean_param_model(ParamModel<T> &param)
 {
-    if (param.regul == FUSEDLASSO && param.lambda == 0)
+    if (param.regul == FUSEDLASSO && param.lambda_1 == 0)
     {
         param.regul = ELASTICNET;
-        param.lambda = param.lambda2;
-        param.lambda2 = param.lambda3;
+        param.lambda_1 = param.lambda_2;
+        param.lambda_2 = param.lambda_3;
     };
     if (param.regul == ELASTICNET)
     {
-        if (param.lambda == 0)
+        if (param.lambda_1 == 0)
         {
             param.regul = L2;
-            param.lambda = param.lambda2;
+            param.lambda_1 = param.lambda_2;
         };
-        if (param.lambda2 == 0)
+        if (param.lambda_2 == 0)
             param.regul = L1;
-        if (param.lambda == 0 && param.lambda2 == 0)
+        if (param.lambda_1 == 0 && param.lambda_2 == 0)
             param.regul = NONE;
     }
     else
     {
-        if (param.lambda == 0)
+        if (param.lambda_1 == 0)
             param.regul = NONE;
     }
 }
@@ -119,7 +119,7 @@ public:
     virtual regul_t id() const { return _id; };
     virtual bool intercept() const { return _intercept; };
     virtual T strong_convexity() const { return 0; };
-    virtual T lambda() const { return 0; };
+    virtual T lambda_1() const { return 0; };
 
 protected:
     const bool _intercept;
@@ -156,7 +156,7 @@ class Ridge final : public Regularizer<D, I>
 public:
     typedef typename D::value_type T;
 
-    Ridge(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda){};
+    Ridge(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda_1){};
 
     inline void prox(const D &input, D &output, const T eta) const
     {
@@ -186,7 +186,7 @@ public:
         cout << "L2 regularization" << endl;
     }
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda; };
-    virtual T lambda() const { return _lambda; };
+    virtual T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
     {
         const T scal = T(1.0) / (T(1.0) + _lambda * eta);
@@ -209,7 +209,7 @@ class Lasso final : public Regularizer<D, I>
 public:
     typedef typename D::value_type T;
 
-    Lasso(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda){};
+    Lasso(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda_1){};
     inline void prox(const D &input, D &output, const T eta) const
     {
         input.fastSoftThrshold(output, eta * _lambda);
@@ -239,7 +239,7 @@ public:
     {
         cout << "L1 regularization" << endl;
     }
-    virtual T lambda() const { return _lambda; };
+    virtual T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
     {
         const int p = input.n();
@@ -267,8 +267,8 @@ public:
     // min_x 0.5|y-x|^2 + lambda_1 |x|  + 0.5 lambda_2 x^2
     // min_x - y x + 0.5 x^2  + lambda_1 |x|  + 0.5 lambda_2 x^2
     // min_x - y x + 0.5 (1+lambda_2) x^2  + lambda_1 |x|
-    // min_x - y/(1+lambda2) x + 0.5  x^2  + lambda_1/(1+lambda2) |x|
-    ElasticNet(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda), _lambda2(model.lambda2){};
+    // min_x - y/(1+lambda_2) x + 0.5  x^2  + lambda_1/(1+lambda_2) |x|
+    ElasticNet(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda_1), _lambda2(model.lambda_2){};
     inline void prox(const D &input, D &output, const T eta) const
     {
         output.copy(input);
@@ -288,8 +288,8 @@ public:
     };
     // max_x xy - lambda_1 |x| - 0.5 lambda_2 x^2
     // - min_x - xy + lambda_1 |x| + 0.5 lambda_2 x^2
-    // -(1/lambda2) min_x - xy/lambda2  + lambda_1/lambda_2 |x| + 0.5 x^2
-    // x^* = prox_(l1 lambda_1/lambda_2) [ y/lambda2]
+    // -(1/lambda_2) min_x - xy/lambda_2  + lambda_1/lambda_2 |x| + 0.5 x^2
+    // x^* = prox_(l1 lambda_1/lambda_2) [ y/lambda_2]
     // x^* = prox_(l1 lambda_1) [ y] /_lambda2
     inline T fenchel(D &grad1, D &grad2) const
     {
@@ -311,7 +311,7 @@ public:
         cout << "Elastic Net regularization" << endl;
     }
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda2; };
-    virtual T lambda() const { return _lambda; };
+    virtual T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
     {
         const int p = input.n();
@@ -338,7 +338,7 @@ class L1Ball final : public Regularizer<D, I>
 public:
     typedef typename D::value_type T;
 
-    L1Ball(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda){};
+    L1Ball(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda_1){};
     inline void prox(const D &input, D &output, const T eta) const
     {
         D tmp;
@@ -367,7 +367,7 @@ public:
     {
         cout << "L1 ball regularization" << endl;
     }
-    virtual T lambda() const { return _lambda; };
+    virtual T lambda_1() const { return _lambda; };
 
 private:
     const T _lambda;
@@ -379,7 +379,7 @@ class L2Ball final : public Regularizer<D, I>
 public:
     typedef typename D::value_type T;
 
-    L2Ball(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda){};
+    L2Ball(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda_1){};
     inline void prox(const D &input, D &output, const T eta) const
     {
         D tmp;
@@ -412,7 +412,7 @@ public:
     {
         cout << "L1 ball regularization" << endl;
     }
-    virtual T lambda() const { return _lambda; };
+    virtual T lambda_1() const { return _lambda; };
 
 private:
     const T _lambda;
@@ -424,7 +424,7 @@ class FusedLasso final : public Regularizer<D, I>
 public:
     typedef typename D::value_type T;
 
-    FusedLasso(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda), _lambda2(model.lambda2), _lambda3(model.lambda3){};
+    FusedLasso(const ParamModel<T> &model) : Regularizer<D, I>(model), _lambda(model.lambda_1), _lambda2(model.lambda_2), _lambda3(model.lambda_3){};
     inline void prox(const D &x, D &output, const T eta) const
     {
         output.resize(x.n());
@@ -448,7 +448,7 @@ public:
     }
     bool provides_fenchel() const { return false; };
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda3; };
-    virtual T lambda() const { return _lambda; };
+    virtual T lambda_1() const { return _lambda; };
 
 private:
     const T _lambda;
@@ -561,7 +561,7 @@ public:
         cout << "Regularization for matrices" << endl;
         _regs[0]->print();
     };
-    virtual T lambda() const { return _regs[0]->lambda(); };
+    virtual T lambda_1() const { return _regs[0]->lambda_1(); };
     inline void lazy_prox(const Matrix<T> &input, Matrix<T> &output, const Vector<I> &indices, const T eta) const
     {
 #pragma omp parallel for
@@ -637,7 +637,7 @@ public:
     {
         return _intercept ? 0 : _reg->strong_convexity();
     };
-    virtual T lambda() const { return _reg->lambda(); };
+    virtual T lambda_1() const { return _reg->lambda_1(); };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
     {
         Vector<T> w1, w2, b1, b2;
@@ -675,7 +675,7 @@ struct normL2
 {
 public:
     typedef T value_type;
-    normL2(const ParamModel<T> &model) : _lambda(model.lambda){};
+    normL2(const ParamModel<T> &model) : _lambda(model.lambda_1){};
 
     inline void prox(Vector<T> &x, const T thrs) const
     {
@@ -712,7 +712,7 @@ struct normLinf
 {
 public:
     typedef T value_type;
-    normLinf(const ParamModel<T> &model) : _lambda(model.lambda){};
+    normLinf(const ParamModel<T> &model) : _lambda(model.lambda_1){};
 
     inline void prox(Vector<T> &x, const T thrs) const
     {
@@ -742,7 +742,7 @@ struct normL2_L1
 {
 public:
     typedef T value_type;
-    normL2_L1(const ParamModel<T> &model) : _lambda(model.lambda), _lambda2(model.lambda2){};
+    normL2_L1(const ParamModel<T> &model) : _lambda(model.lambda_1), _lambda2(model.lambda_2){};
 
     inline void prox(Vector<T> &x, const T thrs) const
     {
@@ -804,7 +804,7 @@ class MixedL1LN final : public Regularizer<Matrix<typename N::value_type>, I>
 public:
     typedef typename N::value_type T;
     typedef Matrix<T> D;
-    MixedL1LN(const ParamModel<T> &model, const int nclass, const bool transpose) : Regularizer<D, I>(model), _transpose(transpose), _lambda(model.lambda), _norm(model){};
+    MixedL1LN(const ParamModel<T> &model, const int nclass, const bool transpose) : Regularizer<D, I>(model), _transpose(transpose), _lambda(model.lambda_1), _norm(model){};
     inline void prox(const D &x, D &y, const T eta) const
     {
         const int n = x.n();
@@ -917,7 +917,7 @@ public:
         N::print();
         cout << " norm regularization" << endl;
     }
-    inline T lambda() const { return _lambda; };
+    inline T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
     {
         output.resize(input.m(), input.n());

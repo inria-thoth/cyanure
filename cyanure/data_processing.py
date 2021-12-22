@@ -120,12 +120,12 @@ def check_parameters(estimator):
         estimator.tol, "Tolerance for stopping criteria must be positive")
     check_positive_parameter(estimator.max_iter,
                              "Maximum number of iteration must be positive")
-    check_positive_parameter(estimator.lambd,
+    check_positive_parameter(estimator.lambda_1,
                              "Penalty term must be positive")
 
     # Verify that it is not the default value
-    if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambd != 0.1:
-        warnings.warn("Setting penalty='none' will ignore the lambd")
+    if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambda_1 != 0.1:
+        warnings.warn("Setting penalty='none' will ignore the lambda_1")
 
 
 def check_input_fit(X, y, estimator):

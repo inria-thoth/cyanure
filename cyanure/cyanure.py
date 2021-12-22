@@ -36,10 +36,10 @@ class ERM(BaseEstimator, ABC):
     def _more_tags(self):
         return {"requires_y": True}
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, dual=None, tol=1e-3, solver="auto",
+    def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual=None, tol=1e-4, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50,
-                 verbose=True, warm_start=False, limited_memory_qning=20, multi_class="auto",
-                 lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
+                 verbose=True, warm_start=False, limited_memory_qning=50, multi_class="auto",
+                 lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1):
         """Initialization function of the ERM class.
 
         Parameters
@@ -61,13 +61,13 @@ class ERM(BaseEstimator, ABC):
 
             For binary_problem problems
             - 'none' => psi(w) = 0
-            - 'l2' =>  psi{w) = (lambd/2) ||w||_2^2
-            - 'l1' =>  psi{w) = lambd ||w||_1
-            - 'elastic-net' =>  psi{w) = lambd ||w||_1 + (lambd2/2)||w||_2^2
-            - 'fused-lasso' => psi(w) = lambd3 sum_{i=2}^p |w[i]-w[i-1]|
-                                      + lambd||w||_1 + (lambd2/2)||w||_2^2
-            - 'l1-ball'     => encodes the constraint ||w||_1 <= lambd
-            - 'l2-ball'     => encodes the constraint ||w||_2 <= lambd
+            - 'l2' =>  psi{w) = (lambda_1/2) ||w||_2^2
+            - 'l1' =>  psi{w) = lambda_1 ||w||_1
+            - 'elastic-net' =>  psi{w) = lambda_1 ||w||_1 + (lambda_2/2)||w||_2^2
+            - 'fused-lasso' => psi(w) = lambda_3 sum_{i=2}^p |w[i]-w[i-1]|
+                                      + lambda_1||w||_1 + (lambda_2/2)||w||_2^2
+            - 'l1-ball'     => encodes the constraint ||w||_1 <= lambda_1
+            - 'l2-ball'     => encodes the constraint ||w||_2 <= lambda_1
 
             For multivariate problems, the previous penalties operate on each
             individual (e.g., class) predictor.
@@ -90,10 +90,9 @@ class ERM(BaseEstimator, ABC):
         self.tol = tol
         self.random_state = random_state
         self.max_iter = max_iter
-        # TODO change regularization names
-        self.lambd = lambd
-        self.lambd2 = lambd2
-        self.lambd3 = lambd3
+        self.lambda_1 = lambda_1
+        self.lambda_2 = lambda_2
+        self.lambda_3 = lambda_3
         self.limited_memory_qning = limited_memory_qning
         self.fista_restart = fista_restart
         self.verbose = verbose
@@ -121,13 +120,13 @@ class ERM(BaseEstimator, ABC):
             - vector of size n with entries in {0,1,k-1} for classification
               with k classes
 
-        lambd: float, default=0
+        lambda_1: float, default=0
             first regularization parameter
 
-        lambd2: float, default=0
+        lambda_2: float, default=0
             second regularization parameter, if needed
 
-        lambd3: float, default=0
+        lambda_3: float, default=0
             third regularization parameter, if needed
 
         solver: string, default='auto'
@@ -201,8 +200,13 @@ class ERM(BaseEstimator, ABC):
             self.le_ = le
 
         if (self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic":
+            if (self.multi_class == "multinomial"):
+                if len(np.unique(y)) != 2:
+                    self._binary_problem=False
+                else:
+                    nclasses = len(np.unique(y))
             loss = "multiclass-logistic"
-            logger.info("Loss has been set to multiclass-logistic because the multiclass paramter is set to multinomial!")
+            logger.info("Loss has been set to multiclass-logistic because the multiclass parameter is set to multinomial!")
 
         if loss is None:
             loss = self.loss
@@ -252,23 +256,23 @@ class ERM(BaseEstimator, ABC):
         w = np.copy(w0)
         optimization_info = cyanure_lib.erm_(
             training_data_fortran, yf, w0, w, dual_variable=self.dual, loss=loss,
-            penalty=self.penalty, solver=self.solver, lambd=float(self.lambd),
-            lambd2=float(self.lambd2), lambd3=float(self.lambd3),
+            penalty=self.penalty, solver=self.solver, lambda_1=float(self.lambda_1),
+            lambda_2=float(self.lambda_2), lambda_3=float(self.lambda_3),
             intercept=bool(self.fit_intercept), tol=float(self.tol), duality_gap_interval=int(self.duality_gap_interval),
             max_iter=int(self.max_iter), limited_memory_qning=int(self.limited_memory_qning),
             fista_restart=int(self.fista_restart), verbose=bool(self.verbose),
             univariate=bool(self._binary_problem), n_threads=int(self.n_threads), seed=int(self.random_state)
         )
 
-        # TODO fix onevsall bug in c++ (optim_info.add(optim_info_col)) + remove ternary
-        print(optimization_info)
-        print(optimization_info.shape)
-        self.n_iter_ = np.array([optimization_info[0][-1] if optimization_info[0][-1] >= 1 else 1])
+        if ((self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic") and optimization_info.shape[0] == 1:
+            optimization_info = np.repeat(optimization_info, nclasses, axis=0)
+
+        self.n_iter_ = np.array([optimization_info[class_index][0][-1] for class_index in range(optimization_info.shape[0])])
 
         # TODO Vérifier avec Julien
-        if self.n_iter_ == self.max_iter:
-            warnings.warn("The max_iter was reached which means the coef_ did not converge", ConvergenceWarning)
-        print(self.n_iter_)
+        for index in range(self.n_iter_.shape[0]):
+            if self.n_iter_[index] == self.max_iter:
+                warnings.warn("The max_iter was reached which means the coef_ did not converge", ConvergenceWarning)
 
         if self.fit_intercept:
             self.intercept_ = w[-1, ]
@@ -441,14 +445,14 @@ class Regression(ERM):
         return {"multioutput": True}
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0,
-                 lambd=0, lambd2=0, lambd3=0, solver='auto', tol=1e-3,
+                 lambda_1=0, lambda_2=0, lambda_3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1):
         if loss != 'square':
             raise ValueError("square loss should be used")
         super().__init__(loss=loss, penalty=penalty,
-                         fit_intercept=fit_intercept, random_state=random_state, lambd=lambd,
-                         lambd2=lambd2, lambd3=lambd3, solver=solver, tol=tol,
+                         fit_intercept=fit_intercept, random_state=random_state, lambda_1=lambda_1,
+                         lambda_2=lambda_2, lambda_3=lambda_3, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart, verbose=verbose,
                          warm_start=warm_start, n_threads=n_threads)
@@ -530,17 +534,17 @@ class MultiClassifier(Classifier):
         - 'l1l2', which is the multi-task group Lasso regularization
 
         .. math::
-            \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_2~~~~
+            \\psi(W) = \\lambda_1 \\sum_{j=1}^p \\|W^j\\|_2~~~~
             \\text{where}~W^j~\\text{is the j-th row of}~W.
         - 'l1linf'
 
         .. math::
-            \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_\\infty.
+            \\psi(W) = \\lambda_1 \\sum_{j=1}^p \\|W^j\\|_\\infty.
 
         - 'l1l2+l1', which is the multi-task group Lasso regularization + l1
 
         .. math::
-            \\psi(W) = \\sum_{j=1}^p \\lambda \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
+            \\psi(W) = \\sum_{j=1}^p \\lambda_1 \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
             \\text{where}~W^j~\\text{is the j-th row of}~W.
 
 
@@ -551,11 +555,11 @@ class MultiClassifier(Classifier):
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=0.001, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50, verbose=True, warm_start=False, multi_class="auto",
-                 limited_memory_qning=20, lambd=0, lambd2=0, lambd3=0, duality_gap_interval=5, n_threads=-1):
+                 limited_memory_qning=20, lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept, tol=tol, solver=solver,
                          random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
                          verbose=verbose, warm_start=warm_start, limited_memory_qning=limited_memory_qning,
-                         lambd=lambd, lambd2=lambd2, lambd3=lambd3, duality_gap_interval=duality_gap_interval,
+                         lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3, duality_gap_interval=duality_gap_interval,
                          n_threads=n_threads, multi_class= multi_class)
 
     def fit(self, X, y, le_parameter=None):
@@ -676,18 +680,18 @@ class SKLearnClassifier(ERM):
     _estimator_type = "classifier"
 
     def __init__(self, loss, penalty, fit_intercept=True,
-                 verbose=False, lambd=0, lambd2=0, lambd3=0,
+                 verbose=False, lambda_1=0, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=None, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1, random_state=0 ,multi_class="auto"):
         super().__init__(
             loss=loss, penalty=penalty, fit_intercept=fit_intercept,
             solver=solver, tol=tol, random_state=random_state, verbose=verbose,
-            lambd=lambd, lambd2=lambd2, lambd3=lambd3, multi_class= multi_class,
+            lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3, multi_class= multi_class,
             duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning,
             fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads)
 
     def fit(self, X, y, le_parameter=None):
-        """Compatible with both binary and multi-classification. Here the parameter C replaces lambd,
+        """Compatible with both binary and multi-classification. Here the parameter C replaces lambda_1,
         and max_iter replaces max_iter.
         """
         X, y, le = check_input_fit(X, y, self)
@@ -783,7 +787,7 @@ class LinearSVC(SKLearnClassifier):
     A compatibility class for scikit-learn user, but only for square hinge loss
     It is perfectly equivalent to the BinaryClassifier class, but the
     regularization parameter (here "C") is provided during the class
-    initialization. Note that :math:`C= \\frac{1}{2n \\lambda}`
+    initialization. Note that :math:`C= \\frac{1}{2n \\lambda_1}`
 
     Parameters
     ----------
@@ -800,7 +804,7 @@ class LinearSVC(SKLearnClassifier):
     """
 
     def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True,
-                 verbose=False, lambd=0.1, lambd2=0, lambd3=0,
+                 verbose=False, lambda_1=0.1, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1, random_state=0):
         if loss not in ['squared_hinge', 'sqhinge']:
@@ -809,11 +813,11 @@ class LinearSVC(SKLearnClassifier):
         super().__init__(
             loss=loss, penalty=penalty, fit_intercept=fit_intercept,
             solver=solver, tol=tol, random_state=random_state, verbose=verbose,
-            lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+            lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3,
             duality_gap_interval=duality_gap_interval, max_iter=max_iter,
             limited_memory_qning=limited_memory_qning,
             fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads)
-        self.lambd = lambd
+        self.lambda_1 = lambda_1
         self.max_iter = max_iter
         self.verbose = False
 
@@ -823,7 +827,7 @@ class LogisticRegression(SKLearnClassifier):
     A compatibility class for scikit-learn user, but only for square hinge loss
     It is perfectly equivalent to the BinaryClassifier class, but the
     regularization parameter (here "C") is provided during the class
-    initialization. Note that :math:`C= \\frac{1}{n \\lambda}`
+    initialization. Note that :math:`C= \\frac{1}{n \\lambda_1}`
 
     Parameters
     ----------
@@ -842,12 +846,12 @@ class LogisticRegression(SKLearnClassifier):
     _estimator_type = "classifier"
 
     def __init__(self, penalty='l2', loss='logistic', fit_intercept=True,
-                 verbose=False, lambd=0, lambd2=0, lambd3=0,
+                 verbose=False, lambda_1=0, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1, random_state=0, multi_class="auto"):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept,
                          solver=solver, tol=tol, random_state=random_state, verbose=verbose,
-                         lambd=lambd, lambd2=lambd2, lambd3=lambd3,
+                         lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, multi_class= multi_class,
                          fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads)
@@ -893,7 +897,7 @@ def fit_large_feature_number(estimator, aux, X, y):
         n_new_as = max(
             min(init * math.ceil(scaling ** ii), p) - n_active, 0)
         new_as = corr.argsort()[-n_new_as:]
-        if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambd * (1 + estimator.tol):
+        if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambda_1 * (1 + estimator.tol):
             break
         if len(active_set) > 0:
             neww = np.zeros(n_active + n_new_as,
@@ -915,10 +919,10 @@ def fit_large_feature_number(estimator, aux, X, y):
 
 
 class Lasso(Regression):
-    def __init__(self, lambd=0, solver='auto', tol=1e-3,
+    def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, random_state=0, fit_intercept=True):
-        super().__init__(loss='square', penalty='l1', lambd=lambd, solver=solver, tol=tol,
+        super().__init__(loss='square', penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart,
                          verbose=verbose, warm_start=warm_start, n_threads=n_threads,
@@ -946,12 +950,16 @@ class L1Logistic(MultiClassifier):
     _estimator_type = "classifier"
 
     def _more_tags(self):
-        return {"requires_y": True}
+        return {"requires_y": True,  "_xfail_checks": {
+                "check_non_transformer_estimators_n_iter": (
+                    "We have a different implementation of _n_iter in the multinomial case."
+                ),
+            }}
 
-    def __init__(self, lambd=0, solver='auto', tol=1e-3,
+    def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, multi_class="auto"):
-        super().__init__(loss='logistic', penalty='l1', lambd=lambd, solver=solver, tol=tol,
+        super().__init__(loss='logistic', penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning,
                          fista_restart=fista_restart, verbose=verbose,

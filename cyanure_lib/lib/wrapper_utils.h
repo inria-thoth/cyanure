@@ -160,6 +160,29 @@ static int npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, string obj_name)
 }
 
 template <typename T>
+static int npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, string obj_name)
+{
+    if (array == NULL)
+    {
+        return 1;
+    }
+    if (!(PyArray_NDIM(array) == 3 &&
+          PyArray_TYPE(array) == getTypeNumber<T>() &&
+          (PyArray_FLAGS(array) & NPY_ARRAY_F_CONTIGUOUS)))
+    {
+        PyErr_SetString(PyExc_TypeError, (obj_name + " matrices should be f-contiguous 3D " + getTypeName<T>() + " array").c_str());
+        return 0;
+    }
+    T *rawX = reinterpret_cast<T *>(PyArray_DATA(array));
+    const npy_intp *shape = PyArray_DIMS(array);
+    npy_intp nclass = shape[0];
+    npy_intp m = shape[1];
+    npy_intp n = shape[2];
+    matrix.setData(rawX, nclass, m, n);
+    return 1;
+}
+
+template <typename T>
 static int npyToVector(PyArrayObject *array, Vector<T> &vector, string obj_name)
 {
     if (array == NULL)
@@ -185,7 +208,7 @@ template <typename T>
 inline PyArrayObject *create_np_vector(const int n)
 {
     int nd = 1;
-    npy_intp dims[1] = {n};
+    npy_intp dims[nd] = {n};
     return (PyArrayObject *)PyArray_SimpleNew(nd, dims, getTypeNumber<T>());
 }
 
@@ -193,7 +216,15 @@ template <typename T>
 inline PyArrayObject *create_np_matrix(const int m, const int n)
 {
     int nd = 2;
-    npy_intp dims[2] = {m, n};
+    npy_intp dims[nd] = {m, n};
+    return (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>());
+}
+
+template <typename T>
+inline PyArrayObject *create_np_optim_info(const int nclass, const int m, const int n)
+{
+    int nd = 3;
+    npy_intp dims[nd] = {nclass, m, n};
     return (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>());
 }
 

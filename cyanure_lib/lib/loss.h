@@ -159,7 +159,8 @@ class LinearLossVec : public Loss< M, VECM, VECM > {
          _data.add_dual_pred(input,output,s,T(1.0));
       }
       virtual T scal_grad(const Vector<T>& input, const INTM ii) const {
-         T s; scal_grad(input,ii,s);
+         T s; 
+         scal_grad(input,ii,s);
          return s;
       }
       virtual void scal_grad(const Vector<T>& input, const INTM i, T& output) const = 0;
@@ -182,7 +183,8 @@ class LinearLossMat : public Loss< M, L, Matrix<typename M::value_type> > {
          _data.add_dual_pred(i,sgrad,output,a);
       };
       inline void double_add_grad(const Matrix<T>& input1, const Matrix<T>& input2, const INTM i, Matrix<T>& output, const T eta1 = T(1.0), const T eta2 = -T(1.0), const T dummy = T(1.0)) const {
-         Vector<T> sgrad1, sgrad2;
+         Vector<T> sgrad2;
+         Vector<T> sgrad1;
          scal_grad(input1,i,sgrad1);
          scal_grad(input2,i,sgrad2);
          sgrad1.add_scal(sgrad2,eta2,eta1);
@@ -197,7 +199,9 @@ class LinearLossMat : public Loss< M, L, Matrix<typename M::value_type> > {
       virtual void  add_feature(Matrix<T>& output, const INTM i, const Vector<T>& s) const { 
          _data.add_dual_pred(i,s,output,T(1.0),T(1.0));
       };
+  
       virtual void scal_grad(const Matrix<T>& input, const INTM i, Vector<T>& output) const = 0;
+
       DataMatrixLinear<M>& data() const { return _data;};
 
    protected:

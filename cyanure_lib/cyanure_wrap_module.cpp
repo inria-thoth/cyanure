@@ -6,7 +6,7 @@
 #include "lib/exception.h"
 
 template <typename T, typename I>
-static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0, PyArrayObject* inw, PyArrayObject* in_dual, const int max_iter, const int limited_memory_qning, const int fista_restart, const T tol, const int duality_gap_interval, const bool verbose, char* solver, char* loss, char* regul, const T lambda, const T lambda2, const T lambda3, const bool intercept, const bool univariate, const int n_threads)
+static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0, PyArrayObject* inw, PyArrayObject* in_dual, const int max_iter, const int limited_memory_qning, const int fista_restart, const T tol, const int duality_gap_interval, const bool verbose, char* solver, char* loss, char* regul, const T lambda_1, const T lambda_2, const T lambda_3, const bool intercept, const bool univariate, const int n_threads)
 {
     ParamSolver<T> param;
     param.max_iter = max_iter;
@@ -22,12 +22,12 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
     ParamModel<T> model;
     model.loss = loss_from_string(loss);
     model.regul = regul_from_string(regul);
-    model.lambda = lambda;
-    model.lambda2 = lambda2;
-    model.lambda3 = lambda3;
+    model.lambda_1 = lambda_1;
+    model.lambda_2 = lambda_2;
+    model.lambda_3 = lambda_3;
     model.intercept = intercept;
     clean_param_model(model);
-    Matrix<T> optim_info;
+    OptimInfo<T> optim_info;
     try
     {
         if (univariate)
@@ -116,9 +116,9 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 }
             }
         }
-        PyArrayObject* out = create_np_matrix<T>(optim_info.m(), optim_info.n());
-        Matrix<T> outm;
-        npyToMatrix(out, outm, "optim info");
+        PyArrayObject* out = create_np_optim_info<T>(optim_info.nclass(), optim_info.m(), optim_info.n());
+        OptimInfo<T> outm;
+        npyToOptimInfo(out, outm, "optim info");
         outm.copy(optim_info);
         return out;
     }
@@ -159,16 +159,16 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
     int univariate = 1;
     int n_threads = 1;
     int seed = 0;
-    double lambda = 0;
-    double lambda2 = 0;
-    double lambda3 = 0;
+    double lambda_1 = 0;
+    double lambda_2 = 0;
+    double lambda_3 = 0;
     int intercept = 0;
     char* regul = (char*)"none";
     char* solver = (char*)"ista";
     char* loss = (char*)"square";
-    static char* kwlist[] = { (char*)"", (char*)"", (char*)"", (char*)"", (char*)"dual_variable", (char*)"loss", (char*)"penalty", (char*)"solver", (char*)"lambd", (char*)"lambd2", (char*)"lambd3", (char*)"intercept", (char*)"tol", (char*)"duality_gap_interval", (char*)"max_iter", (char*)"limited_memory_qning", (char*)"fista_restart", (char*)"verbose", (char*)"univariate", (char*)"n_threads", (char*)"seed", NULL };
+    static char* kwlist[] = { (char*)"", (char*)"", (char*)"", (char*)"", (char*)"dual_variable", (char*)"loss", (char*)"penalty", (char*)"solver", (char*)"lambda_1", (char*)"lambda_2", (char*)"lambda_3", (char*)"intercept", (char*)"tol", (char*)"duality_gap_interval", (char*)"max_iter", (char*)"limited_memory_qning", (char*)"fista_restart", (char*)"verbose", (char*)"univariate", (char*)"n_threads", (char*)"seed", NULL };
     const char* format = (const char*)"OOOO|Osssdddpdiiiippii";
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &X, &y, &w0, &w, &dual, &loss, &regul, &solver, &lambda, &lambda2, &lambda3, &intercept, &tol, &duality_gap_interval, &max_iter, &limited_memory_qning, &fista_restart, &verbose, &univariate, &n_threads, &seed))
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &X, &y, &w0, &w, &dual, &loss, &regul, &solver, &lambda_1, &lambda_2, &lambda_3, &intercept, &tol, &duality_gap_interval, &max_iter, &limited_memory_qning, &fista_restart, &verbose, &univariate, &n_threads, &seed))
         return NULL;
     duality_gap_interval = duality_gap_interval <= 0 ? -1 : MIN(duality_gap_interval, max_iter);
     srandom(seed);
@@ -176,19 +176,19 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
     getTypeObject((PyObject*)X, T, I);
     if (T == getTypeNumber<float>() && I == getTypeNumber<int>())
     {
-        optim_info = erm<float, int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
+        optim_info = erm<float, int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda_1, lambda_2, lambda_3, intercept, univariate, n_threads);
     }
     else if (T == getTypeNumber<float>() && I == getTypeNumber<long long int>())
     {
-        optim_info = erm<float, long long int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
+        optim_info = erm<float, long long int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda_1, lambda_2, lambda_3, intercept, univariate, n_threads);
     }
     else if (T == getTypeNumber<double>() && I == getTypeNumber<int>())
     {
-        optim_info = erm<double, int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
+        optim_info = erm<double, int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda_1, lambda_2, lambda_3, intercept, univariate, n_threads);
     }
     else if (T == getTypeNumber<double>() && I == getTypeNumber<long long int>())
     {
-        optim_info = erm<double, long long int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda, lambda2, lambda3, intercept, univariate, n_threads);
+        optim_info = erm<double, long long int>(X, y, w0, w, dual, max_iter, limited_memory_qning, fista_restart, tol, duality_gap_interval, verbose, solver, loss, regul, lambda_1, lambda_2, lambda_3, intercept, univariate, n_threads);
     }
     else
     {

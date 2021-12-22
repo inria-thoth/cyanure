@@ -41,7 +41,10 @@
 #undef max
 #undef min
 
-
+/// Dense OptimInfo class
+template<typename T> class OptimInfo;
+/// Sparse OptimInfo class
+template<typename T, typename I = INTM> class SpOptimInfo;
 /// Dense Matrix class
 template<typename T> class Matrix;
 /// Sparse Matrix class
@@ -52,36 +55,36 @@ template<typename T> class Vector;
 template<typename T, typename I = INTM> class SpVector;
 
 template <typename T> 
-static inline bool isZero(const T lambda) {
-   return static_cast<double>(abs<T>(lambda)) < 1e-99;
+static inline bool isZero(const T lambda_1) {
+   return static_cast<double>(abs<T>(lambda_1)) < 1e-99;
 }
 
 template <typename T> 
-static inline bool isEqual(const T lambda1, const T lambda2) {
-   return static_cast<double>(abs<T>(lambda1-lambda2)) < 1e-99;
+static inline bool isEqual(const T lambda_1, const T lambda_2) {
+   return static_cast<double>(abs<T>(lambda_1-lambda_2)) < 1e-99;
 }
 
 
 template <typename T>
-static inline T softThrs(const T x, const T lambda) {
-   if (x > lambda) {
-      return x-lambda;
-   } else if (x < -lambda) {
-      return x+lambda;
+static inline T softThrs(const T x, const T lambda_1) {
+   if (x > lambda_1) {
+      return x-lambda_1;
+   } else if (x < -lambda_1) {
+      return x+lambda_1;
    } else {
       return 0;
    }
 };
 
 template <typename T>
-static inline T fastSoftThrs(const T x, const T lambda) {
-   return x + T(0.5)*(abs<T>(x-lambda) - abs<T>(x+lambda));
+static inline T fastSoftThrs(const T x, const T lambda_1) {
+   return x + T(0.5)*(abs<T>(x-lambda_1) - abs<T>(x+lambda_1));
 };
 
 
 template <typename T>
-static inline T hardThrs(const T x, const T lambda) {
-   return (x > lambda || x < -lambda) ? x : 0;
+static inline T hardThrs(const T x, const T lambda_1) {
+   return (x > lambda_1 || x < -lambda_1) ? x : 0;
 };
 
 template <typename T>
@@ -124,7 +127,253 @@ static T solve_binomial2(const T a, const T b, const T c) {
    return (-b - alt_sqrt<T>(delta))/(2*a); // returns single largest solution, assiming delta > 0;
 };
 
+/// Class OptimInfo
+template<typename T> class OptimInfo {
+    friend class SpOptimInfo<T>;
+    public:
+    typedef T value_type;
+    //TODO Matrix object
+    typedef Vector<T> col_type;
+    typedef INTM index_type;
+    typedef Vector<T> element;
 
+    /// Constructor with existing data X of an nclass x m x n matrix
+    OptimInfo(T* X, INTM nclass, INTM m, INTM n);
+    /// Constructor for a new m x n matrix
+    OptimInfo(INTM nclass, INTM m, INTM n);
+    /// Empty constructor
+    OptimInfo();
+
+    /// Destructor
+    virtual ~OptimInfo();
+
+    /// Accessors
+    /// Number of class
+    inline INTM nclass() const { return _nclass; };
+    /// Number of rows
+    inline INTM m() const { return _m; };
+    /// Number of columns
+    inline INTM n() const { return _n; };
+    /// size
+    inline INTM size() const { return _nclass*_n*_m; };
+    /// Return a modifiable reference to X(i,j,k)
+    inline T& operator()(const INTM i, const INTM j, const INTM k);
+    /// Return the value X(i,j,k)
+    inline T operator()(const INTM i, const INTM j, const INTM k) const;
+    /// Return a modifiable reference to X(i) (1D indexing)
+    inline T& operator[](const INTM index) { return _X[index]; };
+    /// Return the value X(i) (1D indexing)
+    inline T operator[](const INTM index) const { return _X[index]; };
+    /// Copy the column i into x
+    inline void copyCol(const INTM i, Vector<T>& x) const;
+    /// make a copy of the OptimInfo optim in the current OptimInfo
+   inline void copy(const OptimInfo<T>& optim);
+   /// Set all the values to zero
+   inline void setZeros();
+   /// Resize the optiminfo
+   inline void resize(INTM nclass,INTM m, INTM n, const bool set_zeros = true);
+   /// add alpha*optimInfo to the current matrix
+   inline void add(const OptimInfo<T>& mat, const int index, const T alpha = 1.0);
+
+   /// Change the data in the optimInfo
+   inline void setData(T* X, INTM nclass, INTM m, INTM n);
+
+    /// Debugging function
+   /// Print the matrix to std::cout
+   inline void print(const string& name) const;
+   inline void dump(const string& name) const;
+
+    /// clear the vector
+   inline void clear();
+
+   typedef Vector<T> col;
+   typedef Matrix<T> mat;
+   static const bool is_sparse = false;
+
+   protected:
+   /// Forbid lazy copies
+   explicit OptimInfo<T>(const OptimInfo<T>& matrix);
+   /// Forbid lazy copies
+   OptimInfo<T>& operator=(const OptimInfo<T>& matrix);
+
+   /// is the data allocation external or not
+   bool _externAlloc;
+   /// pointer to the data
+   T* _X;
+   /// number of class
+   INTM _nclass;
+   /// number of rows
+   INTM _m;
+   /// number of columns
+   INTM _n;
+
+};
+
+/// Sparse Matrix class, CSC format
+template<typename T, typename I> class SpOptimInfo {
+   friend class OptimInfo<T>;
+   friend class SpMatrix<T,I>;
+   public:
+   typedef T value_type;
+   typedef SpOptimInfo<T,I> col_type;
+   typedef I index_type;
+   /// Constructor, CSC format, existing data
+   SpOptimInfo(T* v, I* r, I* pB, I* pE, I m, I n, I nzmax);
+   /// Constructor, new m x n matrix, with at most nzmax non-zeros values
+   SpOptimInfo(I m, I n, I nzmax);
+   /// Empty constructor
+   SpOptimInfo();
+
+   /// Destructor
+   ~SpOptimInfo();
+
+//    /// Accessors
+//    /// reference the column i Io vec
+//    inline void refCol(I i, SpVector<T,I>& vec) const;
+//    /// returns pB[i]
+//    inline I pB(const I i) const { return _pB[i]; };
+//    /// returns r[i]
+//    inline I r(const I i) const { return _r[i]; };
+//    /// returns v[i]
+//    inline T v(const I i) const { return _v[i]; };
+//    /// returns the maximum number of non-zero elements
+//    inline I nzmax() const { return _nzmax; };
+//    /// returns the number of rows
+//    inline I n() const { return _n; };
+//    /// returns the number of columns
+//    inline I m() const { return _m; };
+//    /// returns the number of columns
+//    inline I V() const { return 1; };
+//    /// returns X[index]
+//    inline T operator[](const I index) const;
+//    void getData(Vector<T>& data, const I index) const;
+//    void setData(T* v, I* r, I* pB, I* pE, I m, I n, I nzmax);
+
+//    /// print the sparse matrix
+//    inline void print(const string& name) const;
+//    /// compute the sum of the matrix elements
+//    inline T asum() const;
+//    /// compute the sum of the matrix elements
+//    inline T normFsq() const;
+//    /// Direct access to _pB
+//    inline I* pB() const { return _pB; };
+//    /// Direct access to _pE
+//    inline I* pE() const { return _pE; };
+//    /// Direct access to _r
+//    inline I* r() const { return _r; };
+//    /// Direct access to _v
+//    inline T* v() const { return _v; };
+//    /// number of nonzeros elements
+//    inline I nnz() const { return _pB[_n]; };
+//    inline void add_direct(const SpMatrix<T,I>& mat, const T a);
+//    inline void copy_direct(const SpMatrix<T,I>& mat);
+//    inline T dot_direct(const SpMatrix<T,I>& mat) const;
+
+//    /// Modifiers
+//    /// clear the matrix
+//    inline void clear();
+//    /// resize the matrix
+//    inline void resize(const I m, const I n, const I nzmax);
+//    /// scale the matrix by a
+//    inline void scal(const T a) const;
+//    inline T abs_mean() const;
+
+//    /// Algebraic operations
+//    /// aat <- A*A'
+//    inline void AAt(Matrix<T>& aat) const;
+//    /// aat <- A(:,indices)*A(:,indices)'
+//    inline void AAt(Matrix<T>& aat, const Vector<I>& indices) const;
+//    /// aat <- sum_i w_i A(:,i)*A(:,i)'
+//    inline void wAAt(const Vector<T>& w, Matrix<T>& aat) const;
+//    /// XAt <- X*A'
+//    inline void XAt(const Matrix<T>& X, Matrix<T>& XAt) const;
+//    /// XAt <- X(:,indices)*A(:,indices)'
+//    inline void XAt(const Matrix<T>& X, Matrix<T>& XAt, 
+//          const Vector<I>& indices) const;
+//    /// XAt <- sum_i w_i X(:,i)*A(:,i)'
+//    inline void wXAt( const Vector<T>& w, const Matrix<T>& X, 
+//          Matrix<T>& XAt, const int numthreads=-1) const;
+//    inline void XtX(Matrix<T>& XtX) const;
+
+//    /// y <- A'*x
+//    inline void multTrans(const Vector<T>& x, Vector<T>& y,
+//          const T alpha = 1.0, const T beta = 0.0) const;
+//    inline void multTrans(const SpVector<T,I>& x, Vector<T>& y,
+//          const T alpha = 1.0, const T beta = 0.0) const;
+//    /// perform b = alpha*A*x + beta*b, when x is sparse
+//    inline void mult(const SpVector<T,I>& x, Vector<T>& b, 
+//          const T alpha = 1.0, const T beta = 0.0) const;
+//    /// perform b = alpha*A*x + beta*b, when x is sparse
+//    inline void mult(const Vector<T>& x, Vector<T>& b, 
+//          const T alpha = 1.0, const T beta = 0.0) const;
+//    /// perform C = a*A*B + b*C, possibly transposing A or B.
+//    inline void mult(const Matrix<T>& B, Matrix<T>& C, 
+//          const bool transA = false, const bool transB = false,
+//          const T a = 1.0, const T b = 0.0) const;
+//    /// perform C = a*B*A + b*C, possibly transposing A or B.
+//    inline void multSwitch(const Matrix<T>& B, Matrix<T>& C, 
+//          const bool transA = false, const bool transB = false,
+//          const T a = 1.0, const T b = 0.0) const;
+//    /// perform C = a*B*A + b*C, possibly transposing A or B.
+//    inline void mult(const SpMatrix<T,I>& B, Matrix<T>& C, const bool transA = false,
+//          const bool transB = false, const T a = 1.0,
+//          const T b = 0.0) const;
+//    /// make a copy of the matrix mat in the current matrix
+//    inline void copyTo(Matrix<T>& mat) const { this->toFull(mat); };
+//    /// dot product;
+//    inline T dot(const Matrix<T>& x) const;
+//    inline void copyRow(const I i, Vector<T>& x) const;
+//    inline void sum_cols(Vector<T>& sum) const;
+//    inline void copy(const SpMatrix<T,I>& mat);
+
+//    /// Conversions
+//    /// copy the sparse matrix into a dense matrix
+//    inline void toFull(Matrix<T>& matrix) const;
+//    /// copy the sparse matrix into a dense transposed matrix
+//    inline void toFullTrans(Matrix<T>& matrix) const;
+
+//    /// use the data from v, r for _v, _r
+//    inline void convert(const Matrix<T>&v, const Matrix<I>& r,
+//          const I K);
+//    /// use the data from v, r for _v, _r
+//    inline void convert2(const Matrix<T>&v, const Vector<I>& r,
+//          const I K);
+//    inline void normalize(); 
+//    inline void normalize_rows(); 
+//    /// returns the l2 norms ^2 of the columns
+//    inline void norm_2sq_cols(Vector<T>& norms) const;
+//    /// returns the l0 norms of the columns
+//    inline void norm_0_cols(Vector<T>& norms) const;
+//    /// returns the l1 norms of the columns
+//    inline void norm_1_cols(Vector<T>& norms) const;
+//    inline void addVecToCols(const Vector<T>& diag, const T a = 1.0);
+//    inline void addVecToColsWeighted(const Vector<T>& diag, const T* weights, const T a = 1.0);
+
+//    typedef SpVector<T,I> col;
+//    static const bool is_sparse = true;
+
+//    private:
+//    /// forbid copy constructor
+//    explicit SpMatrix(const SpMatrix<T,I>& matrix);
+//    SpMatrix<T,I>& operator=(const SpMatrix<T,I>& matrix);
+
+//    /// if the data has been externally allocated
+//    bool _externAlloc;
+//    /// data
+//    T* _v;
+//    /// row indices 
+//    I* _r;
+//    /// indices of the beginning of columns
+//    I* _pB;
+//    /// indices of the end of columns
+//    I* _pE;
+//    /// number of rows
+//    I _m;
+//    /// number of columns
+//    I _n;
+//    /// number of non-zero values
+//    I _nzmax;
+};
 
 /// Class Matrix
 template<typename T> class Matrix {
@@ -282,7 +531,7 @@ template<typename T> class Matrix {
    inline void svd(Matrix<T>& U, Vector<T>& S, Matrix<T>&V) const;
    inline void svd2(Matrix<T>& U, Vector<T>& S, const int num = -1, const int method = 0) const;
    inline void SymEig(Matrix<T>& U, Vector<T>& S) const;
-   inline void InvsqrtMat(Matrix<T>& out, const T lambda = 0) const;
+   inline void InvsqrtMat(Matrix<T>& out, const T lambda_1 = 0) const;
    inline void sqrtMat(Matrix<T>& out) const;
 //   inline void Inv(Matrix<T>& out) const;
 
@@ -486,8 +735,8 @@ template<typename T> class Matrix {
    /// performs soft-thresholding of the vector
    inline void blockThrshold(const T nu, const INTM sizeGroup);
    /// performs sparse projections of the columns 
-   inline void sparseProject(Matrix<T>& out, const T thrs,   const int mode = 1, const T lambda1 = 0,
-         const T lambda2 = 0, const T lambda3 = 0, const bool pos = false, const int numThreads=-1);
+   inline void sparseProject(Matrix<T>& out, const T thrs,   const int mode = 1, const T lambda_1 = 0,
+         const T lambda_2 = 0, const T lambda_3 = 0, const bool pos = false, const int numThreads=-1);
    inline void transformFilter();
 
    /// Conversion
@@ -521,6 +770,8 @@ template<typename T> class Matrix {
    INTM _n;
 
 };
+
+
 
 /// Class for dense vector
 template<typename T> class Vector {
@@ -723,16 +974,16 @@ template<typename T> class Vector {
    inline void l1project_weighted(Vector<T>& out, const Vector<T>& weights, const T thrs, const bool residual = false) const;
    inline void l1l2projectb(Vector<T>& out, const T thrs, const T gamma, const bool pos = false,
          const int mode = 1);
-   inline void sparseProject(Vector<T>& out, const T thrs,   const int mode = 1, const T lambda1 = 0,
-         const T lambda2 = 0, const T lambda3 = 0, const bool pos = false);
+   inline void sparseProject(Vector<T>& out, const T thrs,   const int mode = 1, const T lambda_1 = 0,
+         const T lambda_2 = 0, const T lambda_3 = 0, const bool pos = false);
    inline void project_sft(const Vector<int>& labels, const int clas);
    inline void project_sft_binary(const Vector<T>& labels);
    /// projects the vector onto the l1 ball of radius thrs,
    /// projects the vector onto the l1 ball of radius thrs,
    /// returns true if the returned vector is null
    inline void l1l2project(Vector<T>& out, const T thrs, const T gamma, const bool pos = false) const;
-   inline void fusedProject(Vector<T>& out, const T lambda1, const T lambda2, const int itermax);
-   inline void fusedProjectHomotopy(Vector<T>& out, const T lambda1,const T lambda2,const T lambda3 = 0,
+   inline void fusedProject(Vector<T>& out, const T lambda_1, const T lambda_2, const int itermax);
+   inline void fusedProjectHomotopy(Vector<T>& out, const T lambda_1,const T lambda_2,const T lambda_3 = 0,
          const bool penalty = true);
    /// projects the vector onto the l1 ball of radius thrs,
    /// _sort the vector
@@ -769,6 +1020,7 @@ template<typename T> class Vector {
    /// size of the vector
    INTM _n;
 };
+
 
 
 /// Sparse Matrix class, CSC format
@@ -1131,1836 +1383,6 @@ template<typename T, typename I> class DoubleLazyVector {
 };
 
 
-/* ************************************
- * Implementation of the class Matrix 
- * ************************************/
-
-/// Constructor with existing data X of an m x n matrix
-template <typename T> Matrix<T>::Matrix(T* X, INTM m, INTM n) :
-   _externAlloc(true), _X(X), _m(m), _n(n) {  };
-
-
-/// Constructor for a new m x n matrix
-template <typename T> Matrix<T>::Matrix(INTM m, INTM n) :
-   _externAlloc(false), _m(m), _n(n)  {
-#pragma omp critical
-      {
-         _X= new T[_n*_m];
-      }
-   };
-
-/// Empty constructor
-template <typename T> Matrix<T>::Matrix() :
-   _externAlloc(false), _X(NULL), _m(0), _n(0) { };
-
-/// Destructor
-template <typename T> Matrix<T>::~Matrix() {
-   clear();
-};
-
-/// Return a modifiable reference to X(i,j)
-template <typename T> inline T& Matrix<T>::operator()(const INTM i, const INTM j) {
-   return _X[j*_m+i];
-};
-
-/// Return the value X(i,j)
-template <typename T> inline T Matrix<T>::operator()(const INTM i, const INTM j) const {
-   return _X[j*_m+i];
-};
-
-/// Print the matrix to std::cout
-template <typename T> inline void Matrix<T>::print(const string& name) const {
-   std::cerr << name << std::endl;
-   std::cerr << _m << " x " << _n << std::endl;
-   for (INTM i = 0; i<_m; ++i) {
-      for (INTM j = 0; j<_n; ++j) {
-         printf("%10.5g ",static_cast<double>(_X[j*_m+i]));
-      }
-      printf("\n ");
-   }
-   printf("\n ");
-};
-
-/// Print the matrix to std::cout
-template <typename T> inline void Matrix<T>::dump(const string& name) const {
-   ofstream f; 
-   const char * cname = name.c_str();
-   f.open(cname);
-   f.precision(20);
-   std::cerr << name << std::endl;
-   f << _m << " x " << _n << std::endl;
-   for (INTM i = 0; i<_m; ++i) {
-      for (INTM j = 0; j<_n; ++j) {
-         f << static_cast<double>(_X[j*_m+i]) << " ";
-      }
-      f << std::endl;
-   }
-   f << std::endl;
-   f.close();
-};
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::copyCol(const INTM i, Vector<T>& x) const {
-   assert(i >= 0 && i<_n);
-   x.resize(_m);
-   cblas_copy<T>(_m,_X+i*_m,1,x._X,1);
-};
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::copyRow(const INTM i, Vector<T>& x) const {
-   assert(i >= 0 && i<_m);
-   x.resize(_n);
-   cblas_copy<T>(_n,_X+i,_m,x._X,1);
-};
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::scalRow(const INTM i, const T s) const {
-   assert(i >= 0 && i<_m);
-   for (int ii=0; ii<_n; ++ii)
-      _X[i+ii*_m] *= s;
-};
-
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::copyToRow(const INTM i, const Vector<T>& x) {
-   assert(i >= 0 && i<_m);
-   cblas_copy<T>(_n,x._X,1,_X+i,_m);
-};
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::extract_rawCol(const INTM i, T* x) const {
-   assert(i >= 0 && i<_n);
-   cblas_copy<T>(_m,_X+i*_m,1,x,1);
-};
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::add_rawCol(const INTM i, T* x, const T a) const {
-   assert(i >= 0 && i<_n);
-   cblas_axpy<T>(_m,a,_X+i*_m,1,x,1);
-};
-
-/// Copy the column i INTMo x
-template <typename T> inline void Matrix<T>::getData(Vector<T>& x, const INTM i) const {
-   this->copyCol(i,x);
-};
-
-/// Reference the column i into the vector x
-template <typename T> inline void Matrix<T>::refCol(INTM i, Vector<T>& x) const {
-   assert(i >= 0 && i<_n);
-   x.clear();
-   x._X=_X+i*_m;
-   x._n=_m;
-   x._externAlloc=true; 
-};
-
-/// Reference the column i to i+n INTMo the Matrix mat
-template <typename T> inline void Matrix<T>::refSubMat(INTM i, INTM n, Matrix<T>& mat) const {
-   mat.setData(_X+i*_m,_m,n);
-}
-
-/// Check wether the columns of the matrix are normalized or not
-template <typename T> inline bool Matrix<T>::isNormalized() const {
-   for (INTM i = 0; i<_n; ++i) {
-      T norm=cblas_nrm2<T>(_m,_X+_m*i,1);
-      if (fabs(norm - 1.0) > 1e-6) return false;
-   }
-   return true;
-};
-
-/// clean a dictionary matrix
-template <typename T>
-inline void Matrix<T>::clean() {
-   this->normalize();
-   Matrix<T> G;
-   this->XtX(G);
-   T* prG = G._X;
-   /// remove the diagonal
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j = i+1; j<_n; ++j) {
-         if (prG[i*_n+j] > 0.99) {
-            // remove nasty column j and put random values inside
-            Vector<T> col;
-            this->refCol(j,col);
-            col.setAleat();
-            col.normalize();
-         }
-      }
-   }
-};
-
-/// return the 1D-index of the value of greatest magnitude
-template <typename T> inline INTM Matrix<T>::fmax() const {
-   return cblas_iamax<T>(_n*_m,_X,1);
-};
-
-/// return the value of greatest magnitude
-template <typename T> inline T Matrix<T>::fmaxval() const {
-   return _X[cblas_iamax<T>(_n*_m,_X,1)];
-};
-
-
-/// return the 1D-index of the value of lowest magnitude
-template <typename T> inline INTM Matrix<T>::fmin() const {
-   return cblas_iamin<T>(_n*_m,_X,1);
-};
-
-/// extract a sub-matrix of a symmetric matrix
-template <typename T> inline void Matrix<T>::subMatrixSym(
-      const Vector<INTM>& indices, Matrix<T>& subMatrix) const {
-   INTM L = indices.n();
-   subMatrix.resize(L,L);
-   T* out = subMatrix._X;
-   INTM* rawInd = indices.rawX();
-   for (INTM i = 0; i<L; ++i)
-      for (INTM j = 0; j<=i; ++j)
-         out[i*L+j]=_X[rawInd[i]*_n+rawInd[j]];
-   subMatrix.fillSymmetric();
-};
-
-/// Resize the matrix
-template <typename T> inline void Matrix<T>::resize(INTM m, INTM n, const bool set_zeros) {
-   if (_n==n && _m==m) return;
-   clear();
-   _n=n;
-   _m=m;
-   _externAlloc=false;
-#pragma omp critical
-   {
-      _X=new T[_n*_m];
-   }
-   if (set_zeros)
-      setZeros();
-};
-
-/// Change the data in the matrix
-template <typename T> inline void Matrix<T>::setData(T* X, INTM m, INTM n) {
-   clear();
-   _X=X;
-   _m=m;
-   _n=n;
-   _externAlloc=true;
-};
-
-/// Set all the values to zero
-template <typename T> inline void Matrix<T>::setZeros() {
-   memset(_X,0,_n*_m*sizeof(T));
-};
-
-/// Set all the values to a scalar
-template <typename T> inline void Matrix<T>::set(const T a) {
-   for (INTM i = 0; i<_n*_m; ++i) _X[i]=a;
-};
-
-/// Clear the matrix
-template <typename T> inline void Matrix<T>::clear() {
-   if (!_externAlloc) delete[](_X);
-   _n=0;
-   _m=0;
-   _X=NULL;
-   _externAlloc=true;
-};
-
-/// Put white Gaussian noise in the matrix 
-template <typename T> inline void Matrix<T>::setAleat() {
-   for (INTM i = 0; i<_n*_m; ++i) _X[i]=normalDistrib<T>();
-};
-
-/// set the matrix to the identity
-template <typename T> inline void Matrix<T>::eye() {
-   this->setZeros();
-   for (INTM i = 0; i<MIN(_n,_m); ++i) _X[i*_m+i] = T(1.0);
-};
-
-/// Normalize all columns to unit l2 norm
-template <typename T> inline void Matrix<T>::normalize() {
-   //T constant = 1.0/sqrt(_m);
-   for (INTM i = 0; i<_n; ++i) {
-      T norm=cblas_nrm2<T>(_m,_X+_m*i,1);
-      if (norm > 1e-10) {
-         T invNorm=1.0/norm;
-         cblas_scal<T>(_m,invNorm,_X+_m*i,1);
-      }  else {
-         // for (INTM j = 0; j<_m; ++j) _X[_m*i+j]=constant;
-         Vector<T> d;
-         this->refCol(i,d);
-         d.setAleat();
-         d.normalize();
-      } 
-   }
-};
-
-/// Normalize all columns which l2 norm is greater than one.
-template <typename T> inline void Matrix<T>::normalize2() {
-   for (INTM i = 0; i<_n; ++i) {
-      T norm=cblas_nrm2<T>(_m,_X+_m*i,1);
-      if (norm > 1.0) {
-         T invNorm=1.0/norm;
-         cblas_scal<T>(_m,invNorm,_X+_m*i,1);
-      } 
-   }
-};
-
-/// center the matrix
-template <typename T> inline void Matrix<T>::center() {
-   for (INTM i = 0; i<_n; ++i) {
-      Vector<T> col;
-      this->refCol(i,col);
-      T sum = col.sum();
-      col.add(-sum/static_cast<T>(_m));
-   }
-};
-
-/// center the matrix
-template <typename T> inline void Matrix<T>::center_rows() {
-   Vector<T> mean_rows(_m);
-   mean_rows.setZeros();
-   for (INTM i = 0; i<_n; ++i) 
-      for (INTM j = 0; j<_m; ++j) 
-         mean_rows[j] += _X[i*_m+j];
-   mean_rows.scal(T(1.0)/_n);
-   for (INTM i = 0; i<_n; ++i) 
-      for (INTM j = 0; j<_m; ++j) 
-         _X[i*_m+j] -= mean_rows[j];
-};
-
-/// center the matrix
-template <typename T> inline void Matrix<T>::normalize_rows() {
-   Vector<T> norm_rows(_m);
-   norm_rows.setZeros();
-   for (INTM i = 0; i<_n; ++i)
-      for (INTM j = 0; j<_m; ++j)
-         norm_rows[j] += _X[i*_m+j]*_X[i*_m+j];
-   for (INTM j = 0; j<_m; ++j)
-      norm_rows[j]  = norm_rows[j] < T(1e-10) ? T(1e-10) : T(1.0)/sqrt(norm_rows[j]);
-   this->multDiagLeft(norm_rows);
-};
-
-/// center the matrix and keep the center values
-template <typename T> inline void Matrix<T>::center(Vector<T>& centers) {
-   centers.resize(_n);
-   for (INTM i = 0; i<_n; ++i) {
-      Vector<T> col;
-      this->refCol(i,col);
-      T sum = col.sum()/static_cast<T>(_m);
-      centers[i]=sum;
-      col.add(-sum);
-   }
-};
-
-/// scale the matrix by the a
-template <typename T> inline void Matrix<T>::scal(const T a) {
-   cblas_scal<T>(_n*_m,a,_X,1);
-};
-
-/// make a copy of the matrix mat in the current matrix
-template <typename T> inline void Matrix<T>::copy(const Matrix<T>& mat) {
-   if (_X != mat._X) {
-      resize(mat._m,mat._n);
-      //   cblas_copy<T>(_m*_n,mat._X,1,_X,1);
-      memcpy(_X,mat._X,_m*_n*sizeof(T));
-   }
-};
-
-/// make a copy of the matrix mat in the current matrix
-template <typename T> inline void Matrix<T>::copyRef(const Matrix<T>& mat) {
-   this->setData(mat.rawX(),mat.m(),mat.n());
-};
-
-/// make the matrix symmetric by copying the upper-right part
-/// INTMo the lower-left part
-template <typename T> inline void Matrix<T>::fillSymmetric() {
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j =0; j<i; ++j) {
-         _X[j*_m+i]=_X[i*_m+j];
-      }
-   }
-};
-template <typename T> inline void Matrix<T>::fillSymmetric2() {
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j =0; j<i; ++j) {
-         _X[i*_m+j]=_X[j*_m+i];
-      }
-   }
-};
-
-
-template <typename T> inline void Matrix<T>::whiten(const INTM V) {
-   const INTM sizePatch=_m/V;
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j = 0; j<V; ++j) {
-         T mean = 0;
-         for (INTM k = 0; k<sizePatch; ++k) {
-            mean+=_X[i*_m+sizePatch*j+k];
-         }
-         mean /= sizePatch;
-         for (INTM k = 0; k<sizePatch; ++k) {
-            _X[i*_m+sizePatch*j+k]-=mean;
-         }
-      }
-   }
-};
-
-template <typename T> inline void Matrix<T>::whiten(Vector<T>& mean, const bool pattern) {
-   mean.setZeros();
-   if (pattern) {
-      const INTM n =static_cast<INTM>(sqrt(static_cast<T>(_m)));
-      INTM count[4];
-      for (INTM i = 0; i<4; ++i) count[i]=0;
-      for (INTM i = 0; i<_n; ++i) {
-         INTM offsetx=0;
-         for (INTM j = 0; j<n; ++j) {
-            offsetx= (offsetx+1) % 2;
-            INTM offsety=0;
-            for (INTM k = 0; k<n; ++k) {
-               offsety= (offsety+1) % 2;
-               mean[2*offsetx+offsety]+=_X[i*_m+j*n+k];
-               count[2*offsetx+offsety]++;
-            }
-         }
-      }
-      for (INTM i = 0; i<4; ++i)
-         mean[i] /= count[i];
-      for (INTM i = 0; i<_n; ++i) {
-         INTM offsetx=0;
-         for (INTM j = 0; j<n; ++j) {
-            offsetx= (offsetx+1) % 2;
-            INTM offsety=0;
-            for (INTM k = 0; k<n; ++k) {
-               offsety= (offsety+1) % 2;
-               _X[i*_m+j*n+k]-=mean[2*offsetx+offsety];
-            }
-         }
-      }
-   } else  {
-      const INTM V = mean.n();
-      const INTM sizePatch=_m/V;
-      for (INTM i = 0; i<_n; ++i) {
-         for (INTM j = 0; j<V; ++j) {
-            for (INTM k = 0; k<sizePatch; ++k) {
-               mean[j]+=_X[i*_m+sizePatch*j+k];
-            }
-         }
-      }
-      mean.scal(T(1.0)/(_n*sizePatch));
-      for (INTM i = 0; i<_n; ++i) {
-         for (INTM j = 0; j<V; ++j) {
-            for (INTM k = 0; k<sizePatch; ++k) {
-               _X[i*_m+sizePatch*j+k]-=mean[j];
-            }
-         }
-      }
-   }
-};
-
-template <typename T> inline void Matrix<T>::whiten(Vector<T>& mean, const
-      Vector<T>& mask) {
-   const INTM V = mean.n();
-   const INTM sizePatch=_m/V;
-   mean.setZeros();
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j = 0; j<V; ++j) {
-         for (INTM k = 0; k<sizePatch; ++k) {
-            mean[j]+=_X[i*_m+sizePatch*j+k];
-         }
-      }
-   }
-   for (INTM i = 0; i<V; ++i)
-      mean[i] /= _n*cblas_asum(sizePatch,mask._X+i*sizePatch,1);
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j = 0; j<V; ++j) {
-         for (INTM k = 0; k<sizePatch; ++k) {
-            if (mask[sizePatch*j+k])
-               _X[i*_m+sizePatch*j+k]-=mean[j];
-         }
-      }
-   }
-};
-
-
-template <typename T> inline void Matrix<T>::unwhiten(Vector<T>& mean, const bool pattern) {
-   if (pattern) {
-      const INTM n =static_cast<INTM>(sqrt(static_cast<T>(_m)));
-      for (INTM i = 0; i<_n; ++i) {
-         INTM offsetx=0;
-         for (INTM j = 0; j<n; ++j) {
-            offsetx= (offsetx+1) % 2;
-            INTM offsety=0;
-            for (INTM k = 0; k<n; ++k) {
-               offsety= (offsety+1) % 2;
-               _X[i*_m+j*n+k]+=mean[2*offsetx+offsety];
-            }
-         }
-      }
-   } else {
-      const INTM V = mean.n();
-      const INTM sizePatch=_m/V;
-      for (INTM i = 0; i<_n; ++i) {
-         for (INTM j = 0; j<V; ++j) {
-            for (INTM k = 0; k<sizePatch; ++k) {
-               _X[i*_m+sizePatch*j+k]+=mean[j];
-            }
-         }
-      }
-   }
-};
-
-/// Transpose the current matrix and put the result in the matrix
-/// trans
-template <typename T> inline void Matrix<T>::transpose(Matrix<T>& trans) const {
-   trans.resize(_n,_m);
-   T* out = trans._X;
-   for (INTM i = 0; i<_n; ++i)
-      for (INTM j = 0; j<_m; ++j)
-         out[j*_n+i] = _X[i*_m+j];
-};
-
-/// A <- -A
-template <typename T> inline void Matrix<T>::neg() {
-   for (INTM i = 0; i<_n*_m; ++i) _X[i]=-_X[i];
-};
-
-template <typename T> inline void Matrix<T>::incrDiag() {
-   for (INTM i = 0; i<MIN(_n,_m); ++i) ++_X[i*_m+i];
-};
-
-template <typename T> inline void Matrix<T>::addDiag(
-      const Vector<T>& diag) {
-   T* d= diag.rawX();
-   for (INTM i = 0; i<MIN(_n,_m); ++i) _X[i*_m+i] += d[i];
-};
-
-template <typename T> inline void Matrix<T>::addDiag(
-      const T diag) {
-   for (INTM i = 0; i<MIN(_n,_m); ++i) _X[i*_m+i] += diag;
-};
-
-template <typename T> inline void Matrix<T>::addToCols(
-      const Vector<T>& cent) {
-   Vector<T> col;
-   for (INTM i = 0; i<_n; ++i) {
-      this->refCol(i,col);      
-      col.add(cent[i]);
-   }
-};
-
-template <typename T> inline void Matrix<T>::addVecToCols(
-      const Vector<T>& vec, const T a) {
-   Vector<T> col;
-   for (INTM i = 0; i<_n; ++i) {
-      this->refCol(i,col);      
-      col.add(vec,a);
-   }
-};
-
-/// perform a rank one approximation uv' using the power method
-/// u0 is an initial guess for u (can be empty).
-template <typename T> inline void Matrix<T>::svdRankOne(const Vector<T>& u0,
-      Vector<T>& u, Vector<T>& v) const {
-   int i;
-   const int max_iter=MAX(_m,MAX(_n,200));
-   const T eps=1e-10;
-   u.resize(_m);
-   v.resize(_n);
-   T norm=u0.nrm2();
-   Vector<T> up(u0);
-   if (norm < EPSILON) up.setAleat();
-   up.normalize();
-   multTrans(up,v);
-   for (i = 0; i<max_iter; ++i) {
-      mult(v,u);
-      norm=u.nrm2();
-      u.scal(1.0/norm);
-      multTrans(u,v);
-      T theta=u.dot(up);
-      if (i > 10 && (1 - fabs(theta)) < eps) break;
-      up.copy(u);
-   }
-};
-
-template <typename T> inline void Matrix<T>::svd2(Matrix<T>& U, Vector<T>& S, const int num, const int method) const {
-   const INTM num_eig= (num == -1 || method <= 1) ? MIN(_m,_n) : MIN(MIN(_m,num),_n);
-   S.resize(num_eig);
-   U.resize(_m,num_eig);
-   if (method==0) {
-      // gesv
-      T* vv = NULL;
-      Matrix<T> copyX;
-      copyX.copy(*this);
-      gesvd<T>(reduced,no,_m,_n,copyX._X,_m,S.rawX(),U.rawX(),_m,vv,1);
-   } else if (method==1) {
-      // syev
-      if (_m == num_eig) {
-         this->XXt(U);
-         syev<T>(allV,lower,_m,U.rawX(),_m,S.rawX());
-      } else {
-         Matrix<T> XXt(_m,_m);
-         this->XXt(XXt); // in fact should do XtX, but will do that later
-         Vector<T> ss(_m);
-         syev<T>(allV,lower,_m,XXt.rawX(),_m,ss.rawX());
-         memcpy(U.rawX(),XXt.rawX()+(_m-num_eig)*_m,_m*num_eig*sizeof(T));
-         memcpy(S.rawX(),ss.rawX()+_m-num_eig,num_eig*sizeof(T));
-      }
-      S.thrsPos();
-      S.Sqrt();
-   } else if (method==2) {
-      // syevr
-      Matrix<T> XXt(_m,_m);
-      this->XXt(XXt); // in fact should do XtX, but will do that later
-      if (_m == num_eig) {
-         syevr(allV,rangeAll,lower,_m,XXt.rawX(),_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
-      } else {
-         Vector<T> ss(_m);
-         syevr(allV,range,lower,_m,XXt.rawX(),_m,T(0),T(0),_m-num_eig+1,_m,ss.rawX(),U.rawX(),_m);
-         memcpy(S.rawX(),ss.rawX(),num_eig*sizeof(T));
-      }
-      S.thrsPos();
-      for (int ii=0; ii<S.n(); ++ii)
-         S[ii]=alt_sqrt<T>(S[ii]);
-      //S.Sqrt();
-   } 
-   if (method==1 || method==2) {
-      Vector<T> col, col2;
-      Vector<T> tmpcol(_m);
-      const int n=U.n();
-      for (int ii=0; ii<n/2; ++ii) {
-         T tmp=S[n-ii-1];
-         S[n-ii-1]=S[ii];
-         S[ii]=tmp;
-         U.refCol(n-ii-1,col);
-         U.refCol(ii,col2);
-         tmpcol.copy(col);
-         col.copy(col2);
-         col2.copy(tmpcol);
-      }
-   }
-}
-
-template <typename T> inline void Matrix<T>::SymEig(Matrix<T>& U, Vector<T>& S) const {
-   const int num_eig=_m;
-   S.resize(_m);
-   U.resize(_m,_m);
-   syevr(allV,rangeAll,lower,_m,_X,_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
-   S.thrsPos();
-}
-
-template <typename T> inline void Matrix<T>::InvsqrtMat(Matrix<T>& out, const T lambda) const {
-   const int num_eig=_m;
-   Vector<T> S;
-   S.resize(_m);
-   Matrix<T> U, U2;
-   U.resize(_m,_m);
-   syevr(allV,rangeAll,lower,_m,_X,_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
-   S.thrsPos();
-   //for (int ii=0; ii<_m; ++ii) S[ii]=sqrt(S[ii])/(S[ii]+lambda);
-   //for (int ii=0; ii<_m; ++ii) S[ii]= S[ii] > 1e-6 ? T(1.0)/S[ii] : 0;
-   for (int ii=0; ii<_m; ++ii) S[ii]= S[ii] > 1e-6 ? T(1.0)/sqrt(S[ii]+lambda) : 0;
-   U2.copy(U);
-   U2.multDiagRight(S);
-   U2.mult(U,out,false,true);
-}
-
-template <typename T> inline void Matrix<T>::sqrtMat(Matrix<T>& out) const {
-   const int num_eig=_m;
-   Vector<T> S;
-   S.resize(_m);
-   Matrix<T> U, U2;
-   U.resize(_m,_m);
-   syevr(allV,rangeAll,lower,_m,_X,_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
-   S.thrsPos();
-   S.Sqrt();
-   U2.copy(U);
-   U2.multDiagRight(S);
-   U2.mult(U,out,false,true);
-}
-
-
-
-template <typename T> inline void Matrix<T>::singularValues(Vector<T>& u) const {
-   u.resize(MIN(_m,_n));
-   if (_m > 10*_n) {
-      Matrix<T> XtX;
-      this->XtX(XtX);
-      syev<T>(no,lower,_n,XtX.rawX(),_n,u.rawX());
-      u.thrsPos();
-      u.Sqrt();
-   } else if (_n > 10*_m) { 
-      Matrix<T> XXt;
-      this->XXt(XXt);
-      syev<T>(no,lower,_m,XXt.rawX(),_m,u.rawX());
-      u.thrsPos();
-      u.Sqrt();
-   } else {
-      T* vu = NULL;
-      T* vv = NULL;
-      Matrix<T> copyX;
-      copyX.copy(*this);
-      gesvd<T>(no,no,_m,_n,copyX._X,_m,u.rawX(),vu,1,vv,1);
-   }
-};
-
-template <typename T> inline void Matrix<T>::svd(Matrix<T>& U, Vector<T>& S, Matrix<T>&V) const {
-   const INTM num_eig=MIN(_m,_n);
-   S.resize(num_eig);
-   U.resize(_m,num_eig);
-   V.resize(num_eig,_n);
-   if (_m > 10*_n) {
-      Matrix<T> Vt(_n,_n);
-      this->XtX(Vt);
-      syev<T>(allV,lower,_n,Vt.rawX(),_n,S.rawX());
-      S.thrsPos();
-      S.Sqrt();
-      this->mult(Vt,U);
-      Vt.transpose(V);
-      Vector<T> inveigs;
-      inveigs.copy(S);
-      for (INTM i = 0; i<num_eig; ++i) 
-         if (S[i] > 1e-10) {
-            inveigs[i]=T(1.0)/S[i];
-         } else {
-            inveigs[i]=T(1.0);
-         }
-      U.multDiagRight(inveigs);
-   } else if (_n > 10*_m) {
-      this->XXt(U);
-      syev<T>(allV,lower,_m,U.rawX(),_m,S.rawX());
-      S.thrsPos();
-      S.Sqrt();
-      U.mult(*this,V,true,false);
-      Vector<T> inveigs;
-      inveigs.copy(S);
-      for (INTM i = 0; i<num_eig; ++i) 
-         if (S[i] > 1e-10) {
-            inveigs[i]=T(1.0)/S[i];
-         } else {
-            inveigs[i]=T(1.0);
-         }
-      V.multDiagLeft(inveigs);
-   } else {
-      Matrix<T> copyX;
-      copyX.copy(*this);
-      gesvd<T>(reduced,reduced,_m,_n,copyX._X,_m,S.rawX(),U.rawX(),_m,V.rawX(),num_eig);
-   }
-};
-
-/// find the eigenvector corresponding to the largest eigenvalue
-/// when the current matrix is symmetric. u0 is the initial guess.
-/// using two iterations of the power method
-template <typename T> inline void Matrix<T>::eigLargestSymApprox(
-      const Vector<T>& u0, Vector<T>& u) const {
-   int i,j;
-   const int max_iter=100;
-   const T eps=10e-6;
-   u.copy(u0);
-   T norm = u.nrm2();
-   T theta;
-   u.scal(1.0/norm);
-   Vector<T> up(u);
-   Vector<T> uor(u);
-   T lambda=T();
-
-   for (j = 0; j<2;++j) {
-      up.copy(u);
-      for (i = 0; i<max_iter; ++i) {
-         mult(up,u);
-         norm = u.nrm2();
-         u.scal(1.0/norm);
-         theta=u.dot(up);
-         if ((1 - fabs(theta)) < eps) break;
-         up.copy(u);
-      }
-      lambda+=theta*norm;
-      if (isnan(lambda)) {
-         std::cerr << "eigLargestSymApprox failed" << std::endl;
-         exit(1);
-      }
-      if (j == 1 && lambda < eps) {
-         u.copy(uor);
-         break;
-      }
-      if (theta >= 0) break;
-      u.copy(uor);
-      for (i = 0; i<_m; ++i) _X[i*_m+i]-=lambda;
-   }
-};
-
-/// find the eigenvector corresponding to the eivenvalue with the 
-/// largest magnitude when the current matrix is symmetric,
-/// using the power method. It 
-/// returns the eigenvalue. u0 is an initial guess for the 
-/// eigenvector.
-template <typename T> inline T Matrix<T>::eigLargestMagnSym(
-      const Vector<T>& u0, Vector<T>& u) const {
-   const int max_iter=1000;
-   const T eps=10e-6;
-   u.copy(u0);
-   T norm = u.nrm2();
-   u.scal(1.0/norm);
-   Vector<T> up(u);
-   T lambda=T();
-
-   for (int i = 0; i<max_iter; ++i) {
-      mult(u,up);
-      u.copy(up);
-      norm=u.nrm2();
-      if (norm > 0) u.scal(1.0/norm);
-      if (norm == 0 || fabs(norm-lambda)/norm < eps) break;
-      lambda=norm;
-   }
-   return norm;
-};
-
-/// returns the value of the eigenvalue with the largest magnitude
-/// using the power iteration.
-template <typename T> inline T Matrix<T>::eigLargestMagnSym() const {
-   const int max_iter=1000;
-   const T eps=10e-6;
-   Vector<T> u(_m);
-   u.setAleat();
-   T norm = u.nrm2();
-   u.scal(1.0/norm);
-   Vector<T> up(u);
-   T lambda=T();
-   for (int i = 0; i<max_iter; ++i) {
-      mult(u,up);
-      u.copy(up);
-      norm=u.nrm2();
-      if (fabs(norm-lambda) < eps) break;
-      lambda=norm;
-      u.scal(1.0/norm);
-   }
-   return norm;
-};
-
-/// inverse the matrix when it is symmetric
-template <typename T> inline void Matrix<T>::invSym() {
-   sytri<T>(upper,_n,_X,_n);
-   this->fillSymmetric();
-};
-template <typename T> inline void Matrix<T>::invSymPos() {
-   potri<T>(upper,_n,_X,_n);
-   this->fillSymmetric();
-};
-
-/// perform b = alpha*A'x + beta*b
-template <typename T> inline void Matrix<T>::multTrans(const Vector<T>& x, 
-      Vector<T>& b, const T a, const T c) const {
-   b.resize(_n);
-   //   assert(x._n == _m && b._n == _n);
-   cblas_gemv<T>(CblasColMajor,CblasTrans,_m,_n,a,_X,_m,x._X,1,c,b._X,1);
-};
-
-/// perform b = A'x, when x is sparse
-template <typename T> 
-template <typename I> 
-inline void Matrix<T>::multTrans(const SpVector<T,I>& x, 
-      Vector<T>& b, const T alpha, const T beta) const {
-   b.resize(_n);
-   Vector<T> col;
-   if (beta) {
-      for (INTM i = 0; i<_n; ++i) {
-         refCol(i,col);
-         b._X[i] = alpha*col.dot(x);
-      }
-   } else {
-
-      for (INTM i = 0; i<_n; ++i) {
-         refCol(i,col);
-         b._X[i] = beta*b._X[i]+alpha*col.dot(x);
-      }
-   }
-};
-
-template <typename T> inline void Matrix<T>::multTrans(
-      const Vector<T>& x, Vector<T>& b, const Vector<bool>& active) const {
-   b.setZeros();
-   Vector<T> col;
-   bool* pr_active=active.rawX();
-   for (INTM i = 0; i<_n; ++i) {
-      if (pr_active[i]) {
-         this->refCol(i,col);
-         b._X[i]=col.dot(x);
-      }
-   }
-};
-
-/// perform b = alpha*A*x+beta*b
-template <typename T> inline void Matrix<T>::mult(const Vector<T>& x, 
-      Vector<T>& b, const T a, const T c) const {
-   //  assert(x._n == _n && b._n == _m);
-   b.resize(_m);
-   cblas_gemv<T>(CblasColMajor,CblasNoTrans,_m,_n,a,_X,_m,x._X,1,c,b._X,1);
-};
-
-
-/// perform b = alpha*A*x+beta*b
-template <typename T> inline void Matrix<T>::mult_loop(const Vector<T>& x, 
-      Vector<T>& b) const {
-   b.resize(_m);
-   for (int ii=0; ii<_m; ++ii) {
-      b[ii]=cblas_dot<T>(_n,x._X,1,_X+ii,_m);
-   }
-};
-
-/// perform b = alpha*A*x + beta*b, when x is sparse
-template <typename T> 
-template <typename I> 
-inline void Matrix<T>::mult(const SpVector<T,I>& x, 
-      Vector<T>& b, const T a, const T a2) const {
-   if (!a2) {
-      b.setZeros();
-   } else if (a2 != 1.0) {
-      b.scal(a2);
-   }
-   if (a == 1.0) {
-      for (INTM i = 0; i<x._L; ++i) {
-         cblas_axpy<T>(_m,x._v[i],_X+x._r[i]*_m,1,b._X,1);
-      }
-   } else {
-      for (INTM i = 0; i<x._L; ++i) {
-         cblas_axpy<T>(_m,a*x._v[i],_X+x._r[i]*_m,1,b._X,1);
-      }
-   }
-};
-
-/// perform C = a*A*B + b*C, possibly transposing A or B.
-template <typename T> inline void Matrix<T>::mult(const Matrix<T>& B, 
-      Matrix<T>& C, const bool transA, const bool transB,
-      const T a, const T b) const {
-   CBLAS_TRANSPOSE trA,trB;
-   INTM m,k,n;
-   if (transA) {
-      trA = CblasTrans;
-      m = _n;
-      k = _m;
-   } else {
-      trA= CblasNoTrans;
-      m = _m;
-      k = _n;
-   }
-   if (transB) {
-      trB = CblasTrans;
-      n = B._m; 
-      //assert(B._n == k);
-   } else {
-      trB = CblasNoTrans;
-      n = B._n; 
-      //assert(B._m == k);
-   }
-   C.resize(m,n);
-   cblas_gemm<T>(CblasColMajor,trA,trB,m,n,k,a,_X,_m,B._X,B._m,
-         b,C._X,C._m);
-};
-
-/// perform C = a*B*A + b*C, possibly transposing A or B.
-template <typename T>
-inline void Matrix<T>::multSwitch(const Matrix<T>& B, Matrix<T>& C, 
-      const bool transA, const bool transB,
-      const T a, const T b) const {
-   B.mult(*this,C,transB,transA,a,b);
-};
-
-/// perform C = A*B, when B is sparse
-template <typename T>
-template <typename I>
-inline void Matrix<T>::mult(const SpMatrix<T,I>& B, Matrix<T>& C,
-      const bool transA, const bool transB,
-      const T a, const T b) const {
-   if (transA) {
-      if (transB) {
-         C.resize(_n,B.m());
-         if (b) {
-            C.scal(b);
-         } else {
-            C.setZeros();
-         }
-         Vector<T> rowC(B.m());
-         Vector<T> colA;
-         for (INTM i = 0; i<_n; ++i) {
-            this->refCol(i,colA);
-            B.mult(colA,rowC,a);
-            C.addRow(i,rowC,a);
-         }
-      } else {
-         C.resize(_n,B.n());
-         if (b) {
-            C.scal(b);
-         } else {
-            C.setZeros();
-         }
-         Vector<T> colC;
-         SpVector<T,I> colB;
-         for (INTM i = 0; i<B.n(); ++i) {
-            C.refCol(i,colC);
-            B.refCol(i,colB);
-            this->multTrans(colB,colC,a,T(1.0));
-         }
-      }
-   } else {
-      if (transB) {
-         C.resize(_m,B.m());
-         if (b) {
-            C.scal(b);
-         } else {
-            C.setZeros();
-         }
-         Vector<T> colA;
-         SpVector<T,I> colB;
-         for (INTM i = 0; i<_n; ++i) {
-            this->refCol(i,colA);
-            B.refCol(i,colB);
-            C.rank1Update(colA,colB,a);
-         }
-      } else {
-         C.resize(_m,B.n());
-         if (b) {
-            C.scal(b);
-         } else {
-            C.setZeros();
-         }
-         Vector<T> colC;
-         SpVector<T,I> colB;
-         for (INTM i = 0; i<B.n(); ++i) {
-            C.refCol(i,colC);
-            B.refCol(i,colB);
-            this->mult(colB,colC,a,T(1.0));
-         }
-      }
-   };
-}
-
-
-/// mult by a diagonal matrix on the left
-template <typename T>
-   inline void Matrix<T>::multDiagLeft(const Vector<T>& diag) {
-      if (diag.n() != _m)
-         return;
-      T* d = diag.rawX();
-      for (INTM i = 0; i< _n; ++i) {
-         for (INTM j = 0; j<_m; ++j) {
-            _X[i*_m+j] *= d[j];
-         }
-      }
-   };
-
-/// mult by a diagonal matrix on the right
-template <typename T> inline void Matrix<T>::multDiagRight(
-      const Vector<T>& diag) {
-   if (diag.n() != _n)
-      return;
-   T* d = diag.rawX();
-   for (INTM i = 0; i< _n; ++i) {
-      for (INTM j = 0; j<_m; ++j) {
-         _X[i*_m+j] *= d[i];
-      }
-   }
-};
-/// mult by a diagonal matrix on the right
-template <typename T> inline void Matrix<T>::AddMultDiagRight(
-      const Vector<T>& diag, Matrix<T>& mat) {
-   if (diag.n() != _n)
-      return;
-   mat.resize(_m,_n);
-   //mat.setZeros();
-   T* d = diag.rawX();
-   for (INTM i = 0; i< _n; ++i) {
-      cblas_axpy<T>(_m,d[i],_X+i*_m,1,mat._X+i*_m,1);
-   }
-};
-
-
-
-/// C = A .* B, elementwise multiplication
-template <typename T> inline void Matrix<T>::mult_elementWise(
-      const Matrix<T>& B, Matrix<T>& C) const {
-   assert(_n == B._n && _m == B._m);
-   C.resize(_m,_n);
-   vMul<T>(_n*_m,_X,B._X,C._X);
-};
-
-/// C = A .* B, elementwise multiplication
-template <typename T> inline void Matrix<T>::div_elementWise(
-      const Matrix<T>& B, Matrix<T>& C) const {
-   assert(_n == B._n && _m == B._m);
-   C.resize(_m,_n);
-   vDiv<T>(_n*_m,_X,B._X,C._X);
-};
-
-
-/// XtX = A'*A
-template <typename T> inline void Matrix<T>::XtX(Matrix<T>& xtx) const {
-   xtx.resize(_n,_n);
-   cblas_syrk<T>(CblasColMajor,CblasUpper,CblasTrans,_n,_m,T(1.0),
-         _X,_m,T(),xtx._X,_n);
-   xtx.fillSymmetric();
-};
-
-/// XXt = A*At
-template <typename T> inline void Matrix<T>::XXt(Matrix<T>& xxt) const {
-   xxt.resize(_m,_m);
-   cblas_syrk<T>(CblasColMajor,CblasUpper,CblasNoTrans,_m,_n,T(1.0),
-         _X,_m,T(),xxt._X,_m);
-   xxt.fillSymmetric();
-};
-
-/// XXt = A*A' where A is an upper triangular matrix
-template <typename T> inline void Matrix<T>::upperTriXXt(Matrix<T>& XXt, const INTM L) const {
-   XXt.resize(L,L);
-   for (INTM i = 0; i<L; ++i) {
-      cblas_syr<T>(CblasColMajor,CblasUpper,i+1,T(1.0),_X+i*_m,1,XXt._X,L);
-   }
-   XXt.fillSymmetric();
-}
-
-
-/// extract the diagonal
-template <typename T> inline void Matrix<T>::diag(Vector<T>& dv) const {
-   INTM size_diag=MIN(_n,_m);
-   dv.resize(size_diag);
-   T* const d = dv.rawX();
-   for (INTM i = 0; i<size_diag; ++i)
-      d[i]=_X[i*_m+i];
-};
-
-/// set the diagonal
-template <typename T> inline void Matrix<T>::setDiag(const Vector<T>& dv) {
-   INTM size_diag=MIN(_n,_m);
-   T* const d = dv.rawX();
-   for (INTM i = 0; i<size_diag; ++i)
-      _X[i*_m+i]=d[i];
-};
-
-/// set the diagonal
-template <typename T> inline void Matrix<T>::setDiag(const T val) {
-   INTM size_diag=MIN(_n,_m);
-   for (INTM i = 0; i<size_diag; ++i)
-      _X[i*_m+i]=val;
-};
-
-
-/// each element of the matrix is replaced by its exponential
-template <typename T> inline void Matrix<T>::exp() {
-   vExp<T>(_n*_m,_X,_X);
-};
-
-/// each element of the matrix is replaced by its exponential
-template <typename T> inline void Matrix<T>::pow(const T a) {
-   vPowx<T>(_n*_m,_X,a,_X);
-};
-
-template <typename T> inline void Matrix<T>::sqr() {
-   vSqr<T>(_n*_m,_X,_X);
-};
-
-template <typename T> inline void Matrix<T>::Sqrt() {
-   vSqrt<T>(_n*_m,_X,_X);
-};
-
-template <typename T> inline void Matrix<T>::Invsqrt() {
-   vInvSqrt<T>(_n*_m,_X,_X);
-};
-/// return vec1'*A*vec2, where vec2 is sparse
-template <typename T> 
-template <typename I> 
-inline T Matrix<T>::quad(const SpVector<T,I>& vec) const {
-   T sum = T();
-   INTM L = vec._L;
-   I* r = vec._r;
-   T* v = vec._v;
-   for (INTM i = 0; i<L; ++i)
-      for (INTM j = 0; j<L; ++j)
-         sum += _X[r[i]*_m+r[j]]*v[i]*v[j];
-   return sum;
-};
-
-template <typename T> 
-template <typename I> 
-inline void Matrix<T>::quad_mult(const Vector<T>& vec1,
-      const SpVector<T,I>& vec2, Vector<T>& y, const T a, const T b) const {
-   const INTM size_y= y.n();
-   const INTM nn = _n/size_y;
-   //y.resize(size_y);
-   //y.setZeros();
-   Matrix<T> tmp;
-   for (INTM i = 0; i<size_y; ++i) {
-      tmp.setData(_X+(i*nn)*_m,_m,nn);
-      y[i]=b*y[i]+a*tmp.quad(vec1,vec2);
-   }
-}
-
-/// return vec'*A*vec when vec is sparse
-template <typename T> 
-template <typename I> 
-inline T Matrix<T>::quad(
-      const Vector<T>& vec1, const SpVector<T,I>& vec) const {
-   T sum = T();
-   INTM L = vec._L;
-   I* r = vec._r;
-   T* v = vec._v;
-   Vector<T> col;
-   for (INTM i = 0; i<L; ++i) {
-      this->refCol(r[i],col);
-      sum += v[i]*col.dot(vec1);
-   }
-   return sum;
-};
-
-/// add alpha*mat to the current matrix
-template <typename T> inline void Matrix<T>::add(const Matrix<T>& mat, const T alpha) {
-   assert(mat._m == _m && mat._n == _n);
-   cblas_axpy<T>(_n*_m,alpha,mat._X,1,_X,1);
-};
-
-/// add alpha*mat to the current matrix
-template <typename T> inline void Matrix<T>::add_scal(const Matrix<T>& mat, const T alpha, const T beta) {
-   assert(mat._m == _m && mat._n == _n);
-   cblas_axpby<T>(_n*_m,alpha,mat._X,1,beta,_X,1);
-};
-
-
-/// add alpha*mat to the current matrix
-template <typename T> inline T Matrix<T>::dot(const Matrix<T>& mat) const {
-   assert(mat._m == _m && mat._n == _n);
-   return cblas_dot<T>(_n*_m,mat._X,1,_X,1);
-};
-
-
-/// add alpha to the current matrix
-template <typename T> inline void Matrix<T>::add(const T alpha) {
-   for (INTM i = 0; i<_n*_m; ++i) _X[i]+=alpha;
-};
-
-/// substract the matrix mat to the current matrix
-template <typename T> inline void Matrix<T>::sub(const Matrix<T>& mat) {
-   vSub<T>(_n*_m,_X,mat._X,_X);
-};
-
-/// compute the sum of the magnitude of the matrix values
-template <typename T> inline T Matrix<T>::asum() const {
-   return cblas_asum<T>(_n*_m,_X,1);
-};
-
-template <typename T> inline T Matrix<T>::sum() const {
-   T sum=0;
-   for (INTM i =0; i<_n*_m; ++i) sum+=_X[i];
-   return sum;
-};
-
-
-
-/// returns the trace of the matrix
-template <typename T> inline T Matrix<T>::trace() const {
-   T sum=T();
-   INTM m = MIN(_n,_m);
-   for (INTM i = 0; i<m; ++i) 
-      sum += _X[i*_m+i];
-   return sum;
-};
-
-/// return ||A||_F
-template <typename T> inline T Matrix<T>::normF() const {
-   return cblas_nrm2<T>(_n*_m,_X,1);
-};
-
-template <typename T> inline T Matrix<T>::mean() const {
-   Vector<T> vec;
-   this->toVect(vec);
-   return vec.mean();
-};
-
-template <typename T> inline T Matrix<T>::abs_mean() const {
-   Vector<T> vec;
-   this->toVect(vec);
-   return vec.abs_mean();
-};
-
-
-/// return ||A||_F^2
-template <typename T> inline T Matrix<T>::normFsq() const {
-   return cblas_dot<T>(_n*_m,_X,1,_X,1);
-};
-
-/// return ||At||_{inf,2}
-template <typename T> inline T Matrix<T>::norm_inf_2_col() const {
-   Vector<T> col;
-   T max = -1.0;
-   for (INTM i = 0; i<_n; ++i) {
-      refCol(i,col);
-      T norm_col = col.nrm2();
-      if (norm_col > max) 
-         max = norm_col;
-   }
-   return max;
-};
-
-/// return ||At||_{1,2}
-template <typename T> inline T Matrix<T>::norm_1_2_col() const {
-   Vector<T> col;
-   T sum = 0.0;
-   for (INTM i = 0; i<_n; ++i) {
-      refCol(i,col);
-      sum += col.nrm2();
-   }
-   return sum;
-};
-
-/// returns the l2 norms of the columns
-template <typename T> inline void Matrix<T>::norm_2_rows(
-      Vector<T>& norms) const {
-   norms.resize(_m);
-   norms.setZeros();
-   for (INTM i = 0; i<_n; ++i) 
-      for (INTM j = 0; j<_m; ++j) 
-         norms[j] += _X[i*_m+j]*_X[i*_m+j];
-   for (INTM j = 0; j<_m; ++j) 
-      norms[j]=sqrt(norms[j]);
-};
-
-/// returns the l2 norms of the columns
-template <typename T> inline void Matrix<T>::norm_2sq_rows(
-      Vector<T>& norms) const {
-   norms.resize(_m);
-   norms.setZeros();
-   for (INTM i = 0; i<_n; ++i) 
-      for (INTM j = 0; j<_m; ++j) 
-         norms[j] += _X[i*_m+j]*_X[i*_m+j];
-};
-
-
-/// returns the l2 norms of the columns
-template <typename T> inline void Matrix<T>::norm_2_cols(
-      Vector<T>& norms) const {
-   norms.resize(_n);
-   Vector<T> col;
-   for (INTM i = 0; i<_n; ++i) {
-      refCol(i,col);
-      norms[i] = col.nrm2();
-   }
-};
-
-
-/// returns the linf norms of the columns
-template <typename T> inline void Matrix<T>::norm_inf_cols(Vector<T>& norms) const {
-   norms.resize(_n);
-   Vector<T> col;
-   for (INTM i = 0; i<_n; ++i) {
-      refCol(i,col);
-      norms[i] = col.fmaxval();
-   }
-};
-
-/// returns the linf norms of the columns
-template <typename T> inline void Matrix<T>::norm_inf_rows(Vector<T>& norms) const {
-   norms.resize(_m);
-   norms.setZeros();
-   for (INTM i = 0; i<_n; ++i) 
-      for (INTM j = 0; j<_m; ++j) 
-         norms[j] = MAX(abs<T>(_X[i*_m+j]),norms[j]);
-};
-
-template <typename T> inline void Matrix<T>::get_sum_cols(Vector<T>& sum) const {
-   sum.resize(_n);
-   for (INTM i = 0; i<_n; ++i) {
-      sum[i]=0;
-      for (INTM j = 0; j<_m; ++j) 
-         sum[i] += (_X[i*_m+j]);
-   }
-};
-
-template <typename T> inline void Matrix<T>::dot_col(const Matrix<T>& mat, 
-      Vector<T>& dots) const {
-   dots.resize(_n);
-   for (INTM i = 0; i<_n; ++i) 
-      dots[i] = cblas_dot<T>(_m,_X+i*_m,1,mat._X+i*_m,1);
-}
-
-/// returns the linf norms of the columns
-template <typename T> inline void Matrix<T>::norm_l1_rows(Vector<T>& norms) const {
-   norms.resize(_m);
-   norms.setZeros();
-   for (INTM i = 0; i<_n; ++i) 
-      for (INTM j = 0; j<_m; ++j) 
-         norms[j] += abs<T>(_X[i*_m+j]);
-};
-
-
-
-/// returns the l2 norms of the columns
-template <typename T> inline void Matrix<T>::norm_2sq_cols(
-      Vector<T>& norms) const {
-   norms.resize(_n);
-   Vector<T> col;
-   for (INTM i = 0; i<_n; ++i) {
-      refCol(i,col);
-      norms[i] = col.nrm2sq();
-   }
-};
-
-template <typename T> 
-inline void Matrix<T>::sum_cols(Vector<T>& sum) const {
-   sum.resize(_m);
-   sum.setZeros();
-   Vector<T> tmp;
-   for (INTM i = 0; i<_n; ++i) {
-      this->refCol(i,tmp);
-      sum.add(tmp);
-   }
-};
-
-/// Compute the mean of the columns
-template <typename T> inline void Matrix<T>::meanCol(Vector<T>& mean) const {
-   Vector<T> ones(_n);
-   ones.set(T(1.0/_n));
-   this->mult(ones,mean,1.0,0.0);
-};
-
-/// Compute the mean of the rows
-template <typename T> inline void Matrix<T>::meanRow(Vector<T>& mean) const {
-   Vector<T> ones(_m);
-   ones.set(T(1.0/_m));
-   this->multTrans(ones,mean,1.0,0.0);
-};
-
-
-/// fill the matrix with the row given
-template <typename T> inline void Matrix<T>::fillRow(const Vector<T>& row) {
-   for (INTM i = 0; i<_n; ++i) {
-      T val = row[i];
-      for (INTM j = 0; j<_m; ++j) {
-         _X[i*_m+j]=val;
-      }
-   }
-};
-
-/// fill the matrix with the row given
-template <typename T> inline void Matrix<T>::extractRow(const INTM j,
-      Vector<T>& row) const {
-   row.resize(_n);
-   for (INTM i = 0; i<_n; ++i) {
-      row[i]=_X[i*_m+j];
-   }
-};
-
-/// fill the matrix with the row given
-template <typename T> inline void Matrix<T>::setRow(const INTM j,
-      const Vector<T>& row) {
-   for (INTM i = 0; i<_n; ++i) {
-      _X[i*_m+j]=row[i];
-   }
-};
-
-/// fill the matrix with the row given
-template <typename T> inline void Matrix<T>::addRow(const INTM j,
-      const Vector<T>& row, const T a) {
-   if (a==1.0) {
-      for (INTM i = 0; i<_n; ++i) {
-         _X[i*_m+j]+=row[i];
-      }
-   } else {
-      for (INTM i = 0; i<_n; ++i) {
-         _X[i*_m+j]+=a*row[i];
-      }
-   }
-};
-
-
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::softThrshold(const T nu) {
-   Vector<T> vec;
-   toVect(vec);
-   vec.softThrshold(nu);
-};
-
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::fastSoftThrshold(const T nu) {
-   Vector<T> vec;
-   toVect(vec);
-   vec.fastSoftThrshold(nu);
-};
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::fastSoftThrshold(Matrix<T>& output, const T nu) const {
-   output.resize(_m,_n,false);
-   Vector<T> vec, vec2;
-   toVect(vec);
-   output.toVect(vec2);
-   vec.fastSoftThrshold(vec2,nu);
-};
-
-
-
-
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::hardThrshold(const T nu) {
-   Vector<T> vec;
-   toVect(vec);
-   vec.hardThrshold(nu);
-};
-
-
-/// perform thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::thrsmax(const T nu) {
-   Vector<T> vec;
-   toVect(vec);
-   vec.thrsmax(nu);
-};
-
-/// perform thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::thrsmin(const T nu) {
-   Vector<T> vec;
-   toVect(vec);
-   vec.thrsmin(nu);
-};
-
-
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::inv_elem() {
-   Vector<T> vec;
-   toVect(vec);
-   vec.inv();
-};
-
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::blockThrshold(const T nu,
-      const INTM sizeGroup) {
-   for (INTM i = 0; i<_n; ++i) {
-      INTM j;
-      for (j = 0; j<_m-sizeGroup+1; j+=sizeGroup) {
-         T nrm=0;
-         for (INTM k = 0; k<sizeGroup; ++k)
-            nrm += _X[i*_m +j+k]*_X[i*_m +j+k];
-         nrm=sqrt(nrm);
-         if (nrm < nu) {
-            for (INTM k = 0; k<sizeGroup; ++k)
-               _X[i*_m +j+k]=0;
-         } else {
-            T scal = (nrm-nu)/nrm;
-            for (INTM k = 0; k<sizeGroup; ++k)
-               _X[i*_m +j+k]*=scal;
-         }
-      }
-      j -= sizeGroup;
-      for ( ; j<_m; ++j)
-         _X[j]=softThrs<T>(_X[j],nu);
-   }
-}
-
-template <typename T> inline void Matrix<T>::sparseProject(Matrix<T>& Y, 
-      const T thrs,   const int mode, const T lambda1,
-      const T lambda2, const T lambda3, const bool pos,
-      const int numThreads) {
-
-   int NUM_THREADS=init_omp(numThreads);
-   Vector<T>* XXT= new Vector<T>[NUM_THREADS];
-   for (int i = 0; i<NUM_THREADS; ++i) {
-      XXT[i].resize(_m);
-   }
-
-   int i;
-#pragma omp parallel for private(i) 
-   for (i = 0; i< _n; ++i) {
-#ifdef _OPENMP
-      int numT=omp_get_thread_num();
-#else
-      int numT=0;
-#endif
-      Vector<T> Xi;
-      this->refCol(i,Xi);
-      Vector<T> Yi;
-      Y.refCol(i,Yi);
-      Vector<T>& XX = XXT[numT];
-      XX.copy(Xi);
-      XX.sparseProject(Yi,thrs,mode,lambda1,lambda2,lambda3,pos);
-   }
-   delete[](XXT);
-};
-
-
-/// perform soft-thresholding of the matrix, with the threshold nu
-template <typename T> inline void Matrix<T>::thrsPos() {
-   Vector<T> vec;
-   toVect(vec);
-   vec.thrsPos();
-};
-
-
-/// perform A <- A + alpha*vec1*vec2'
-template <typename T> inline void Matrix<T>::rank1Update(
-      const Vector<T>& vec1, const Vector<T>& vec2, const T alpha) {
-   cblas_ger<T>(CblasColMajor,_m,_n,alpha,vec1._X,1,vec2._X,1,_X,_m);
-};
-
-/// perform A <- A + alpha*vec1*vec2', when vec1 is sparse
-template <typename T> 
-template <typename I> 
-inline void Matrix<T>::rank1Update(
-      const SpVector<T,I>& vec1, const Vector<T>& vec2, const T alpha) {
-   I* r = vec1._r;
-   T* v = vec1._v;
-   T* X2 = vec2._X;
-   assert(vec2._n == _n);
-   if (alpha == 1.0) {
-      for (INTM i = 0; i<_n; ++i) {
-         for (INTM j = 0; j<vec1._L; ++j) {
-            _X[i*_m+r[j]] += v[j]*X2[i];
-         }
-      }
-   } else {
-      for (INTM i = 0; i<_n; ++i) {
-         for (INTM j = 0; j<vec1._L; ++j) {
-            _X[i*_m+r[j]] += alpha*v[j]*X2[i];
-         }
-      }
-   }
-};
-
-template <typename T>
-template <typename I>
-inline void Matrix<T>::rank1Update_mult(const Vector<T>& vec1, 
-      const Vector<T>& vec1b,
-      const SpVector<T,I>& vec2,
-      const T alpha) {
-   const INTM nn = vec1b.n();
-   const INTM size_A = _n/nn;
-   Matrix<T> tmp;
-   for (INTM i = 0; i<nn; ++i) {
-      tmp.setData(_X+i*size_A*_m,_m,size_A);
-      tmp.rank1Update(vec1,vec2,alpha*vec1b[i]);
-   }
-};
-
-/// perform A <- A + alpha*vec1*vec2', when vec1 is sparse
-template <typename T>
-template <typename I>
-inline void Matrix<T>::rank1Update(
-      const SpVector<T,I>& vec1, const SpVector<T,I>& vec2, const T alpha) {
-   I* r = vec1._r;
-   T* v = vec1._v;
-   T* v2 = vec2._v;
-   I* r2 = vec2._r;
-   if (alpha == 1.0) {
-      for (INTM i = 0; i<vec2._L; ++i) {
-         for (INTM j = 0; j<vec1._L; ++j) {
-            _X[r2[i]*_m+r[j]] += v[j]*v2[i];
-         }
-      }
-   } else {
-      for (INTM i = 0; i<vec2._L; ++i) {
-         for (INTM j = 0; j<vec1._L; ++j) {
-            _X[r[i]*_m+r[j]] += alpha*v[j]*v2[i];
-         }
-      }
-   }
-};
-
-
-/// perform A <- A + alpha*vec1*vec2', when vec2 is sparse
-template <typename T> 
-template <typename I> 
-inline void Matrix<T>::rank1Update(
-      const Vector<T>& vec1, const SpVector<T,I>& vec2, const T alpha) {
-   I* r = vec2._r;
-   T* v = vec2._v;
-   Vector<T> Xi;
-   for (INTM i = 0; i<vec2._L; ++i) {
-      this->refCol(r[i],Xi);
-      Xi.add(vec1,v[i]*alpha);
-   }
-};
-
-/// perform A <- A + alpha*vec1*vec1', when vec1 is sparse
-template <typename T> 
-template <typename I> 
-inline void Matrix<T>::rank1Update(
-      const SpVector<T,I>& vec1, const T alpha) {
-   I* r = vec1._r;
-   T* v = vec1._v;
-   if (alpha == 1.0) {
-      for (INTM i = 0; i<vec1._L; ++i) {
-         for (INTM j = 0; j<vec1._L; ++j) {
-            _X[r[i]*_m+r[j]] += v[j]*v[i];
-         }
-      }
-   } else {
-      for (INTM i = 0; i<vec1._L; ++i) {
-         for (INTM j = 0; j<vec1._L; ++j) {
-            _X[_m*r[i]+r[j]] += alpha*v[j]*v[i];
-         }
-      }
-   }
-};
-
-/// compute x, such that b = Ax, 
-template <typename T> inline void Matrix<T>::conjugateGradient(
-      const Vector<T>& b, Vector<T>& x, const T tol, const int itermax) const {
-   Vector<T> R,P,AP;
-   R.copy(b);
-   this->mult(x,R,T(-1.0),T(1.0));
-   P.copy(R);
-   int k = 0;
-   T normR = R.nrm2sq();
-   T alpha;
-   while (normR > tol && k < itermax) {
-      this->mult(P,AP);
-      alpha = normR/P.dot(AP);
-      x.add(P,alpha);
-      R.add(AP,-alpha);
-      T tmp = R.nrm2sq();
-      P.scal(tmp/normR);
-      normR = tmp;
-      P.add(R,T(1.0));
-      ++k;
-   };
-};
-
-template <typename T> inline void Matrix<T>::drop(char* fileName) const {
-   std::ofstream f;
-   f.precision(12);
-   f.flags(std::ios_base::scientific);
-   f.open(fileName, ofstream::trunc);
-   std::cout << "Matrix written in " << fileName << std::endl;
-   for (INTM i = 0; i<_n; ++i) {
-      for (INTM j = 0; j<_m; ++j) 
-         f << _X[i*_m+j] << " ";
-      f << std::endl;
-   }
-   f.close();
-};
-
-/// compute a Nadaraya Watson estimator
-template <typename T> inline void Matrix<T>::NadarayaWatson(
-      const Vector<INTM>& ind, const T sigma) {
-   if (ind.n() != _n) return;
-
-   init_omp(MAX_THREADS);
-
-   const INTM Ngroups=ind.maxval();
-   INTM i;
-#pragma omp parallel for private(i)
-   for (i = 1; i<=Ngroups; ++i) {
-      Vector<INTM> indicesGroup(_n);
-      INTM count = 0;
-      for (INTM j = 0; j<_n; ++j)
-         if (ind[j] == i) indicesGroup[count++]=j;
-      Matrix<T> Xm(_m,count);
-      Vector<T> col, col2;
-      for (INTM j= 0; j<count; ++j) {
-         this->refCol(indicesGroup[j],col);
-         Xm.refCol(j,col2);
-         col2.copy(col);
-      }
-      Vector<T> norms;
-      Xm.norm_2sq_cols(norms);
-      Matrix<T> weights;
-      Xm.XtX(weights);
-      weights.scal(T(-2.0));
-      Vector<T> ones(Xm.n());
-      ones.set(T(1.0));
-      weights.rank1Update(ones,norms);
-      weights.rank1Update(norms,ones);
-      weights.scal(-sigma);
-      weights.exp();
-      Vector<T> den;
-      weights.mult(ones,den);
-      den.inv();
-      weights.multDiagRight(den);
-      Matrix<T> num;
-      Xm.mult(weights,num);
-      for (INTM j= 0; j<count; ++j) {
-         this->refCol(indicesGroup[j],col);
-         num.refCol(j,col2);
-         col.copy(col2);
-      }
-   }
-};
-
-/// make a sparse copy of the current matrix
-template <typename T> inline void Matrix<T>::toSparse(SpMatrix<T>& out) const {
-   out.clear();
-   INTM count=0;
-   INTM* pB;
-#pragma omp critical
-   {
-      pB=new INTM[_n+1];
-   }
-   INTM* pE=pB+1;
-   for (INTM i = 0; i<_n*_m; ++i) 
-      if (_X[i] != 0) ++count;
-   INTM* r;
-   T* v;
-#pragma omp critical
-   {
-      r=new INTM[count];
-      v=new T[count];
-   }
-   count=0;
-   for (INTM i = 0; i<_n; ++i) {
-      pB[i]=count;
-      for (INTM j = 0; j<_m; ++j) {
-         if (_X[i*_m+j] != 0) {
-            v[count]=_X[i*_m+j];
-            r[count++]=j;
-         }
-      }
-      pE[i]=count;
-   }
-   out._v=v;
-   out._r=r;
-   out._pB=pB;
-   out._pE=pE;
-   out._m=_m;
-   out._n=_n;
-   out._nzmax=count;
-   out._externAlloc=false;
-};
-
-/// make a sparse copy of the current matrix
-template <typename T> inline void Matrix<T>::toSparseTrans(
-      SpMatrix<T>& out) {
-   out.clear();
-   INTM count=0;
-   INTM* pB;
-#pragma omp critical
-   {
-      pB=new INTM[_m+1];
-   }
-   INTM* pE=pB+1;
-   for (INTM i = 0; i<_n*_m; ++i) 
-      if (_X[i] != 0) ++count;
-   INTM* r;
-   T* v;
-#pragma omp critical
-   {
-      r=new INTM[count];
-      v=new T[count];
-   }
-   count=0;
-   for (INTM i = 0; i<_m; ++i) {
-      pB[i]=count;
-      for (INTM j = 0; j<_n; ++j) {
-         if (_X[i+j*_m] != 0) {
-            v[count]=_X[j*_m+i];
-            r[count++]=j;
-         }
-      }
-      pE[i]=count;
-   }
-   out._v=v;
-   out._r=r;
-   out._pB=pB;
-   out._pE=pE;
-   out._m=_n;
-   out._n=_m;
-   out._nzmax=count;
-   out._externAlloc=false;
-};
-
-/// make a reference of the matrix to a vector vec 
-template <typename T> inline void Matrix<T>::toVect(
-      Vector<T>& vec) const {
-   vec.clear();
-   vec._externAlloc=true;
-   vec._n=_n*_m;
-   vec._X=_X;
-};
 
 /* ***********************************
  * Implementation of the class Vector
@@ -3815,12 +2237,12 @@ template <typename T> inline void Vector<T>::l1project(Vector<T>& out,
          sizeU = sizeG-1;
       }
    }
-   T lambda = (sum-thrs)/sum_card;
+   T lambda_1 = (sum-thrs)/sum_card;
    out.copy(*this);
    if (simplex) {
       out.thrsPos();
    }
-   out.softThrshold(lambda);
+   out.softThrshold(lambda_1);
 };
 
 /// projects the vector onto the l1 ball of radius thrs,
@@ -3839,29 +2261,29 @@ template <typename T> inline void Vector<T>::l1project_weighted(Vector<T>& out, 
    out.sort2(keys,false);
    T sum1=0;
    T sum2=0;
-   T lambda=0;
+   T lambda_1=0;
    for (INTM i = 0; i<_n; ++i) {
-      const T lambda_old=lambda;
+      const T lambda_old=lambda_1;
       const T fact=weights[keys[i]]*weights[keys[i]];
-      lambda=out[i];
+      lambda_1=out[i];
       sum2 += fact;
-      sum1 += fact*lambda;
-      if (sum1 - lambda*sum2 >= thrs) {
+      sum1 += fact*lambda_1;
+      if (sum1 - lambda_1*sum2 >= thrs) {
          sum2-=fact;
-         sum1-=fact*lambda;
-         lambda=lambda_old;
+         sum1-=fact*lambda_1;
+         lambda_1=lambda_old;
          break;
       }
    }
-   lambda=MAX(0,(sum1-thrs)/sum2);
+   lambda_1=MAX(0,(sum1-thrs)/sum2);
 
    if (residual) {
       for (INTM i = 0; i<_n; ++i) {
-         out._X[i]=_X[i] > 0 ? MIN(_X[i],lambda*weights[i]) : MAX(_X[i],-lambda*weights[i]);
+         out._X[i]=_X[i] > 0 ? MIN(_X[i],lambda_1*weights[i]) : MAX(_X[i],-lambda_1*weights[i]);
       }
    } else {
       for (INTM i = 0; i<_n; ++i) {
-         out._X[i]=_X[i] > 0 ? MAX(0,_X[i]-lambda*weights[i]) : MIN(0,_X[i]+lambda*weights[i]);
+         out._X[i]=_X[i] > 0 ? MAX(0,_X[i]-lambda_1*weights[i]) : MIN(0,_X[i]+lambda_1*weights[i]);
       }
    }
 };
@@ -3928,59 +2350,59 @@ inline void Vector<T>::project_sft(const Vector<int>& labels, const int clas) {
 };
 
 template <typename T>
-inline void Vector<T>::sparseProject(Vector<T>& out, const T thrs, const int mode, const T lambda1,
-      const T lambda2, const T lambda3, const bool pos) {
+inline void Vector<T>::sparseProject(Vector<T>& out, const T thrs, const int mode, const T lambda_1,
+      const T lambda_2, const T lambda_3, const bool pos) {
    if (mode == 1) {
       /// min_u ||b-u||_2^2 / ||u||_1 <= thrs
       this->l1project(out,thrs,pos);
    } else if (mode == 2) {
-      /// min_u ||b-u||_2^2 / ||u||_2^2 + lambda1||u||_1 <= thrs
-      if (lambda1 > 1e-10) {
-         this->scal(lambda1);
-         this->l1l2project(out,thrs,2.0/(lambda1*lambda1),pos);
-         this->scal(T(1.0/lambda1));
-         out.scal(T(1.0/lambda1));
+      /// min_u ||b-u||_2^2 / ||u||_2^2 + lambda_1||u||_1 <= thrs
+      if (lambda_1 > 1e-10) {
+         this->scal(lambda_1);
+         this->l1l2project(out,thrs,2.0/(lambda_1*lambda_1),pos);
+         this->scal(T(1.0/lambda_1));
+         out.scal(T(1.0/lambda_1));
       } else {
          out.copy(*this);
          out.normalize2();
          out.scal(sqrt(thrs));
       }
    } else if (mode == 3) {
-      /// min_u ||b-u||_2^2 / ||u||_1 + (lambda1/2) ||u||_2^2 <= thrs
-      this->l1l2project(out,thrs,lambda1,pos);
+      /// min_u ||b-u||_2^2 / ||u||_1 + (lambda_1/2) ||u||_2^2 <= thrs
+      this->l1l2project(out,thrs,lambda_1,pos);
    } else if (mode == 4) {
-      /// min_u 0.5||b-u||_2^2  + lambda1||u||_1 / ||u||_2^2 <= thrs
+      /// min_u 0.5||b-u||_2^2  + lambda_1||u||_1 / ||u||_2^2 <= thrs
       out.copy(*this);
       if (pos) 
          out.thrsPos();
-      out.softThrshold(lambda1);
+      out.softThrshold(lambda_1);
       T nrm=out.nrm2sq();
       if (nrm > thrs)
          out.scal(sqr_alt<T>(thrs/nrm));
    } else if (mode == 5) {
-      /// min_u 0.5||b-u||_2^2  + lambda1||u||_1 +lambda2 Fused(u) / ||u||_2^2 <= thrs
-      //      this->fusedProject(out,lambda1,lambda2,100);
+      /// min_u 0.5||b-u||_2^2  + lambda_1||u||_1 +lambda_2 Fused(u) / ||u||_2^2 <= thrs
+      //      this->fusedProject(out,lambda_1,lambda_2,100);
       //      T nrm=out.nrm2sq();
       //      if (nrm > thrs)
       //         out.scal(sqr_alt<T>(thrs/nrm));
       //  } else if (mode == 6) {
-      /// min_u 0.5||b-u||_2^2  + lambda1||u||_1 +lambda2 Fused(u) +0.5lambda_3 ||u||_2^2 
-      this->fusedProjectHomotopy(out,lambda1,lambda2,lambda3,true);
+      /// min_u 0.5||b-u||_2^2  + lambda_1||u||_1 +lambda_2 Fused(u) +0.5lambda_3 ||u||_2^2 
+      this->fusedProjectHomotopy(out,lambda_1,lambda_2,lambda_3,true);
 } else if (mode==6) {
-   /// min_u ||b-u||_2^2  /  lambda1||u||_1 +lambda2 Fused(u) + 0.5lambda3||u||_2^2 <= thrs
-   this->fusedProjectHomotopy(out,lambda1/thrs,lambda2/thrs,lambda3/thrs,false);
+   /// min_u ||b-u||_2^2  /  lambda_1||u||_1 +lambda_2 Fused(u) + 0.5lambda3||u||_2^2 <= thrs
+   this->fusedProjectHomotopy(out,lambda_1/thrs,lambda_2/thrs,lambda_3/thrs,false);
 } else {
-   /// min_u ||b-u||_2^2 / (1-lambda1)*||u||_2^2 + lambda1||u||_1 <= thrs
-   if (lambda1 < 1e-10) {
+   /// min_u ||b-u||_2^2 / (1-lambda_1)*||u||_2^2 + lambda_1||u||_1 <= thrs
+   if (lambda_1 < 1e-10) {
       out.copy(*this);
       if (pos) 
          out.thrsPos();
       out.normalize2();
       out.scal(sqrt(thrs));
-   } else if (lambda1 > 0.999999) {
+   } else if (lambda_1 > 0.999999) {
       this->l1project(out,thrs,pos);
    } else {
-      this->sparseProject(out,thrs/(1.0-lambda1),2,lambda1/(1-lambda1),0,0,pos);
+      this->sparseProject(out,thrs/(1.0-lambda_1),2,lambda_1/(1-lambda_1),0,0,pos);
    }
 }
 };
@@ -4063,14 +2485,14 @@ template <typename T>
       T b = 2*gamma*thrs+sum_card;
       T c=thrs-sum;
       T delta = b*b-4*a*c;
-      T lambda = (-b+sqrt(delta))/(2*a);
+      T lambda_1 = (-b+sqrt(delta))/(2*a);
 
       out.copy(*this);
       if (pos) {
          out.thrsPos();
       }
-      out.fastSoftThrshold(lambda);
-      out.scal(T(1.0/(1+lambda*gamma)));
+      out.fastSoftThrshold(lambda_1);
+      out.scal(T(1.0/(1+lambda_1*gamma)));
    };
 
 template <typename T>
@@ -4096,7 +2518,7 @@ static inline T fusedHomotopyAux(const bool& sign1,
 
 template <typename T>
 inline void Vector<T>::fusedProjectHomotopy(Vector<T>& alpha, 
-      const T lambda1,const T lambda2,const T lambda3,
+      const T lambda_1,const T lambda_2,const T lambda_3,
       const bool penalty) {
    T* pr_DtR=_X;
    const INTM K = _n;
@@ -4143,15 +2565,15 @@ inline void Vector<T>::fusedProjectHomotopy(Vector<T>& alpha,
    /// Solve the Lasso using simplified LARS
    for (INTM i = 1; i<K; ++i) {
       /// exit if constraINTMs are satisfied
-      /// min_u ||b-u||_2^2  +  lambda1||u||_1 +lambda2 Fused(u) + 0.5lambda3||u||_2^2 
-      if (penalty && currentLambda <= lambda2) break;
+      /// min_u ||b-u||_2^2  +  lambda_1||u||_1 +lambda_2 Fused(u) + 0.5lambda3||u||_2^2 
+      if (penalty && currentLambda <= lambda_2) break;
       if (!penalty) {
-         /// min_u ||b-u||_2^2  /  lambda1||u||_1 +lambda2 Fused(u) + 0.5lambda3||u||_2^2 <= 1.0
+         /// min_u ||b-u||_2^2  /  lambda_1||u||_1 +lambda_2 Fused(u) + 0.5lambda3||u||_2^2 <= 1.0
          scores.copy(alpha);
-         scores.softThrshold(lambda1*currentLambda/lambda2);
-         scores.scal(T(1.0/(1.0+lambda3*currentLambda/lambda2)));
-         if (lambda1*scores.asum()+lambda2*scores.afused()+0.5*
-               lambda3*scores.nrm2sq() >= T(1.0)) break;
+         scores.softThrshold(lambda_1*currentLambda/lambda_2);
+         scores.scal(T(1.0/(1.0+lambda_3*currentLambda/lambda_2)));
+         if (lambda_1*scores.asum()+lambda_2*scores.afused()+0.5*
+               lambda_3*scores.nrm2sq() >= T(1.0)) break;
       }
 
       /// Update pr_ind and pr_c
@@ -4203,7 +2625,7 @@ inline void Vector<T>::fusedProjectHomotopy(Vector<T>& alpha,
       /// Check constraINTMs
       T max_step1 = INFINITY;
       if (penalty) {
-         max_step1 = currentLambda-lambda2;
+         max_step1 = currentLambda-lambda_2;
       } 
 
       /// Check changes of sign
@@ -4257,16 +2679,16 @@ inline void Vector<T>::fusedProjectHomotopy(Vector<T>& alpha,
    }
 
    if (penalty) {
-      alpha.softThrshold(lambda1);
-      alpha.scal(T(1.0/(1.0+lambda3)));
+      alpha.softThrshold(lambda_1);
+      alpha.scal(T(1.0/(1.0+lambda_3)));
    } else {
-      alpha.softThrshold(lambda1*currentLambda/lambda2);
-      alpha.scal(T(1.0/(1.0+lambda3*currentLambda/lambda2)));
+      alpha.softThrshold(lambda_1*currentLambda/lambda_2);
+      alpha.scal(T(1.0/(1.0+lambda_3*currentLambda/lambda_2)));
    }
 };
 
 template <typename T>
-inline void Vector<T>::fusedProject(Vector<T>& alpha, const T lambda1, const T lambda2,
+inline void Vector<T>::fusedProject(Vector<T>& alpha, const T lambda_1, const T lambda_2,
       const int itermax) {
    T* pr_alpha= alpha.rawX();
    T* pr_beta=_X;
@@ -4294,7 +2716,7 @@ inline void Vector<T>::fusedProject(Vector<T>& alpha, const T lambda1, const T l
          pr_alpha[j]+=sum_diff;
          T gamma_old=pr_alpha[j]-pr_alpha[j-1];
          T gamma_new=softThrs((K-j)*gamma_old+pr_beta[j]-
-               (total_alpha-sum_alpha),lambda2)/(K-j);
+               (total_alpha-sum_alpha),lambda_2)/(K-j);
          pr_alpha[j]=pr_alpha[j-1]+gamma_new;
          T diff = gamma_new-gamma_old;
          sum_diff += diff;
@@ -4302,7 +2724,7 @@ inline void Vector<T>::fusedProject(Vector<T>& alpha, const T lambda1, const T l
          total_alpha +=(K-j)*diff;
       }
    }
-   alpha.softThrshold(lambda1);
+   alpha.softThrshold(lambda_1);
 
 };
 
@@ -5495,5 +3917,1970 @@ template <typename T, typename I> void inline SpVector<T,I>::toFull(Vector<T>& o
       for (I i = 0; i<_L; ++i)
          X[_r[i]]=_v[i];
    };
+
+
+/* ************************************
+ * Implementation of the class Matrix 
+ * ************************************/
+
+/// Constructor with existing data X of an m x n matrix
+template <typename T> Matrix<T>::Matrix(T* X, INTM m, INTM n) :
+   _externAlloc(true), _X(X), _m(m), _n(n) {  };
+
+
+/// Constructor for a new m x n matrix
+template <typename T> Matrix<T>::Matrix(INTM m, INTM n) :
+   _externAlloc(false), _m(m), _n(n)  {
+#pragma omp critical
+      {
+         _X= new T[_n*_m];
+      }
+   };
+
+/// Empty constructor
+template <typename T> Matrix<T>::Matrix() :
+   _externAlloc(false), _X(NULL), _m(0), _n(0) { };
+
+/// Destructor
+template <typename T> Matrix<T>::~Matrix() {
+   clear();
+};
+
+/// Return a modifiable reference to X(i,j)
+template <typename T> inline T& Matrix<T>::operator()(const INTM i, const INTM j) {
+   return _X[j*_m+i];
+};
+
+/// Return the value X(i,j)
+template <typename T> inline T Matrix<T>::operator()(const INTM i, const INTM j) const {
+   return _X[j*_m+i];
+};
+
+/// Print the matrix to std::cout
+template <typename T> inline void Matrix<T>::print(const string& name) const {
+   std::cerr << name << std::endl;
+   std::cerr << _m << " x " << _n << std::endl;
+   for (INTM i = 0; i<_m; ++i) {
+      for (INTM j = 0; j<_n; ++j) {
+         printf("%10.5g ",static_cast<double>(_X[j*_m+i]));
+      }
+      printf("\n ");
+   }
+   printf("\n ");
+};
+
+/// Print the matrix to std::cout
+template <typename T> inline void Matrix<T>::dump(const string& name) const {
+   ofstream f; 
+   const char * cname = name.c_str();
+   f.open(cname);
+   f.precision(20);
+   std::cerr << name << std::endl;
+   f << _m << " x " << _n << std::endl;
+   for (INTM i = 0; i<_m; ++i) {
+      for (INTM j = 0; j<_n; ++j) {
+         f << static_cast<double>(_X[j*_m+i]) << " ";
+      }
+      f << std::endl;
+   }
+   f << std::endl;
+   f.close();
+};
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::copyCol(const INTM i, Vector<T>& x) const {
+   assert(i >= 0 && i<_n);
+   x.resize(_m);
+   cblas_copy<T>(_m,_X+i*_m,1,x._X,1);
+};
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::copyRow(const INTM i, Vector<T>& x) const {
+   assert(i >= 0 && i<_m);
+   x.resize(_n);
+   cblas_copy<T>(_n,_X+i,_m,x._X,1);
+};
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::scalRow(const INTM i, const T s) const {
+   assert(i >= 0 && i<_m);
+   for (int ii=0; ii<_n; ++ii)
+      _X[i+ii*_m] *= s;
+};
+
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::copyToRow(const INTM i, const Vector<T>& x) {
+   assert(i >= 0 && i<_m);
+   cblas_copy<T>(_n,x._X,1,_X+i,_m);
+};
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::extract_rawCol(const INTM i, T* x) const {
+   assert(i >= 0 && i<_n);
+   cblas_copy<T>(_m,_X+i*_m,1,x,1);
+};
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::add_rawCol(const INTM i, T* x, const T a) const {
+   assert(i >= 0 && i<_n);
+   cblas_axpy<T>(_m,a,_X+i*_m,1,x,1);
+};
+
+/// Copy the column i INTMo x
+template <typename T> inline void Matrix<T>::getData(Vector<T>& x, const INTM i) const {
+   this->copyCol(i,x);
+};
+
+/// Reference the column i into the vector x
+template <typename T> inline void Matrix<T>::refCol(INTM i, Vector<T>& x) const {
+   assert(i >= 0 && i<_n);
+   x.clear();
+   x._X=_X+i*_m;
+   x._n=_m;
+   x._externAlloc=true; 
+};
+
+/// Reference the column i to i+n INTMo the Matrix mat
+template <typename T> inline void Matrix<T>::refSubMat(INTM i, INTM n, Matrix<T>& mat) const {
+   mat.setData(_X+i*_m,_m,n);
+}
+
+/// Check wether the columns of the matrix are normalized or not
+template <typename T> inline bool Matrix<T>::isNormalized() const {
+   for (INTM i = 0; i<_n; ++i) {
+      T norm=cblas_nrm2<T>(_m,_X+_m*i,1);
+      if (fabs(norm - 1.0) > 1e-6) return false;
+   }
+   return true;
+};
+
+/// clean a dictionary matrix
+template <typename T>
+inline void Matrix<T>::clean() {
+   this->normalize();
+   Matrix<T> G;
+   this->XtX(G);
+   T* prG = G._X;
+   /// remove the diagonal
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j = i+1; j<_n; ++j) {
+         if (prG[i*_n+j] > 0.99) {
+            // remove nasty column j and put random values inside
+            Vector<T> col;
+            this->refCol(j,col);
+            col.setAleat();
+            col.normalize();
+         }
+      }
+   }
+};
+
+/// return the 1D-index of the value of greatest magnitude
+template <typename T> inline INTM Matrix<T>::fmax() const {
+   return cblas_iamax<T>(_n*_m,_X,1);
+};
+
+/// return the value of greatest magnitude
+template <typename T> inline T Matrix<T>::fmaxval() const {
+   return _X[cblas_iamax<T>(_n*_m,_X,1)];
+};
+
+
+/// return the 1D-index of the value of lowest magnitude
+template <typename T> inline INTM Matrix<T>::fmin() const {
+   return cblas_iamin<T>(_n*_m,_X,1);
+};
+
+/// extract a sub-matrix of a symmetric matrix
+template <typename T> inline void Matrix<T>::subMatrixSym(
+      const Vector<INTM>& indices, Matrix<T>& subMatrix) const {
+   INTM L = indices.n();
+   subMatrix.resize(L,L);
+   T* out = subMatrix._X;
+   INTM* rawInd = indices.rawX();
+   for (INTM i = 0; i<L; ++i)
+      for (INTM j = 0; j<=i; ++j)
+         out[i*L+j]=_X[rawInd[i]*_n+rawInd[j]];
+   subMatrix.fillSymmetric();
+};
+
+/// Resize the matrix
+template <typename T> inline void Matrix<T>::resize(INTM m, INTM n, const bool set_zeros) {
+   if (_n==n && _m==m) return;
+   clear();
+   _n=n;
+   _m=m;
+   _externAlloc=false;
+#pragma omp critical
+   {
+      _X=new T[_n*_m];
+   }
+   if (set_zeros)
+      setZeros();
+};
+
+/// Change the data in the matrix
+template <typename T> inline void Matrix<T>::setData(T* X, INTM m, INTM n) {
+   clear();
+   _X=X;
+   _m=m;
+   _n=n;
+   _externAlloc=true;
+};
+
+/// Set all the values to zero
+template <typename T> inline void Matrix<T>::setZeros() {
+   memset(_X,0,_n*_m*sizeof(T));
+};
+
+/// Set all the values to a scalar
+template <typename T> inline void Matrix<T>::set(const T a) {
+   for (INTM i = 0; i<_n*_m; ++i) _X[i]=a;
+};
+
+/// Clear the matrix
+template <typename T> inline void Matrix<T>::clear() {
+   if (!_externAlloc) delete[](_X);
+   _n=0;
+   _m=0;
+   _X=NULL;
+   _externAlloc=true;
+};
+
+/// Put white Gaussian noise in the matrix 
+template <typename T> inline void Matrix<T>::setAleat() {
+   for (INTM i = 0; i<_n*_m; ++i) _X[i]=normalDistrib<T>();
+};
+
+/// set the matrix to the identity
+template <typename T> inline void Matrix<T>::eye() {
+   this->setZeros();
+   for (INTM i = 0; i<MIN(_n,_m); ++i) _X[i*_m+i] = T(1.0);
+};
+
+/// Normalize all columns to unit l2 norm
+template <typename T> inline void Matrix<T>::normalize() {
+   //T constant = 1.0/sqrt(_m);
+   for (INTM i = 0; i<_n; ++i) {
+      T norm=cblas_nrm2<T>(_m,_X+_m*i,1);
+      if (norm > 1e-10) {
+         T invNorm=1.0/norm;
+         cblas_scal<T>(_m,invNorm,_X+_m*i,1);
+      }  else {
+         // for (INTM j = 0; j<_m; ++j) _X[_m*i+j]=constant;
+         Vector<T> d;
+         this->refCol(i,d);
+         d.setAleat();
+         d.normalize();
+      } 
+   }
+};
+
+/// Normalize all columns which l2 norm is greater than one.
+template <typename T> inline void Matrix<T>::normalize2() {
+   for (INTM i = 0; i<_n; ++i) {
+      T norm=cblas_nrm2<T>(_m,_X+_m*i,1);
+      if (norm > 1.0) {
+         T invNorm=1.0/norm;
+         cblas_scal<T>(_m,invNorm,_X+_m*i,1);
+      } 
+   }
+};
+
+/// center the matrix
+template <typename T> inline void Matrix<T>::center() {
+   for (INTM i = 0; i<_n; ++i) {
+      Vector<T> col;
+      this->refCol(i,col);
+      T sum = col.sum();
+      col.add(-sum/static_cast<T>(_m));
+   }
+};
+
+/// center the matrix
+template <typename T> inline void Matrix<T>::center_rows() {
+   Vector<T> mean_rows(_m);
+   mean_rows.setZeros();
+   for (INTM i = 0; i<_n; ++i) 
+      for (INTM j = 0; j<_m; ++j) 
+         mean_rows[j] += _X[i*_m+j];
+   mean_rows.scal(T(1.0)/_n);
+   for (INTM i = 0; i<_n; ++i) 
+      for (INTM j = 0; j<_m; ++j) 
+         _X[i*_m+j] -= mean_rows[j];
+};
+
+/// center the matrix
+template <typename T> inline void Matrix<T>::normalize_rows() {
+   Vector<T> norm_rows(_m);
+   norm_rows.setZeros();
+   for (INTM i = 0; i<_n; ++i)
+      for (INTM j = 0; j<_m; ++j)
+         norm_rows[j] += _X[i*_m+j]*_X[i*_m+j];
+   for (INTM j = 0; j<_m; ++j)
+      norm_rows[j]  = norm_rows[j] < T(1e-10) ? T(1e-10) : T(1.0)/sqrt(norm_rows[j]);
+   this->multDiagLeft(norm_rows);
+};
+
+/// center the matrix and keep the center values
+template <typename T> inline void Matrix<T>::center(Vector<T>& centers) {
+   centers.resize(_n);
+   for (INTM i = 0; i<_n; ++i) {
+      Vector<T> col;
+      this->refCol(i,col);
+      T sum = col.sum()/static_cast<T>(_m);
+      centers[i]=sum;
+      col.add(-sum);
+   }
+};
+
+/// scale the matrix by the a
+template <typename T> inline void Matrix<T>::scal(const T a) {
+   cblas_scal<T>(_n*_m,a,_X,1);
+};
+
+/// make a copy of the matrix mat in the current matrix
+template <typename T> inline void Matrix<T>::copy(const Matrix<T>& mat) {
+   if (_X != mat._X) {
+      resize(mat._m,mat._n);
+      //   cblas_copy<T>(_m*_n,mat._X,1,_X,1);
+      memcpy(_X,mat._X,_m*_n*sizeof(T));
+   }
+};
+
+/// make a copy of the matrix mat in the current matrix
+template <typename T> inline void Matrix<T>::copyRef(const Matrix<T>& mat) {
+   this->setData(mat.rawX(),mat.m(),mat.n());
+};
+
+/// make the matrix symmetric by copying the upper-right part
+/// INTMo the lower-left part
+template <typename T> inline void Matrix<T>::fillSymmetric() {
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j =0; j<i; ++j) {
+         _X[j*_m+i]=_X[i*_m+j];
+      }
+   }
+};
+template <typename T> inline void Matrix<T>::fillSymmetric2() {
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j =0; j<i; ++j) {
+         _X[i*_m+j]=_X[j*_m+i];
+      }
+   }
+};
+
+
+template <typename T> inline void Matrix<T>::whiten(const INTM V) {
+   const INTM sizePatch=_m/V;
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j = 0; j<V; ++j) {
+         T mean = 0;
+         for (INTM k = 0; k<sizePatch; ++k) {
+            mean+=_X[i*_m+sizePatch*j+k];
+         }
+         mean /= sizePatch;
+         for (INTM k = 0; k<sizePatch; ++k) {
+            _X[i*_m+sizePatch*j+k]-=mean;
+         }
+      }
+   }
+};
+
+template <typename T> inline void Matrix<T>::whiten(Vector<T>& mean, const bool pattern) {
+   mean.setZeros();
+   if (pattern) {
+      const INTM n =static_cast<INTM>(sqrt(static_cast<T>(_m)));
+      INTM count[4];
+      for (INTM i = 0; i<4; ++i) count[i]=0;
+      for (INTM i = 0; i<_n; ++i) {
+         INTM offsetx=0;
+         for (INTM j = 0; j<n; ++j) {
+            offsetx= (offsetx+1) % 2;
+            INTM offsety=0;
+            for (INTM k = 0; k<n; ++k) {
+               offsety= (offsety+1) % 2;
+               mean[2*offsetx+offsety]+=_X[i*_m+j*n+k];
+               count[2*offsetx+offsety]++;
+            }
+         }
+      }
+      for (INTM i = 0; i<4; ++i)
+         mean[i] /= count[i];
+      for (INTM i = 0; i<_n; ++i) {
+         INTM offsetx=0;
+         for (INTM j = 0; j<n; ++j) {
+            offsetx= (offsetx+1) % 2;
+            INTM offsety=0;
+            for (INTM k = 0; k<n; ++k) {
+               offsety= (offsety+1) % 2;
+               _X[i*_m+j*n+k]-=mean[2*offsetx+offsety];
+            }
+         }
+      }
+   } else  {
+      const INTM V = mean.n();
+      const INTM sizePatch=_m/V;
+      for (INTM i = 0; i<_n; ++i) {
+         for (INTM j = 0; j<V; ++j) {
+            for (INTM k = 0; k<sizePatch; ++k) {
+               mean[j]+=_X[i*_m+sizePatch*j+k];
+            }
+         }
+      }
+      mean.scal(T(1.0)/(_n*sizePatch));
+      for (INTM i = 0; i<_n; ++i) {
+         for (INTM j = 0; j<V; ++j) {
+            for (INTM k = 0; k<sizePatch; ++k) {
+               _X[i*_m+sizePatch*j+k]-=mean[j];
+            }
+         }
+      }
+   }
+};
+
+template <typename T> inline void Matrix<T>::whiten(Vector<T>& mean, const
+      Vector<T>& mask) {
+   const INTM V = mean.n();
+   const INTM sizePatch=_m/V;
+   mean.setZeros();
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j = 0; j<V; ++j) {
+         for (INTM k = 0; k<sizePatch; ++k) {
+            mean[j]+=_X[i*_m+sizePatch*j+k];
+         }
+      }
+   }
+   for (INTM i = 0; i<V; ++i)
+      mean[i] /= _n*cblas_asum(sizePatch,mask._X+i*sizePatch,1);
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j = 0; j<V; ++j) {
+         for (INTM k = 0; k<sizePatch; ++k) {
+            if (mask[sizePatch*j+k])
+               _X[i*_m+sizePatch*j+k]-=mean[j];
+         }
+      }
+   }
+};
+
+
+template <typename T> inline void Matrix<T>::unwhiten(Vector<T>& mean, const bool pattern) {
+   if (pattern) {
+      const INTM n =static_cast<INTM>(sqrt(static_cast<T>(_m)));
+      for (INTM i = 0; i<_n; ++i) {
+         INTM offsetx=0;
+         for (INTM j = 0; j<n; ++j) {
+            offsetx= (offsetx+1) % 2;
+            INTM offsety=0;
+            for (INTM k = 0; k<n; ++k) {
+               offsety= (offsety+1) % 2;
+               _X[i*_m+j*n+k]+=mean[2*offsetx+offsety];
+            }
+         }
+      }
+   } else {
+      const INTM V = mean.n();
+      const INTM sizePatch=_m/V;
+      for (INTM i = 0; i<_n; ++i) {
+         for (INTM j = 0; j<V; ++j) {
+            for (INTM k = 0; k<sizePatch; ++k) {
+               _X[i*_m+sizePatch*j+k]+=mean[j];
+            }
+         }
+      }
+   }
+};
+
+/// Transpose the current matrix and put the result in the matrix
+/// trans
+template <typename T> inline void Matrix<T>::transpose(Matrix<T>& trans) const {
+   trans.resize(_n,_m);
+   T* out = trans._X;
+   for (INTM i = 0; i<_n; ++i)
+      for (INTM j = 0; j<_m; ++j)
+         out[j*_n+i] = _X[i*_m+j];
+};
+
+/// A <- -A
+template <typename T> inline void Matrix<T>::neg() {
+   for (INTM i = 0; i<_n*_m; ++i) _X[i]=-_X[i];
+};
+
+template <typename T> inline void Matrix<T>::incrDiag() {
+   for (INTM i = 0; i<MIN(_n,_m); ++i) ++_X[i*_m+i];
+};
+
+template <typename T> inline void Matrix<T>::addDiag(
+      const Vector<T>& diag) {
+   T* d= diag.rawX();
+   for (INTM i = 0; i<MIN(_n,_m); ++i) _X[i*_m+i] += d[i];
+};
+
+template <typename T> inline void Matrix<T>::addDiag(
+      const T diag) {
+   for (INTM i = 0; i<MIN(_n,_m); ++i) _X[i*_m+i] += diag;
+};
+
+template <typename T> inline void Matrix<T>::addToCols(
+      const Vector<T>& cent) {
+   Vector<T> col;
+   for (INTM i = 0; i<_n; ++i) {
+      this->refCol(i,col);      
+      col.add(cent[i]);
+   }
+};
+
+template <typename T> inline void Matrix<T>::addVecToCols(
+      const Vector<T>& vec, const T a) {
+   Vector<T> col;
+   for (INTM i = 0; i<_n; ++i) {
+      this->refCol(i,col);      
+      col.add(vec,a);
+   }
+};
+
+/// perform a rank one approximation uv' using the power method
+/// u0 is an initial guess for u (can be empty).
+template <typename T> inline void Matrix<T>::svdRankOne(const Vector<T>& u0,
+      Vector<T>& u, Vector<T>& v) const {
+   int i;
+   const int max_iter=MAX(_m,MAX(_n,200));
+   const T eps=1e-10;
+   u.resize(_m);
+   v.resize(_n);
+   T norm=u0.nrm2();
+   Vector<T> up(u0);
+   if (norm < EPSILON) up.setAleat();
+   up.normalize();
+   multTrans(up,v);
+   for (i = 0; i<max_iter; ++i) {
+      mult(v,u);
+      norm=u.nrm2();
+      u.scal(1.0/norm);
+      multTrans(u,v);
+      T theta=u.dot(up);
+      if (i > 10 && (1 - fabs(theta)) < eps) break;
+      up.copy(u);
+   }
+};
+
+template <typename T> inline void Matrix<T>::svd2(Matrix<T>& U, Vector<T>& S, const int num, const int method) const {
+   const INTM num_eig= (num == -1 || method <= 1) ? MIN(_m,_n) : MIN(MIN(_m,num),_n);
+   S.resize(num_eig);
+   U.resize(_m,num_eig);
+   if (method==0) {
+      // gesv
+      T* vv = NULL;
+      Matrix<T> copyX;
+      copyX.copy(*this);
+      gesvd<T>(reduced,no,_m,_n,copyX._X,_m,S.rawX(),U.rawX(),_m,vv,1);
+   } else if (method==1) {
+      // syev
+      if (_m == num_eig) {
+         this->XXt(U);
+         syev<T>(allV,lower,_m,U.rawX(),_m,S.rawX());
+      } else {
+         Matrix<T> XXt(_m,_m);
+         this->XXt(XXt); // in fact should do XtX, but will do that later
+         Vector<T> ss(_m);
+         syev<T>(allV,lower,_m,XXt.rawX(),_m,ss.rawX());
+         memcpy(U.rawX(),XXt.rawX()+(_m-num_eig)*_m,_m*num_eig*sizeof(T));
+         memcpy(S.rawX(),ss.rawX()+_m-num_eig,num_eig*sizeof(T));
+      }
+      S.thrsPos();
+      S.Sqrt();
+   } else if (method==2) {
+      // syevr
+      Matrix<T> XXt(_m,_m);
+      this->XXt(XXt); // in fact should do XtX, but will do that later
+      if (_m == num_eig) {
+         syevr(allV,rangeAll,lower,_m,XXt.rawX(),_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
+      } else {
+         Vector<T> ss(_m);
+         syevr(allV,range,lower,_m,XXt.rawX(),_m,T(0),T(0),_m-num_eig+1,_m,ss.rawX(),U.rawX(),_m);
+         memcpy(S.rawX(),ss.rawX(),num_eig*sizeof(T));
+      }
+      S.thrsPos();
+      for (int ii=0; ii<S.n(); ++ii)
+         S[ii]=alt_sqrt<T>(S[ii]);
+      //S.Sqrt();
+   } 
+   if (method==1 || method==2) {
+      Vector<T> col, col2;
+      Vector<T> tmpcol(_m);
+      const int n=U.n();
+      for (int ii=0; ii<n/2; ++ii) {
+         T tmp=S[n-ii-1];
+         S[n-ii-1]=S[ii];
+         S[ii]=tmp;
+         U.refCol(n-ii-1,col);
+         U.refCol(ii,col2);
+         tmpcol.copy(col);
+         col.copy(col2);
+         col2.copy(tmpcol);
+      }
+   }
+}
+
+template <typename T> inline void Matrix<T>::SymEig(Matrix<T>& U, Vector<T>& S) const {
+   const int num_eig=_m;
+   S.resize(_m);
+   U.resize(_m,_m);
+   syevr(allV,rangeAll,lower,_m,_X,_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
+   S.thrsPos();
+}
+
+template <typename T> inline void Matrix<T>::InvsqrtMat(Matrix<T>& out, const T lambda_1) const {
+   const int num_eig=_m;
+   Vector<T> S;
+   S.resize(_m);
+   Matrix<T> U, U2;
+   U.resize(_m,_m);
+   syevr(allV,rangeAll,lower,_m,_X,_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
+   S.thrsPos();
+   //for (int ii=0; ii<_m; ++ii) S[ii]=sqrt(S[ii])/(S[ii]+lambda_1);
+   //for (int ii=0; ii<_m; ++ii) S[ii]= S[ii] > 1e-6 ? T(1.0)/S[ii] : 0;
+   for (int ii=0; ii<_m; ++ii) S[ii]= S[ii] > 1e-6 ? T(1.0)/sqrt(S[ii]+lambda_1) : 0;
+   U2.copy(U);
+   U2.multDiagRight(S);
+   U2.mult(U,out,false,true);
+}
+
+template <typename T> inline void Matrix<T>::sqrtMat(Matrix<T>& out) const {
+   const int num_eig=_m;
+   Vector<T> S;
+   S.resize(_m);
+   Matrix<T> U, U2;
+   U.resize(_m,_m);
+   syevr(allV,rangeAll,lower,_m,_X,_m,T(0),T(0),0,0,S.rawX(),U.rawX(),_m);
+   S.thrsPos();
+   S.Sqrt();
+   U2.copy(U);
+   U2.multDiagRight(S);
+   U2.mult(U,out,false,true);
+}
+
+
+
+template <typename T> inline void Matrix<T>::singularValues(Vector<T>& u) const {
+   u.resize(MIN(_m,_n));
+   if (_m > 10*_n) {
+      Matrix<T> XtX;
+      this->XtX(XtX);
+      syev<T>(no,lower,_n,XtX.rawX(),_n,u.rawX());
+      u.thrsPos();
+      u.Sqrt();
+   } else if (_n > 10*_m) { 
+      Matrix<T> XXt;
+      this->XXt(XXt);
+      syev<T>(no,lower,_m,XXt.rawX(),_m,u.rawX());
+      u.thrsPos();
+      u.Sqrt();
+   } else {
+      T* vu = NULL;
+      T* vv = NULL;
+      Matrix<T> copyX;
+      copyX.copy(*this);
+      gesvd<T>(no,no,_m,_n,copyX._X,_m,u.rawX(),vu,1,vv,1);
+   }
+};
+
+template <typename T> inline void Matrix<T>::svd(Matrix<T>& U, Vector<T>& S, Matrix<T>&V) const {
+   const INTM num_eig=MIN(_m,_n);
+   S.resize(num_eig);
+   U.resize(_m,num_eig);
+   V.resize(num_eig,_n);
+   if (_m > 10*_n) {
+      Matrix<T> Vt(_n,_n);
+      this->XtX(Vt);
+      syev<T>(allV,lower,_n,Vt.rawX(),_n,S.rawX());
+      S.thrsPos();
+      S.Sqrt();
+      this->mult(Vt,U);
+      Vt.transpose(V);
+      Vector<T> inveigs;
+      inveigs.copy(S);
+      for (INTM i = 0; i<num_eig; ++i) 
+         if (S[i] > 1e-10) {
+            inveigs[i]=T(1.0)/S[i];
+         } else {
+            inveigs[i]=T(1.0);
+         }
+      U.multDiagRight(inveigs);
+   } else if (_n > 10*_m) {
+      this->XXt(U);
+      syev<T>(allV,lower,_m,U.rawX(),_m,S.rawX());
+      S.thrsPos();
+      S.Sqrt();
+      U.mult(*this,V,true,false);
+      Vector<T> inveigs;
+      inveigs.copy(S);
+      for (INTM i = 0; i<num_eig; ++i) 
+         if (S[i] > 1e-10) {
+            inveigs[i]=T(1.0)/S[i];
+         } else {
+            inveigs[i]=T(1.0);
+         }
+      V.multDiagLeft(inveigs);
+   } else {
+      Matrix<T> copyX;
+      copyX.copy(*this);
+      gesvd<T>(reduced,reduced,_m,_n,copyX._X,_m,S.rawX(),U.rawX(),_m,V.rawX(),num_eig);
+   }
+};
+
+/// find the eigenvector corresponding to the largest eigenvalue
+/// when the current matrix is symmetric. u0 is the initial guess.
+/// using two iterations of the power method
+template <typename T> inline void Matrix<T>::eigLargestSymApprox(
+      const Vector<T>& u0, Vector<T>& u) const {
+   int i,j;
+   const int max_iter=100;
+   const T eps=10e-6;
+   u.copy(u0);
+   T norm = u.nrm2();
+   T theta;
+   u.scal(1.0/norm);
+   Vector<T> up(u);
+   Vector<T> uor(u);
+   T lambda_1=T();
+
+   for (j = 0; j<2;++j) {
+      up.copy(u);
+      for (i = 0; i<max_iter; ++i) {
+         mult(up,u);
+         norm = u.nrm2();
+         u.scal(1.0/norm);
+         theta=u.dot(up);
+         if ((1 - fabs(theta)) < eps) break;
+         up.copy(u);
+      }
+      lambda_1+=theta*norm;
+      if (isnan(lambda_1)) {
+         std::cerr << "eigLargestSymApprox failed" << std::endl;
+         exit(1);
+      }
+      if (j == 1 && lambda_1 < eps) {
+         u.copy(uor);
+         break;
+      }
+      if (theta >= 0) break;
+      u.copy(uor);
+      for (i = 0; i<_m; ++i) _X[i*_m+i]-=lambda_1;
+   }
+};
+
+/// find the eigenvector corresponding to the eivenvalue with the 
+/// largest magnitude when the current matrix is symmetric,
+/// using the power method. It 
+/// returns the eigenvalue. u0 is an initial guess for the 
+/// eigenvector.
+template <typename T> inline T Matrix<T>::eigLargestMagnSym(
+      const Vector<T>& u0, Vector<T>& u) const {
+   const int max_iter=1000;
+   const T eps=10e-6;
+   u.copy(u0);
+   T norm = u.nrm2();
+   u.scal(1.0/norm);
+   Vector<T> up(u);
+   T lambda_1=T();
+
+   for (int i = 0; i<max_iter; ++i) {
+      mult(u,up);
+      u.copy(up);
+      norm=u.nrm2();
+      if (norm > 0) u.scal(1.0/norm);
+      if (norm == 0 || fabs(norm-lambda_1)/norm < eps) break;
+      lambda_1=norm;
+   }
+   return norm;
+};
+
+/// returns the value of the eigenvalue with the largest magnitude
+/// using the power iteration.
+template <typename T> inline T Matrix<T>::eigLargestMagnSym() const {
+   const int max_iter=1000;
+   const T eps=10e-6;
+   Vector<T> u(_m);
+   u.setAleat();
+   T norm = u.nrm2();
+   u.scal(1.0/norm);
+   Vector<T> up(u);
+   T lambda_1=T();
+   for (int i = 0; i<max_iter; ++i) {
+      mult(u,up);
+      u.copy(up);
+      norm=u.nrm2();
+      if (fabs(norm-lambda_1) < eps) break;
+      lambda_1=norm;
+      u.scal(1.0/norm);
+   }
+   return norm;
+};
+
+/// inverse the matrix when it is symmetric
+template <typename T> inline void Matrix<T>::invSym() {
+   sytri<T>(upper,_n,_X,_n);
+   this->fillSymmetric();
+};
+template <typename T> inline void Matrix<T>::invSymPos() {
+   potri<T>(upper,_n,_X,_n);
+   this->fillSymmetric();
+};
+
+/// perform b = alpha*A'x + beta*b
+template <typename T> inline void Matrix<T>::multTrans(const Vector<T>& x, 
+      Vector<T>& b, const T a, const T c) const {
+   b.resize(_n);
+   //   assert(x._n == _m && b._n == _n);
+   cblas_gemv<T>(CblasColMajor,CblasTrans,_m,_n,a,_X,_m,x._X,1,c,b._X,1);
+};
+
+/// perform b = A'x, when x is sparse
+template <typename T> 
+template <typename I> 
+inline void Matrix<T>::multTrans(const SpVector<T,I>& x, 
+      Vector<T>& b, const T alpha, const T beta) const {
+   b.resize(_n);
+   Vector<T> col;
+   if (beta) {
+      for (INTM i = 0; i<_n; ++i) {
+         refCol(i,col);
+         b._X[i] = alpha*col.dot(x);
+      }
+   } else {
+
+      for (INTM i = 0; i<_n; ++i) {
+         refCol(i,col);
+         b._X[i] = beta*b._X[i]+alpha*col.dot(x);
+      }
+   }
+};
+
+template <typename T> inline void Matrix<T>::multTrans(
+      const Vector<T>& x, Vector<T>& b, const Vector<bool>& active) const {
+   b.setZeros();
+   Vector<T> col;
+   bool* pr_active=active.rawX();
+   for (INTM i = 0; i<_n; ++i) {
+      if (pr_active[i]) {
+         this->refCol(i,col);
+         b._X[i]=col.dot(x);
+      }
+   }
+};
+
+/// perform b = alpha*A*x+beta*b
+template <typename T> inline void Matrix<T>::mult(const Vector<T>& x, 
+      Vector<T>& b, const T a, const T c) const {
+   //  assert(x._n == _n && b._n == _m);
+   b.resize(_m);
+   cblas_gemv<T>(CblasColMajor,CblasNoTrans,_m,_n,a,_X,_m,x._X,1,c,b._X,1);
+};
+
+
+/// perform b = alpha*A*x+beta*b
+template <typename T> inline void Matrix<T>::mult_loop(const Vector<T>& x, 
+      Vector<T>& b) const {
+   b.resize(_m);
+   for (int ii=0; ii<_m; ++ii) {
+      b[ii]=cblas_dot<T>(_n,x._X,1,_X+ii,_m);
+   }
+};
+
+/// perform b = alpha*A*x + beta*b, when x is sparse
+template <typename T> 
+template <typename I> 
+inline void Matrix<T>::mult(const SpVector<T,I>& x, 
+      Vector<T>& b, const T a, const T a2) const {
+   if (!a2) {
+      b.setZeros();
+   } else if (a2 != 1.0) {
+      b.scal(a2);
+   }
+   if (a == 1.0) {
+      for (INTM i = 0; i<x._L; ++i) {
+         cblas_axpy<T>(_m,x._v[i],_X+x._r[i]*_m,1,b._X,1);
+      }
+   } else {
+      for (INTM i = 0; i<x._L; ++i) {
+         cblas_axpy<T>(_m,a*x._v[i],_X+x._r[i]*_m,1,b._X,1);
+      }
+   }
+};
+
+/// perform C = a*A*B + b*C, possibly transposing A or B.
+template <typename T> inline void Matrix<T>::mult(const Matrix<T>& B, 
+      Matrix<T>& C, const bool transA, const bool transB,
+      const T a, const T b) const {
+   CBLAS_TRANSPOSE trA,trB;
+   INTM m,k,n;
+   if (transA) {
+      trA = CblasTrans;
+      m = _n;
+      k = _m;
+   } else {
+      trA= CblasNoTrans;
+      m = _m;
+      k = _n;
+   }
+   if (transB) {
+      trB = CblasTrans;
+      n = B._m; 
+      //assert(B._n == k);
+   } else {
+      trB = CblasNoTrans;
+      n = B._n; 
+      //assert(B._m == k);
+   }
+   C.resize(m,n);
+   cblas_gemm<T>(CblasColMajor,trA,trB,m,n,k,a,_X,_m,B._X,B._m,
+         b,C._X,C._m);
+};
+
+/// perform C = a*B*A + b*C, possibly transposing A or B.
+template <typename T>
+inline void Matrix<T>::multSwitch(const Matrix<T>& B, Matrix<T>& C, 
+      const bool transA, const bool transB,
+      const T a, const T b) const {
+   B.mult(*this,C,transB,transA,a,b);
+};
+
+/// perform C = A*B, when B is sparse
+template <typename T>
+template <typename I>
+inline void Matrix<T>::mult(const SpMatrix<T,I>& B, Matrix<T>& C,
+      const bool transA, const bool transB,
+      const T a, const T b) const {
+   if (transA) {
+      if (transB) {
+         C.resize(_n,B.m());
+         if (b) {
+            C.scal(b);
+         } else {
+            C.setZeros();
+         }
+         Vector<T> rowC(B.m());
+         Vector<T> colA;
+         for (INTM i = 0; i<_n; ++i) {
+            this->refCol(i,colA);
+            B.mult(colA,rowC,a);
+            C.addRow(i,rowC,a);
+         }
+      } else {
+         C.resize(_n,B.n());
+         if (b) {
+            C.scal(b);
+         } else {
+            C.setZeros();
+         }
+         Vector<T> colC;
+         SpVector<T,I> colB;
+         for (INTM i = 0; i<B.n(); ++i) {
+            C.refCol(i,colC);
+            B.refCol(i,colB);
+            this->multTrans(colB,colC,a,T(1.0));
+         }
+      }
+   } else {
+      if (transB) {
+         C.resize(_m,B.m());
+         if (b) {
+            C.scal(b);
+         } else {
+            C.setZeros();
+         }
+         Vector<T> colA;
+         SpVector<T,I> colB;
+         for (INTM i = 0; i<_n; ++i) {
+            this->refCol(i,colA);
+            B.refCol(i,colB);
+            C.rank1Update(colA,colB,a);
+         }
+      } else {
+         C.resize(_m,B.n());
+         if (b) {
+            C.scal(b);
+         } else {
+            C.setZeros();
+         }
+         Vector<T> colC;
+         SpVector<T,I> colB;
+         for (INTM i = 0; i<B.n(); ++i) {
+            C.refCol(i,colC);
+            B.refCol(i,colB);
+            this->mult(colB,colC,a,T(1.0));
+         }
+      }
+   };
+}
+
+
+/// mult by a diagonal matrix on the left
+template <typename T>
+   inline void Matrix<T>::multDiagLeft(const Vector<T>& diag) {
+      if (diag.n() != _m)
+         return;
+      T* d = diag.rawX();
+      for (INTM i = 0; i< _n; ++i) {
+         for (INTM j = 0; j<_m; ++j) {
+            _X[i*_m+j] *= d[j];
+         }
+      }
+   };
+
+/// mult by a diagonal matrix on the right
+template <typename T> inline void Matrix<T>::multDiagRight(
+      const Vector<T>& diag) {
+   if (diag.n() != _n)
+      return;
+   T* d = diag.rawX();
+   for (INTM i = 0; i< _n; ++i) {
+      for (INTM j = 0; j<_m; ++j) {
+         _X[i*_m+j] *= d[i];
+      }
+   }
+};
+/// mult by a diagonal matrix on the right
+template <typename T> inline void Matrix<T>::AddMultDiagRight(
+      const Vector<T>& diag, Matrix<T>& mat) {
+   if (diag.n() != _n)
+      return;
+   mat.resize(_m,_n);
+   //mat.setZeros();
+   T* d = diag.rawX();
+   for (INTM i = 0; i< _n; ++i) {
+      cblas_axpy<T>(_m,d[i],_X+i*_m,1,mat._X+i*_m,1);
+   }
+};
+
+
+
+/// C = A .* B, elementwise multiplication
+template <typename T> inline void Matrix<T>::mult_elementWise(
+      const Matrix<T>& B, Matrix<T>& C) const {
+   assert(_n == B._n && _m == B._m);
+   C.resize(_m,_n);
+   vMul<T>(_n*_m,_X,B._X,C._X);
+};
+
+/// C = A .* B, elementwise multiplication
+template <typename T> inline void Matrix<T>::div_elementWise(
+      const Matrix<T>& B, Matrix<T>& C) const {
+   assert(_n == B._n && _m == B._m);
+   C.resize(_m,_n);
+   vDiv<T>(_n*_m,_X,B._X,C._X);
+};
+
+
+/// XtX = A'*A
+template <typename T> inline void Matrix<T>::XtX(Matrix<T>& xtx) const {
+   xtx.resize(_n,_n);
+   cblas_syrk<T>(CblasColMajor,CblasUpper,CblasTrans,_n,_m,T(1.0),
+         _X,_m,T(),xtx._X,_n);
+   xtx.fillSymmetric();
+};
+
+/// XXt = A*At
+template <typename T> inline void Matrix<T>::XXt(Matrix<T>& xxt) const {
+   xxt.resize(_m,_m);
+   cblas_syrk<T>(CblasColMajor,CblasUpper,CblasNoTrans,_m,_n,T(1.0),
+         _X,_m,T(),xxt._X,_m);
+   xxt.fillSymmetric();
+};
+
+/// XXt = A*A' where A is an upper triangular matrix
+template <typename T> inline void Matrix<T>::upperTriXXt(Matrix<T>& XXt, const INTM L) const {
+   XXt.resize(L,L);
+   for (INTM i = 0; i<L; ++i) {
+      cblas_syr<T>(CblasColMajor,CblasUpper,i+1,T(1.0),_X+i*_m,1,XXt._X,L);
+   }
+   XXt.fillSymmetric();
+}
+
+
+/// extract the diagonal
+template <typename T> inline void Matrix<T>::diag(Vector<T>& dv) const {
+   INTM size_diag=MIN(_n,_m);
+   dv.resize(size_diag);
+   T* const d = dv.rawX();
+   for (INTM i = 0; i<size_diag; ++i)
+      d[i]=_X[i*_m+i];
+};
+
+/// set the diagonal
+template <typename T> inline void Matrix<T>::setDiag(const Vector<T>& dv) {
+   INTM size_diag=MIN(_n,_m);
+   T* const d = dv.rawX();
+   for (INTM i = 0; i<size_diag; ++i)
+      _X[i*_m+i]=d[i];
+};
+
+/// set the diagonal
+template <typename T> inline void Matrix<T>::setDiag(const T val) {
+   INTM size_diag=MIN(_n,_m);
+   for (INTM i = 0; i<size_diag; ++i)
+      _X[i*_m+i]=val;
+};
+
+
+/// each element of the matrix is replaced by its exponential
+template <typename T> inline void Matrix<T>::exp() {
+   vExp<T>(_n*_m,_X,_X);
+};
+
+/// each element of the matrix is replaced by its exponential
+template <typename T> inline void Matrix<T>::pow(const T a) {
+   vPowx<T>(_n*_m,_X,a,_X);
+};
+
+template <typename T> inline void Matrix<T>::sqr() {
+   vSqr<T>(_n*_m,_X,_X);
+};
+
+template <typename T> inline void Matrix<T>::Sqrt() {
+   vSqrt<T>(_n*_m,_X,_X);
+};
+
+template <typename T> inline void Matrix<T>::Invsqrt() {
+   vInvSqrt<T>(_n*_m,_X,_X);
+};
+/// return vec1'*A*vec2, where vec2 is sparse
+template <typename T> 
+template <typename I> 
+inline T Matrix<T>::quad(const SpVector<T,I>& vec) const {
+   T sum = T();
+   INTM L = vec._L;
+   I* r = vec._r;
+   T* v = vec._v;
+   for (INTM i = 0; i<L; ++i)
+      for (INTM j = 0; j<L; ++j)
+         sum += _X[r[i]*_m+r[j]]*v[i]*v[j];
+   return sum;
+};
+
+template <typename T> 
+template <typename I> 
+inline void Matrix<T>::quad_mult(const Vector<T>& vec1,
+      const SpVector<T,I>& vec2, Vector<T>& y, const T a, const T b) const {
+   const INTM size_y= y.n();
+   const INTM nn = _n/size_y;
+   //y.resize(size_y);
+   //y.setZeros();
+   Matrix<T> tmp;
+   for (INTM i = 0; i<size_y; ++i) {
+      tmp.setData(_X+(i*nn)*_m,_m,nn);
+      y[i]=b*y[i]+a*tmp.quad(vec1,vec2);
+   }
+}
+
+/// return vec'*A*vec when vec is sparse
+template <typename T> 
+template <typename I> 
+inline T Matrix<T>::quad(
+      const Vector<T>& vec1, const SpVector<T,I>& vec) const {
+   T sum = T();
+   INTM L = vec._L;
+   I* r = vec._r;
+   T* v = vec._v;
+   Vector<T> col;
+   for (INTM i = 0; i<L; ++i) {
+      this->refCol(r[i],col);
+      sum += v[i]*col.dot(vec1);
+   }
+   return sum;
+};
+
+/// add alpha*mat to the current matrix
+template <typename T> inline void Matrix<T>::add(const Matrix<T>& mat, const T alpha) {
+   assert(mat._m == _m && mat._n == _n);
+   cblas_axpy<T>(_n*_m,alpha,mat._X,1,_X,1);
+};
+
+/// add alpha*mat to the current matrix
+template <typename T> inline void Matrix<T>::add_scal(const Matrix<T>& mat, const T alpha, const T beta) {
+   assert(mat._m == _m && mat._n == _n);
+   cblas_axpby<T>(_n*_m,alpha,mat._X,1,beta,_X,1);
+};
+
+
+/// add alpha*mat to the current matrix
+template <typename T> inline T Matrix<T>::dot(const Matrix<T>& mat) const {
+   assert(mat._m == _m && mat._n == _n);
+   return cblas_dot<T>(_n*_m,mat._X,1,_X,1);
+};
+
+
+/// add alpha to the current matrix
+template <typename T> inline void Matrix<T>::add(const T alpha) {
+   for (INTM i = 0; i<_n*_m; ++i) _X[i]+=alpha;
+};
+
+/// substract the matrix mat to the current matrix
+template <typename T> inline void Matrix<T>::sub(const Matrix<T>& mat) {
+   vSub<T>(_n*_m,_X,mat._X,_X);
+};
+
+/// compute the sum of the magnitude of the matrix values
+template <typename T> inline T Matrix<T>::asum() const {
+   return cblas_asum<T>(_n*_m,_X,1);
+};
+
+template <typename T> inline T Matrix<T>::sum() const {
+   T sum=0;
+   for (INTM i =0; i<_n*_m; ++i) sum+=_X[i];
+   return sum;
+};
+
+
+
+/// returns the trace of the matrix
+template <typename T> inline T Matrix<T>::trace() const {
+   T sum=T();
+   INTM m = MIN(_n,_m);
+   for (INTM i = 0; i<m; ++i) 
+      sum += _X[i*_m+i];
+   return sum;
+};
+
+/// return ||A||_F
+template <typename T> inline T Matrix<T>::normF() const {
+   return cblas_nrm2<T>(_n*_m,_X,1);
+};
+
+template <typename T> inline T Matrix<T>::mean() const {
+   Vector<T> vec;
+   this->toVect(vec);
+   return vec.mean();
+};
+
+template <typename T> inline T Matrix<T>::abs_mean() const {
+   Vector<T> vec;
+   this->toVect(vec);
+   return vec.abs_mean();
+};
+
+
+/// return ||A||_F^2
+template <typename T> inline T Matrix<T>::normFsq() const {
+   return cblas_dot<T>(_n*_m,_X,1,_X,1);
+};
+
+/// return ||At||_{inf,2}
+template <typename T> inline T Matrix<T>::norm_inf_2_col() const {
+   Vector<T> col;
+   T max = -1.0;
+   for (INTM i = 0; i<_n; ++i) {
+      refCol(i,col);
+      T norm_col = col.nrm2();
+      if (norm_col > max) 
+         max = norm_col;
+   }
+   return max;
+};
+
+/// return ||At||_{1,2}
+template <typename T> inline T Matrix<T>::norm_1_2_col() const {
+   Vector<T> col;
+   T sum = 0.0;
+   for (INTM i = 0; i<_n; ++i) {
+      refCol(i,col);
+      sum += col.nrm2();
+   }
+   return sum;
+};
+
+/// returns the l2 norms of the columns
+template <typename T> inline void Matrix<T>::norm_2_rows(
+      Vector<T>& norms) const {
+   norms.resize(_m);
+   norms.setZeros();
+   for (INTM i = 0; i<_n; ++i) 
+      for (INTM j = 0; j<_m; ++j) 
+         norms[j] += _X[i*_m+j]*_X[i*_m+j];
+   for (INTM j = 0; j<_m; ++j) 
+      norms[j]=sqrt(norms[j]);
+};
+
+/// returns the l2 norms of the columns
+template <typename T> inline void Matrix<T>::norm_2sq_rows(
+      Vector<T>& norms) const {
+   norms.resize(_m);
+   norms.setZeros();
+   for (INTM i = 0; i<_n; ++i) 
+      for (INTM j = 0; j<_m; ++j) 
+         norms[j] += _X[i*_m+j]*_X[i*_m+j];
+};
+
+
+/// returns the l2 norms of the columns
+template <typename T> inline void Matrix<T>::norm_2_cols(
+      Vector<T>& norms) const {
+   norms.resize(_n);
+   Vector<T> col;
+   for (INTM i = 0; i<_n; ++i) {
+      refCol(i,col);
+      norms[i] = col.nrm2();
+   }
+};
+
+
+/// returns the linf norms of the columns
+template <typename T> inline void Matrix<T>::norm_inf_cols(Vector<T>& norms) const {
+   norms.resize(_n);
+   Vector<T> col;
+   for (INTM i = 0; i<_n; ++i) {
+      refCol(i,col);
+      norms[i] = col.fmaxval();
+   }
+};
+
+/// returns the linf norms of the columns
+template <typename T> inline void Matrix<T>::norm_inf_rows(Vector<T>& norms) const {
+   norms.resize(_m);
+   norms.setZeros();
+   for (INTM i = 0; i<_n; ++i) 
+      for (INTM j = 0; j<_m; ++j) 
+         norms[j] = MAX(abs<T>(_X[i*_m+j]),norms[j]);
+};
+
+template <typename T> inline void Matrix<T>::get_sum_cols(Vector<T>& sum) const {
+   sum.resize(_n);
+   for (INTM i = 0; i<_n; ++i) {
+      sum[i]=0;
+      for (INTM j = 0; j<_m; ++j) 
+         sum[i] += (_X[i*_m+j]);
+   }
+};
+
+template <typename T> inline void Matrix<T>::dot_col(const Matrix<T>& mat, 
+      Vector<T>& dots) const {
+   dots.resize(_n);
+   for (INTM i = 0; i<_n; ++i) 
+      dots[i] = cblas_dot<T>(_m,_X+i*_m,1,mat._X+i*_m,1);
+}
+
+/// returns the linf norms of the columns
+template <typename T> inline void Matrix<T>::norm_l1_rows(Vector<T>& norms) const {
+   norms.resize(_m);
+   norms.setZeros();
+   for (INTM i = 0; i<_n; ++i) 
+      for (INTM j = 0; j<_m; ++j) 
+         norms[j] += abs<T>(_X[i*_m+j]);
+};
+
+
+
+/// returns the l2 norms of the columns
+template <typename T> inline void Matrix<T>::norm_2sq_cols(
+      Vector<T>& norms) const {
+   norms.resize(_n);
+   Vector<T> col;
+   for (INTM i = 0; i<_n; ++i) {
+      refCol(i,col);
+      norms[i] = col.nrm2sq();
+   }
+};
+
+template <typename T> 
+inline void Matrix<T>::sum_cols(Vector<T>& sum) const {
+   sum.resize(_m);
+   sum.setZeros();
+   Vector<T> tmp;
+   for (INTM i = 0; i<_n; ++i) {
+      this->refCol(i,tmp);
+      sum.add(tmp);
+   }
+};
+
+/// Compute the mean of the columns
+template <typename T> inline void Matrix<T>::meanCol(Vector<T>& mean) const {
+   Vector<T> ones(_n);
+   ones.set(T(1.0/_n));
+   this->mult(ones,mean,1.0,0.0);
+};
+
+/// Compute the mean of the rows
+template <typename T> inline void Matrix<T>::meanRow(Vector<T>& mean) const {
+   Vector<T> ones(_m);
+   ones.set(T(1.0/_m));
+   this->multTrans(ones,mean,1.0,0.0);
+};
+
+
+/// fill the matrix with the row given
+template <typename T> inline void Matrix<T>::fillRow(const Vector<T>& row) {
+   for (INTM i = 0; i<_n; ++i) {
+      T val = row[i];
+      for (INTM j = 0; j<_m; ++j) {
+         _X[i*_m+j]=val;
+      }
+   }
+};
+
+/// fill the matrix with the row given
+template <typename T> inline void Matrix<T>::extractRow(const INTM j,
+      Vector<T>& row) const {
+   row.resize(_n);
+   for (INTM i = 0; i<_n; ++i) {
+      row[i]=_X[i*_m+j];
+   }
+};
+
+/// fill the matrix with the row given
+template <typename T> inline void Matrix<T>::setRow(const INTM j,
+      const Vector<T>& row) {
+   for (INTM i = 0; i<_n; ++i) {
+      _X[i*_m+j]=row[i];
+   }
+};
+
+/// fill the matrix with the row given
+template <typename T> inline void Matrix<T>::addRow(const INTM j,
+      const Vector<T>& row, const T a) {
+   if (a==1.0) {
+      for (INTM i = 0; i<_n; ++i) {
+         _X[i*_m+j]+=row[i];
+      }
+   } else {
+      for (INTM i = 0; i<_n; ++i) {
+         _X[i*_m+j]+=a*row[i];
+      }
+   }
+};
+
+
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::softThrshold(const T nu) {
+   Vector<T> vec;
+   toVect(vec);
+   vec.softThrshold(nu);
+};
+
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::fastSoftThrshold(const T nu) {
+   Vector<T> vec;
+   toVect(vec);
+   vec.fastSoftThrshold(nu);
+};
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::fastSoftThrshold(Matrix<T>& output, const T nu) const {
+   output.resize(_m,_n,false);
+   Vector<T> vec, vec2;
+   toVect(vec);
+   output.toVect(vec2);
+   vec.fastSoftThrshold(vec2,nu);
+};
+
+
+
+
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::hardThrshold(const T nu) {
+   Vector<T> vec;
+   toVect(vec);
+   vec.hardThrshold(nu);
+};
+
+
+/// perform thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::thrsmax(const T nu) {
+   Vector<T> vec;
+   toVect(vec);
+   vec.thrsmax(nu);
+};
+
+/// perform thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::thrsmin(const T nu) {
+   Vector<T> vec;
+   toVect(vec);
+   vec.thrsmin(nu);
+};
+
+
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::inv_elem() {
+   Vector<T> vec;
+   toVect(vec);
+   vec.inv();
+};
+
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::blockThrshold(const T nu,
+      const INTM sizeGroup) {
+   for (INTM i = 0; i<_n; ++i) {
+      INTM j;
+      for (j = 0; j<_m-sizeGroup+1; j+=sizeGroup) {
+         T nrm=0;
+         for (INTM k = 0; k<sizeGroup; ++k)
+            nrm += _X[i*_m +j+k]*_X[i*_m +j+k];
+         nrm=sqrt(nrm);
+         if (nrm < nu) {
+            for (INTM k = 0; k<sizeGroup; ++k)
+               _X[i*_m +j+k]=0;
+         } else {
+            T scal = (nrm-nu)/nrm;
+            for (INTM k = 0; k<sizeGroup; ++k)
+               _X[i*_m +j+k]*=scal;
+         }
+      }
+      j -= sizeGroup;
+      for ( ; j<_m; ++j)
+         _X[j]=softThrs<T>(_X[j],nu);
+   }
+}
+
+template <typename T> inline void Matrix<T>::sparseProject(Matrix<T>& Y, 
+      const T thrs,   const int mode, const T lambda_1,
+      const T lambda_2, const T lambda_3, const bool pos,
+      const int numThreads) {
+
+   int NUM_THREADS=init_omp(numThreads);
+   Vector<T>* XXT= new Vector<T>[NUM_THREADS];
+   for (int i = 0; i<NUM_THREADS; ++i) {
+      XXT[i].resize(_m);
+   }
+
+   int i;
+#pragma omp parallel for private(i) 
+   for (i = 0; i< _n; ++i) {
+#ifdef _OPENMP
+      int numT=omp_get_thread_num();
+#else
+      int numT=0;
+#endif
+      Vector<T> Xi;
+      this->refCol(i,Xi);
+      Vector<T> Yi;
+      Y.refCol(i,Yi);
+      Vector<T>& XX = XXT[numT];
+      XX.copy(Xi);
+      XX.sparseProject(Yi,thrs,mode,lambda_1,lambda_2,lambda_3,pos);
+   }
+   delete[](XXT);
+};
+
+
+/// perform soft-thresholding of the matrix, with the threshold nu
+template <typename T> inline void Matrix<T>::thrsPos() {
+   Vector<T> vec;
+   toVect(vec);
+   vec.thrsPos();
+};
+
+
+/// perform A <- A + alpha*vec1*vec2'
+template <typename T> inline void Matrix<T>::rank1Update(
+      const Vector<T>& vec1, const Vector<T>& vec2, const T alpha) {
+   cblas_ger<T>(CblasColMajor,_m,_n,alpha,vec1._X,1,vec2._X,1,_X,_m);
+};
+
+/// perform A <- A + alpha*vec1*vec2', when vec1 is sparse
+template <typename T> 
+template <typename I> 
+inline void Matrix<T>::rank1Update(
+      const SpVector<T,I>& vec1, const Vector<T>& vec2, const T alpha) {
+   I* r = vec1._r;
+   T* v = vec1._v;
+   T* X2 = vec2._X;
+   assert(vec2._n == _n);
+   if (alpha == 1.0) {
+      for (INTM i = 0; i<_n; ++i) {
+         for (INTM j = 0; j<vec1._L; ++j) {
+            _X[i*_m+r[j]] += v[j]*X2[i];
+         }
+      }
+   } else {
+      for (INTM i = 0; i<_n; ++i) {
+         for (INTM j = 0; j<vec1._L; ++j) {
+            _X[i*_m+r[j]] += alpha*v[j]*X2[i];
+         }
+      }
+   }
+};
+
+template <typename T>
+template <typename I>
+inline void Matrix<T>::rank1Update_mult(const Vector<T>& vec1, 
+      const Vector<T>& vec1b,
+      const SpVector<T,I>& vec2,
+      const T alpha) {
+   const INTM nn = vec1b.n();
+   const INTM size_A = _n/nn;
+   Matrix<T> tmp;
+   for (INTM i = 0; i<nn; ++i) {
+      tmp.setData(_X+i*size_A*_m,_m,size_A);
+      tmp.rank1Update(vec1,vec2,alpha*vec1b[i]);
+   }
+};
+
+/// perform A <- A + alpha*vec1*vec2', when vec1 is sparse
+template <typename T>
+template <typename I>
+inline void Matrix<T>::rank1Update(
+      const SpVector<T,I>& vec1, const SpVector<T,I>& vec2, const T alpha) {
+   I* r = vec1._r;
+   T* v = vec1._v;
+   T* v2 = vec2._v;
+   I* r2 = vec2._r;
+   if (alpha == 1.0) {
+      for (INTM i = 0; i<vec2._L; ++i) {
+         for (INTM j = 0; j<vec1._L; ++j) {
+            _X[r2[i]*_m+r[j]] += v[j]*v2[i];
+         }
+      }
+   } else {
+      for (INTM i = 0; i<vec2._L; ++i) {
+         for (INTM j = 0; j<vec1._L; ++j) {
+            _X[r[i]*_m+r[j]] += alpha*v[j]*v2[i];
+         }
+      }
+   }
+};
+
+
+/// perform A <- A + alpha*vec1*vec2', when vec2 is sparse
+template <typename T> 
+template <typename I> 
+inline void Matrix<T>::rank1Update(
+      const Vector<T>& vec1, const SpVector<T,I>& vec2, const T alpha) {
+   I* r = vec2._r;
+   T* v = vec2._v;
+   Vector<T> Xi;
+   for (INTM i = 0; i<vec2._L; ++i) {
+      this->refCol(r[i],Xi);
+      Xi.add(vec1,v[i]*alpha);
+   }
+};
+
+/// perform A <- A + alpha*vec1*vec1', when vec1 is sparse
+template <typename T> 
+template <typename I> 
+inline void Matrix<T>::rank1Update(
+      const SpVector<T,I>& vec1, const T alpha) {
+   I* r = vec1._r;
+   T* v = vec1._v;
+   if (alpha == 1.0) {
+      for (INTM i = 0; i<vec1._L; ++i) {
+         for (INTM j = 0; j<vec1._L; ++j) {
+            _X[r[i]*_m+r[j]] += v[j]*v[i];
+         }
+      }
+   } else {
+      for (INTM i = 0; i<vec1._L; ++i) {
+         for (INTM j = 0; j<vec1._L; ++j) {
+            _X[_m*r[i]+r[j]] += alpha*v[j]*v[i];
+         }
+      }
+   }
+};
+
+/// compute x, such that b = Ax, 
+template <typename T> inline void Matrix<T>::conjugateGradient(
+      const Vector<T>& b, Vector<T>& x, const T tol, const int itermax) const {
+   Vector<T> R,P,AP;
+   R.copy(b);
+   this->mult(x,R,T(-1.0),T(1.0));
+   P.copy(R);
+   int k = 0;
+   T normR = R.nrm2sq();
+   T alpha;
+   while (normR > tol && k < itermax) {
+      this->mult(P,AP);
+      alpha = normR/P.dot(AP);
+      x.add(P,alpha);
+      R.add(AP,-alpha);
+      T tmp = R.nrm2sq();
+      P.scal(tmp/normR);
+      normR = tmp;
+      P.add(R,T(1.0));
+      ++k;
+   };
+};
+
+template <typename T> inline void Matrix<T>::drop(char* fileName) const {
+   std::ofstream f;
+   f.precision(12);
+   f.flags(std::ios_base::scientific);
+   f.open(fileName, ofstream::trunc);
+   std::cout << "Matrix written in " << fileName << std::endl;
+   for (INTM i = 0; i<_n; ++i) {
+      for (INTM j = 0; j<_m; ++j) 
+         f << _X[i*_m+j] << " ";
+      f << std::endl;
+   }
+   f.close();
+};
+
+/// compute a Nadaraya Watson estimator
+template <typename T> inline void Matrix<T>::NadarayaWatson(
+      const Vector<INTM>& ind, const T sigma) {
+   if (ind.n() != _n) return;
+
+   init_omp(MAX_THREADS);
+
+   const INTM Ngroups=ind.maxval();
+   INTM i;
+#pragma omp parallel for private(i)
+   for (i = 1; i<=Ngroups; ++i) {
+      Vector<INTM> indicesGroup(_n);
+      INTM count = 0;
+      for (INTM j = 0; j<_n; ++j)
+         if (ind[j] == i) indicesGroup[count++]=j;
+      Matrix<T> Xm(_m,count);
+      Vector<T> col, col2;
+      for (INTM j= 0; j<count; ++j) {
+         this->refCol(indicesGroup[j],col);
+         Xm.refCol(j,col2);
+         col2.copy(col);
+      }
+      Vector<T> norms;
+      Xm.norm_2sq_cols(norms);
+      Matrix<T> weights;
+      Xm.XtX(weights);
+      weights.scal(T(-2.0));
+      Vector<T> ones(Xm.n());
+      ones.set(T(1.0));
+      weights.rank1Update(ones,norms);
+      weights.rank1Update(norms,ones);
+      weights.scal(-sigma);
+      weights.exp();
+      Vector<T> den;
+      weights.mult(ones,den);
+      den.inv();
+      weights.multDiagRight(den);
+      Matrix<T> num;
+      Xm.mult(weights,num);
+      for (INTM j= 0; j<count; ++j) {
+         this->refCol(indicesGroup[j],col);
+         num.refCol(j,col2);
+         col.copy(col2);
+      }
+   }
+};
+
+/// make a sparse copy of the current matrix
+template <typename T> inline void Matrix<T>::toSparse(SpMatrix<T>& out) const {
+   out.clear();
+   INTM count=0;
+   INTM* pB;
+#pragma omp critical
+   {
+      pB=new INTM[_n+1];
+   }
+   INTM* pE=pB+1;
+   for (INTM i = 0; i<_n*_m; ++i) 
+      if (_X[i] != 0) ++count;
+   INTM* r;
+   T* v;
+#pragma omp critical
+   {
+      r=new INTM[count];
+      v=new T[count];
+   }
+   count=0;
+   for (INTM i = 0; i<_n; ++i) {
+      pB[i]=count;
+      for (INTM j = 0; j<_m; ++j) {
+         if (_X[i*_m+j] != 0) {
+            v[count]=_X[i*_m+j];
+            r[count++]=j;
+         }
+      }
+      pE[i]=count;
+   }
+   out._v=v;
+   out._r=r;
+   out._pB=pB;
+   out._pE=pE;
+   out._m=_m;
+   out._n=_n;
+   out._nzmax=count;
+   out._externAlloc=false;
+};
+
+/// make a sparse copy of the current matrix
+template <typename T> inline void Matrix<T>::toSparseTrans(
+      SpMatrix<T>& out) {
+   out.clear();
+   INTM count=0;
+   INTM* pB;
+#pragma omp critical
+   {
+      pB=new INTM[_m+1];
+   }
+   INTM* pE=pB+1;
+   for (INTM i = 0; i<_n*_m; ++i) 
+      if (_X[i] != 0) ++count;
+   INTM* r;
+   T* v;
+#pragma omp critical
+   {
+      r=new INTM[count];
+      v=new T[count];
+   }
+   count=0;
+   for (INTM i = 0; i<_m; ++i) {
+      pB[i]=count;
+      for (INTM j = 0; j<_n; ++j) {
+         if (_X[i+j*_m] != 0) {
+            v[count]=_X[j*_m+i];
+            r[count++]=j;
+         }
+      }
+      pE[i]=count;
+   }
+   out._v=v;
+   out._r=r;
+   out._pB=pB;
+   out._pE=pE;
+   out._m=_n;
+   out._n=_m;
+   out._nzmax=count;
+   out._externAlloc=false;
+};
+
+/// make a reference of the matrix to a vector vec 
+template <typename T> inline void Matrix<T>::toVect(
+      Vector<T>& vec) const {
+   vec.clear();
+   vec._externAlloc=true;
+   vec._n=_n*_m;
+   vec._X=_X;
+};
+
+
+/* ************************************
+ * Implementation of the class OptimInfo 
+ * ************************************/
+
+/// Constructor with existing data X of an m x n OptimInfo
+template <typename T> OptimInfo<T>::OptimInfo(T* X, INTM nclass, INTM m, INTM n) :
+   _externAlloc(true), _X(X), _nclass(nclass), _m(m), _n(n) {  };
+
+
+/// Constructor for a new m x n OptimInfo
+template <typename T> OptimInfo<T>::OptimInfo(INTM nclass, INTM m, INTM n) :
+   _externAlloc(false), _nclass(nclass), _m(m), _n(n)  {
+#pragma omp critical
+      {
+         _X= new T[_nclass*_n*_m];
+      }
+   };
+
+/// Empty constructor
+template <typename T> OptimInfo<T>::OptimInfo() :
+   _externAlloc(false), _X(NULL), _nclass(0), _m(0), _n(0) { };
+
+/// Destructor
+template <typename T> OptimInfo<T>::~OptimInfo() {
+   clear();
+};
+
+/// Return a modifiable reference to X(i,j,k)
+template <typename T> inline T& OptimInfo<T>::operator()(const INTM i, const INTM j, const INTM k) {
+   return _X[i*_m*_n + k*_m+j];
+};
+
+/// Return the value X(i,j,k)
+template <typename T> inline T OptimInfo<T>::operator()(const INTM i, const INTM j, const INTM k) const {
+   return _X[i*_m*_n + k*_m+j];
+};
+
+/// Print the OptimInfo to std::cout
+template <typename T> inline void OptimInfo<T>::print(const string& name) const {
+   std::cerr << name << std::endl;
+   std::cerr << _m << " x " << _n << std::endl;
+   for (INTM i = 0; i<_m; ++i) {
+      for (INTM j = 0; j<_n; ++j) {
+          for (INTM k = 0; k<_nclass; ++k) {
+         printf("%10.5g ",static_cast<double>(_X[i*_m*_n + k*_m+j]));
+         }
+      printf("\n ");
+      }
+      printf("\n ");
+   }
+   printf("\n ");
+};
+
+/// Print the OptimInfo to std::cout
+template <typename T> inline void OptimInfo<T>::dump(const string& name) const {
+   ofstream f; 
+   const char * cname = name.c_str();
+   f.open(cname);
+   f.precision(20);
+   std::cerr << name << std::endl;
+   f << _m << " x " << _n << std::endl;
+   for (INTM i = 0; i<_m; ++i) {
+      for (INTM j = 0; j<_n; ++j) {
+          for (INTM k = 0; k<_nclass; ++k) {
+         f << static_cast<double>(_X[i*_m*_n + k*_m+j]) << " ";
+         }
+      f << std::endl;
+      }
+      f << std::endl;
+   }
+   f << std::endl;
+   f.close();
+};
+
+/// Set all the values to zero
+template <typename T> inline void OptimInfo<T>::setZeros() {
+   memset(_X,0,_nclass*_n*_m*sizeof(T));
+};
+
+/// Resize the optimInfo
+template <typename T> inline void OptimInfo<T>::resize(INTM nclass, INTM m, INTM n, const bool set_zeros) {
+   if (_nclass==nclass && _n==n && _m==m) return;
+   clear();
+   _nclass=nclass;
+   _n=n;
+   _m=m;
+   _externAlloc=false;
+#pragma omp critical
+   {
+      _X=new T[_nclass*_n*_m];
+   }
+   if (set_zeros)
+      setZeros();
+};
+
+/// Clear the optimInfo
+template <typename T> inline void OptimInfo<T>::clear() {
+   if (!_externAlloc) delete[](_X);
+   _nclass=0;
+   _n=0;
+   _m=0;
+   _X=NULL;
+   _externAlloc=true;
+};
+
+/// make a copy of the optimInfo optim in the current optim
+template <typename T> inline void OptimInfo<T>::copy(const OptimInfo<T>& optim) {
+   if (_X != optim._X) {
+      resize(optim._nclass, optim._m,optim._n);
+      memcpy(_X,optim._X,_nclass*_m*_n*sizeof(T));
+   }
+};
+
+/// Change the data in the optimInfo
+template <typename T> inline void OptimInfo<T>::setData(T* X, INTM nclass, INTM m, INTM n) {
+   clear();
+   _X=X;
+   _nclass=nclass;
+   _m=m;
+   _n=n;
+   _externAlloc=true;
+};
+
+/// add alpha*optim to the current optim info at a given index
+template <typename T> inline void OptimInfo<T>::add(const OptimInfo<T>& optim, const int index, const T alpha) {
+   assert(optim._m == _m && optim._n == _n);
+   for (INTT i = 0; i<_m * _n; ++i){
+       //FIXME maybe slow
+      _X[index * _m * _n + i] += alpha*optim[i];
+   }
+};
 
 #endif

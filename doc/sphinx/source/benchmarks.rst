@@ -41,7 +41,7 @@ All datasets samples are normalized with :math:`\ell_2`-norm and centered for de
 
 Protocol
 --------
-To select a reasonable regularization parameter :math:`\lambda` for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid :math:`2^{-i}/n` with :math:`i=1,\ldots,16` when evaluating trained model on the validation set. Then, we keep the optimal parameter :math:`\lambda`, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Arsenic are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, fista, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
+To select a reasonable regularization parameter :math:`\lambda_1` for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid :math:`2^{-i}/n` with :math:`i=1,\ldots,16` when evaluating trained model on the validation set. Then, we keep the optimal parameter :math:`\lambda_1`, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Arsenic are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, fista, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
 
 In the evaluation, we include solvers that can be called from scikit-learn, such as Liblinear, LBFGS, newton-cg, or the saga implementation of scikit-learn. We run each solver with different tolerance parameter tol=0.1,0.01,0.001,0.0001 in order to obtain several points illustrating their accuracy-speed trade-off. Each method is run for at most 500 epochs.
 
@@ -50,7 +50,7 @@ Results
 -------
 The results are presented below. There are 11 datasets, and we are going to
 group them into categories leading to similar conclusions. We start with those
-requiring a small regularization parameter (e.g., :math:`\lambda=1/(100n)`),
+requiring a small regularization parameter (e.g., :math:`\lambda_1=1/(100n)`),
 which lead more difficult optimization problems since there is less strong
 convexity.
 
@@ -59,10 +59,10 @@ I am well aware of the limitations of this study (single runs, lack of error bar
 improve it when time permits. Yet, the conclusions seem robust enough given the number of methods and 
 datasets.
 
-small :math:`\lambda`: covtype, epsilon, webspam, ckn_mnist
+small :math:`\lambda_1`: covtype, epsilon, webspam, ckn_mnist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For these datasets, regularization is important, but not crucial to achieve
-a good predictive accuracy and thus the optimal :math:`\lambda` is small. For
+a good predictive accuracy and thus the optimal :math:`\lambda_1` is small. For
 instance, for ckn_mnist, the accuracy on test data is typically above 99\%, and
 the dimension p for covtype is so small that regularization is useless. 
 This leads to an interesting setting with clear conclusions.

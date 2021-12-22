@@ -55,11 +55,11 @@ def process(arguments, X, y, multiclass):
     else:
         classifier=ars.Regression(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
 
-    lambd = arguments.lambd
+    lambda_1 = arguments.lambda_1
     if arguments.penalty=='l2':
-        lambd=arguments.lambd/(X.shape[0])
+        lambda_1=arguments.lambda_1/(X.shape[0])
 
-    classifier.fit(X,y,duality_gap_interval=arguments.duality_gap_interval,lambd=lambd,lambd2=lambd,n_threads=arguments.n_threads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
+    classifier.fit(X,y,duality_gap_interval=arguments.duality_gap_interval,lambda_1=lambda_1,lambda_2=lambda_1,n_threads=arguments.n_threads,tol=1e-3,solver=arguments.solver,restart=False,random_state=0,max_epochs=100)
     sparsity=np.count_nonzero(classifier.coef_.ravel())/len(classifier.coef_.ravel())
     print(sparsity)
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     parser.add_argument("--penalty", default="l1l2")
     parser.add_argument("--solver", default="auto")
     parser.add_argument("--loss", default="multiclass-logistic")
-    parser.add_argument("--lambd", type=float, default=0.0001)
+    parser.add_argument("--lambda_1", type=float, default=0.0001)
     parser.add_argument("--n_threads", type=int, default=4)
     parser.add_argument("--duality_gap_interval", type=int, default=10)
     parser.add_argument("--normalize", type=bool, default=True)

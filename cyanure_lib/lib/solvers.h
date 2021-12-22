@@ -173,19 +173,21 @@ public:
             x.copy(_bestx);
     }
     
-    void get_optim_info(Matrix<T>& optim) const
+    void get_optim_info(OptimInfo<T>& optim) const
     {
+        //FIXME Not clean
         int count = 0;
         for (int ii = 0; ii < _optim_info.n(); ++ii)
             if (_optim_info(0, ii) != 0)
                 ++count;
         if (count > 0)
         {
-            optim.resize(6, count);
+            optim.resize(1, 6, count);
         }
         for (int ii = 0; ii < count; ++ii)
-            for (int jj = 0; jj < 6; ++jj)
-                optim(jj, ii) = _optim_info(jj, ii);
+            for (int jj = 0; jj < 6; ++jj){
+                optim(0, jj, ii) = _optim_info(jj, ii);
+            }
     };
 
     void eval(const D& x)
@@ -391,7 +393,7 @@ public:
     USING_SOLVER;
     IncrementalSolver(const loss_type& loss, const Regularizer<D, I>& regul, const ParamSolver<T>& param, const Vector<T>* Li = NULL) : Solver<loss_type>(loss, regul, param)
     {
-        _minibatch = param.minibatch;
+        _minibatch = 1;
         _non_uniform_sampling = param.non_uniform_sampling;
         if (Li)
             _Li.copy(*Li);
@@ -545,11 +547,15 @@ class SVRG_Solver : public IncrementalSolver<loss_type>
 {
 public:
     USING_INCREMENTAL_SOLVER;
-    SVRG_Solver(const loss_type& loss, const Regularizer<D, I>& regul, const ParamSolver<T>& param, const Vector<T>* Li = NULL) : IncrementalSolver<loss_type>(loss, regul, param, Li) {};
+    SVRG_Solver(const loss_type& loss, const Regularizer<D, I>& regul, const ParamSolver<T>& param, const Vector<T>* Li = NULL) : IncrementalSolver<loss_type>(loss, regul, param, Li) {
+        //TODO Vérifier avec Julien
+        _minibatch = 1;
+    };
 
 protected:
     virtual void solver_init(const D& x0)
     {
+        // Rename x0 and x with w0 and w
         IncrementalSolver<loss_type>::solver_init(x0);
         _xtilde.copy(x0);
         _loss.grad(_xtilde, _gtilde);
@@ -1096,6 +1102,7 @@ public:
     Acc_SVRG_Solver(const loss_type& loss, const Regularizer<D, I>& regul, const ParamSolver<T>& param, const Vector<T>* Li = NULL) : SVRG_Solver<loss_type>(loss, regul, param, Li)
     {
         _accelerated_solver = allow_acc;
+        _minibatch = 1;
     };
 
     virtual void solver_init(const D& x0)
@@ -1211,7 +1218,7 @@ public:
     {
         if (_accelerated_solver)
         {
-            const T lambda = _regul.lambda();
+            const T lambda_1 = _regul.lambda_1();
             DoubleLazyVector<T, I>* lazyy = NULL;
             Vector<I> indices;
             if (_is_lazy)
@@ -1223,7 +1230,7 @@ public:
                 const T alphak = _mu * _deltak / _gammak;
                 const T betak = _deltak / (_gammak * _etak);
                 const T a = (T(1.0) - alphak) / _thetak + alphak;
-                const T scalprox = T(1.0) / (T(1.0) + lambda * _etak);
+                const T scalprox = T(1.0) / (T(1.0) + lambda_1 * _etak);
                 const T eta = _etak;
                 const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
                 const T scaleta = _non_uniform_sampling ? eta / (_qi[ind] * _n) : eta;
@@ -1283,7 +1290,7 @@ public:
                 lazyx = new LazyVector<T, I>(x, _gtilde, _n);
             }
             const T eta = T(1.0) / (3 * (_L - _loss.kappa()));
-            const T lambda = _regul.lambda() + _loss.kappa(); // take care of 0.5(mu+kappa)|x|^2,
+            const T lambda_1 = _regul.lambda_1() + _loss.kappa(); // take care of 0.5(mu+kappa)|x|^2,
             for (int ii = 0; ii < _n; ++ii)
             {
                 const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
@@ -1293,12 +1300,12 @@ public:
                     _loss.get_coordinates(ind, indices);
                     lazyx->update(indices);
                     _loss.double_add_grad(x, _xtilde, ind, x, -scal * eta, scal * eta, 0);
-                    lazyx->add_scal(-eta, T(1.0) / (T(1.0) + eta * lambda));
+                    lazyx->add_scal(-eta, T(1.0) / (T(1.0) + eta * lambda_1));
                 }
                 else
                 {
                     _loss.double_add_grad(x, _xtilde, ind, x, -scal * eta, scal * eta, 0); // x <- x - s( D_i f(x) - D_i f(xtilde))
-                    x.add_scal(_gtilde, -eta / (T(1.0) + eta * lambda), T(1.0) / (T(1.0) + eta * lambda));
+                    x.add_scal(_gtilde, -eta / (T(1.0) + eta * lambda_1), T(1.0) / (T(1.0) + eta * lambda_1));
                 }
 
                 if (random() % _n == 0)
@@ -1326,7 +1333,7 @@ public:
                 lazyx = new LazyVector<T, I>(x, _gtilde, _n);
             }
             const T eta = T(1.0) / (3 * _L);
-            const T lambda = _regul.lambda(); // replace by lazyprox ?
+            const T lambda_1 = _regul.lambda_1(); // replace by lazyprox ?
             for (int ii = 0; ii < _n; ++ii)
             {
                 const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
@@ -1336,12 +1343,12 @@ public:
                     _loss.get_coordinates(ind, indices);
                     lazyx->update(indices);
                     _loss.double_add_grad(x, _xtilde, ind, x, -scal * eta, scal * eta);
-                    lazyx->add_scal(-eta, T(1.0) / (T(1.0) + eta * lambda)); // replace by lazyprox ?
+                    lazyx->add_scal(-eta, T(1.0) / (T(1.0) + eta * lambda_1)); // replace by lazyprox ?
                 }
                 else
                 {
                     _loss.double_add_grad(x, _xtilde, ind, x, -scal * eta, scal * eta);
-                    x.add_scal(_gtilde, -eta / (T(1.0) + eta * lambda), T(1.0) / (T(1.0) + eta * lambda));
+                    x.add_scal(_gtilde, -eta / (T(1.0) + eta * lambda_1), T(1.0) / (T(1.0) + eta * lambda_1));
                 }
                 if (random() % _n == 0)
                 {
@@ -1396,12 +1403,12 @@ Solver<loss_type>* get_solver(const loss_type& loss, const Regularizer<typename 
     {
         const T L = loss.lipschitz();
         const int n = loss.n();
-        const T lambda = regul.strong_convexity();
+        const T lambda_1 = regul.strong_convexity();
         if (n < 1000)
         {
             solver_type = QNING_ISTA;
         }
-        else if (lambda < L / (100 * n))
+        else if (lambda_1 < L / (100 * n))
         {
             solver_type = QNING_MISO;
         }
@@ -1460,7 +1467,7 @@ Solver<loss_type>* get_solver(const loss_type& loss, const Regularizer<typename 
 };
 
 template <typename M>
-void simple_erm(const M& X, const Vector<typename M::value_type>& y, const Vector<typename M::value_type>& w0, Vector<typename M::value_type>& w, Vector<typename M::value_type>& dual_variable, Matrix<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
+void simple_erm(const M& X, const Vector<typename M::value_type>& y, const Vector<typename M::value_type>& w0, Vector<typename M::value_type>& w, Vector<typename M::value_type>& dual_variable, OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
 {
     init_omp(param.threads);
     typedef typename M::value_type T;
@@ -1489,7 +1496,7 @@ void simple_erm(const M& X, const Vector<typename M::value_type>& y, const Vecto
     {
         throw ValueError("Maximum number of iteration must be positive");
     }
-    if (model.lambda < 0)
+    if (model.lambda_1 < 0)
     {
         throw ValueError("Penalty term must be positive");
     }
@@ -1663,7 +1670,7 @@ Regularizer<Matrix<T>, I>* get_regul_mat(const ParamModel<T>& model, const int n
 };
 
 template <typename loss_type>
-void solve_mat(loss_type& loss, const Regularizer<typename loss_type::variable_type, typename loss_type::index_type>& regul, const ParamSolver<typename loss_type::value_type>& param, const typename loss_type::variable_type& W0, typename loss_type::variable_type& W, Matrix<typename loss_type::value_type>& dual_variable, Matrix<typename loss_type::value_type>& optim_info)
+void solve_mat(loss_type& loss, const Regularizer<typename loss_type::variable_type, typename loss_type::index_type>& regul, const ParamSolver<typename loss_type::value_type>& param, const typename loss_type::variable_type& W0, typename loss_type::variable_type& W, Matrix<typename loss_type::value_type>& dual_variable, OptimInfo<typename loss_type::value_type>& optim_info)
 {
     typedef typename loss_type::value_type T;
     typedef typename loss_type::variable_type D;
@@ -1735,7 +1742,7 @@ void solve_mat(loss_type& loss, const Regularizer<typename loss_type::variable_t
 // W0 is p x nclasses if no intercept (or p+1 x nclasses with intercept)
 // prediction model is   W0^T X  gives  nclasses x n
 template <typename M>
-void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const Matrix<typename M::value_type>& W0, Matrix<typename M::value_type>& W, Matrix<typename M::value_type>& dual_variable, Matrix<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
+void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const Matrix<typename M::value_type>& W0, Matrix<typename M::value_type>& W, Matrix<typename M::value_type>& dual_variable, OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
 {
     typedef typename M::value_type T;
     typedef typename M::index_type I;
@@ -1749,7 +1756,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
     {
         throw ValueError("Maximum number of iteration must be positive");
     }
-    if (model.lambda < 0)
+    if (model.lambda_1 < 0)
     {
         throw ValueError("Penalty term must be positive");
     }
@@ -1796,7 +1803,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
         W.copy(W0);
         const int nclass = W0.n();
         const int duality_gap_interval = MAX(param.duality_gap_interval, 1);
-        optim_info.resize(6, MAX(param.max_iter / duality_gap_interval, 1));
+        optim_info.resize(nclass, 6, MAX(param.max_iter / duality_gap_interval, 1));
         optim_info.setZeros();
         ParamSolver<T> param2 = param;
         param2.verbose = false;
@@ -1811,7 +1818,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
         for (int ii = 0; ii < nclass; ++ii)
         {
             Vector<T> w0col, wcol, ycol, dualcol;
-            Matrix<T> optim_info_col;
+            OptimInfo<T> optim_info_col;
             W0.refCol(ii, w0col);
             W.refCol(ii, wcol);
             y.copyRow(ii, ycol);
@@ -1822,19 +1829,18 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
                 dual_variable.copyToRow(ii, dualcol);
 #pragma omp critical
             {
-                //TODO resolve bug
-                optim_info.add(optim_info_col);
+                optim_info.add(optim_info_col, ii);
                 if (param.verbose)
                 {
                     const int noptim = optim_info_col.n() - 1;
-                    cout << "Solver " << ii << " has terminated after " << optim_info_col(0, noptim) << " epochs in " << optim_info_col(5, noptim) << " seconds" << endl;
-                    if (optim_info_col(4, noptim) == 0)
+                    cout << "Solver " << ii << " has terminated after " << optim_info_col(0, 0, noptim) << " epochs in " << optim_info_col(0, 5, noptim) << " seconds" << endl;
+                    if (optim_info_col(0, 4, noptim) == 0)
                     {
-                        cout << "   Primal objective: " << optim_info_col(1, noptim) << ", relative duality gap: " << optim_info_col(3, noptim) << endl;
+                        cout << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", relative duality gap: " << optim_info_col(0, 3, noptim) << endl;
                     }
                     else
                     {
-                        cout << "   Primal objective: " << optim_info_col(1, noptim) << ", tol: " << optim_info_col(4, noptim) << endl;
+                        cout << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", tol: " << optim_info_col(0, 4, noptim) << endl;
                     }
                 }
             }
@@ -1849,7 +1855,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
 };
 
 template <typename M>
-void multivariate_erm(const M& X, const Vector<int>& y, const Matrix<typename M::value_type>& W0, Matrix<typename M::value_type>& W, Matrix<typename M::value_type>& dual_variable, Matrix<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
+void multivariate_erm(const M& X, const Vector<int>& y, const Matrix<typename M::value_type>& W0, Matrix<typename M::value_type>& W, Matrix<typename M::value_type>& dual_variable, OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
 {
     typedef typename M::value_type T;
     typedef typename M::index_type I;

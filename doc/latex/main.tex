@@ -139,7 +139,7 @@ These problems will be handled by the classes \texttt{BinaryClassifier} and
 respectively.  If you are used to scikit-learn~\citep{scikit}, we also provide the classes
 \texttt{LinearSVC} and \texttt{LogisticRegression}, which are compatible with
 scikit-learn's API (in particular, they use the parameter \texttt{C} instead of
-$\lambda$).
+$\lambda_1$).
 
 The regularization function~$\psi$ is chosen among the following choices
 \begin{table}[h!]
@@ -148,22 +148,22 @@ The regularization function~$\psi$ is chosen among the following choices
       \hline
       \multicolumn{2}{|c|}{Penalty $\psi$}     \\  
       \hline
-      \texttt{l2} &   $\frac{\lambda}{2}\|\w\|_2^2$ \\ 
+      \texttt{l2} &   $\frac{\lambda_1}{2}\|\w\|_2^2$ \\ 
       \hline
-      \texttt{l1} &   $\lambda\|\w\|_1$ \\ 
+      \texttt{l1} &   $\lambda_1\|\w\|_1$ \\ 
       \hline
-      \texttt{elastic-net} &   $\lambda\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
+      \texttt{elastic-net} &   $\lambda_1\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
       \hline
-      \texttt{fused-lasso} &   $\lambda_3\sum_{j=2}^p|\w[j]-\w[j-1]| + \lambda\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
+      \texttt{fused-lasso} &   $\lambda_3\sum_{j=2}^p|\w[j]-\w[j-1]| + \lambda_1\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
       \hline
       \texttt{none} &   $0$ \\ 
       \hline
       \hline
       \multicolumn{2}{{|c|}}{Constraint $\psi$}     \\  
       \hline
-      \texttt{l1-ball} &  (constraint) $\|\wb\|_1 \leq \lambda$ \\ 
+      \texttt{l1-ball} &  (constraint) $\|\wb\|_1 \leq \lambda_1$ \\ 
       \hline
-      \texttt{l2-ball} &  (constraint) $\|\wb\|_2 \leq \lambda$ \\ 
+      \texttt{l2-ball} &  (constraint) $\|\wb\|_2 \leq \lambda_1$ \\ 
       \hline
    \end{tabular}
    \caption{Regularization functions used for univariate machine learning problems.}\label{table:penalty}
@@ -217,9 +217,9 @@ The regularization functions may be chosen according to the following table.
       \texttt{l2, l1, elastic-net, fused-lasso, none, l1-ball, l2-ball} & 
       $\sum_{j=1}^k \tilde{\psi}(\w_j)$, with $\tilde{\psi}$ chosen from Table~\ref{table:penalty} \\
       \hline
-      \texttt{l1l2} & $\lambda \sum_{j=1}^p \| \W^j\|_2$ ($\W^j$ is the $j$-th row of $\W$) \\ 
+      \texttt{l1l2} & $\lambda_1 \sum_{j=1}^p \| \W^j\|_2$ ($\W^j$ is the $j$-th row of $\W$) \\ 
       \hline
-      \texttt{l1linf} & $\lambda \sum_{j=1}^p \| \W^j\|_\infty$  \\ 
+      \texttt{l1linf} & $\lambda_1 \sum_{j=1}^p \| \W^j\|_\infty$  \\ 
       \hline
    \end{tabular}
    \caption{Regularization function for multivariate machine learning problems.}
@@ -260,7 +260,7 @@ ars.preprocess(X,normalize=True,columns=False)
 #declare a binary classifier for l2-logistic regression
 classifier=ars.BinaryClassifier(loss='logistic',penalty='l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.1/X.shape[0],max_iter=500,tol=1e-3,duality_gap_interval=5) 
+classifier.fit(X,y,lambda_1=0.1/X.shape[0],max_iter=500,tol=1e-3,duality_gap_interval=5) 
 \end{minted}
 
 Before we comment the previous choices, let us 
@@ -294,7 +294,7 @@ Time elapsed : 928.114
 The solver used was \texttt{catalyst-miso}; the problem was solved up to
 accuracy $\varepsilon=0.001$ in about $15$mn after 35 epochs (without taking into account
 the time to load the dataset from the hard drive). The regularization
-parameter was chosen to be $\lambda=\frac{1}{10n}$, which is close to the
+parameter was chosen to be $\lambda_1=\frac{1}{10n}$, which is close to the
 optimal one given by cross-validation.  Even though performing a grid search with
 cross-validation would be more costly, it nevertheless shows that processing such 
 a large dataset does not necessarily require to massively invest in Amazon EC2 credits,
@@ -315,7 +315,7 @@ ars.preprocess(X,normalize=True,columns=False)
 #declare a binary classifier for squared hinge loss + l1 regularization
 classifier=ars.BinaryClassifier(loss='sqhinge',penalty='l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.000005,max_iter=500,tol=1e-3) 
+classifier.fit(X,y,lambda_1=0.000005,max_iter=500,tol=1e-3) 
 \end{minted}
 which yields
 \begin{verbatim}
@@ -352,7 +352,7 @@ ars.preprocess(X,centering=True,normalize=True,columns=False)
 #declare a multinomial logistic classifier with group Lasso regularization
 classifier=ars.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5) 
+classifier.fit(X,y,lambda_1=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5) 
 \end{minted}
 \begin{verbatim}
 Matrix X, n=60000, p=2304
@@ -391,7 +391,7 @@ ars.preprocess(X,centering=True,normalize=True,columns=False)
 #declare a multinomial logistic classifier with group Lasso regularization
 classifier=ars.MultiClassifier(loss='logistic',penalty='l2')
 # uses the auto solver by default, performs at most 500 epochs
-classifier.fit(X,y,lambd=0.01/X.shape[0],max_iter=500,tol=1e-3) 
+classifier.fit(X,y,lambda_1=0.01/X.shape[0],max_iter=500,tol=1e-3) 
 \end{minted}
 Then, the $10$ classifiers are learned in parallel using the four cpu cores
 (still on the same laptop), which gives the following output after about $1$mn
@@ -458,7 +458,7 @@ datasets, presented in Table~\ref{tab:datasets}
 \end{tabular} \caption{Datasets considered in the comparison. The 9 first ones can be found at \url{https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/}. The last two were generated by using a convolutional kernel network~\cite{mairal2016end}. } \label{tab:datasets}
 \end{table}
 
-Then, we select a regularization parameter~$\lambda$ by optimizing the model
+Then, we select a regularization parameter~$\lambda_1$ by optimizing the model
 accuracy on 20\% of the dataset, kept as validation, on a scale $2^{-i}$, for $i=0,1,\ldots,16$,
 and we report the objective function value on the whole dataset for different solvers in Table~\ref{table:fig1}.
 

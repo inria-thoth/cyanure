@@ -14,7 +14,7 @@ The following code performs binary classification with :math:`\ell_2`-regularize
    #declare a binary classifier for l2-logistic regression
    classifier=ars.BinaryClassifier(loss='logistic',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambd=0.1/X.shape[0],max_iter=500,tol=1e-3,duality_gap_interval=5) 
+   classifier.fit(X,y,lambda_1=0.1/X.shape[0],max_iter=500,tol=1e-3,duality_gap_interval=5) 
 
 Before we comment the previous choices, let us 
 run the above code on a regular three-years-old quad-core workstation with 32Gb of memory
@@ -47,7 +47,7 @@ run the above code on a regular three-years-old quad-core workstation with 32Gb 
 The solver used was *catalyst-miso*; the problem was solved up to
 accuracy tol=0.001 in about $15$mn after 35 epochs (without taking into account
 the time to load the dataset from the hard drive). The regularization
-parameter was chosen to be :math:`\lambda=\frac{1}{10n}`, which is close to the
+parameter was chosen to be :math:`\lambda_1=\frac{1}{10n}`, which is close to the
 optimal one given by cross-validation.  Even though performing a grid search with
 cross-validation would be more costly, it nevertheless shows that processing such 
 a large dataset does not necessarily require to massively invest in Amazon EC2 credits,
@@ -68,7 +68,7 @@ laptop with a quad-core i7-8565U CPU (specifically a dell XPS 13 9380).
    #declare a binary classifier for squared hinge loss + l1 regularization
    classifier=ars.BinaryClassifier(loss='sqhinge',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambd=0.000005,max_iter=500,tol=1e-3) 
+   classifier.fit(X,y,lambda_1=0.000005,max_iter=500,tol=1e-3) 
 which yields
 ::
    Matrix X, n=781265, p=47152
@@ -104,7 +104,7 @@ using the same laptop as previously, and choosing a regularization parameter tha
    #declare a multinomial logistic classifier with group Lasso regularization
    classifier=ars.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambd=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5) 
+   classifier.fit(X,y,lambda_1=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5) 
 which produces
 ::
    Matrix X, n=60000, p=2304
@@ -143,7 +143,7 @@ of learning l2-logistic regression classifiers on the same dataset, in a one-vs-
    #declare a multinomial logistic classifier with group Lasso regularization
    classifier=ars.MultiClassifier(loss='logistic',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambd=0.01/X.shape[0],max_iter=500,tol=1e-3) 
+   classifier.fit(X,y,lambda_1=0.01/X.shape[0],max_iter=500,tol=1e-3) 
 
 Then, the $10$ classifiers are learned in parallel using the four cpu cores
 (still on the same laptop), which gives the following output after about $1$mn
