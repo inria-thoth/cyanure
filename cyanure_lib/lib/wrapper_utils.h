@@ -207,7 +207,7 @@ static int npyToVector(PyArrayObject *array, Vector<T> &vector, string obj_name)
 template <typename T>
 inline PyArrayObject *create_np_vector(const int n)
 {
-    int nd = 1;
+    const int nd = 1;
     npy_intp dims[nd] = {n};
     return (PyArrayObject *)PyArray_SimpleNew(nd, dims, getTypeNumber<T>());
 }
@@ -215,7 +215,7 @@ inline PyArrayObject *create_np_vector(const int n)
 template <typename T>
 inline PyArrayObject *create_np_matrix(const int m, const int n)
 {
-    int nd = 2;
+    const int nd = 2;
     npy_intp dims[nd] = {m, n};
     return (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>());
 }
@@ -223,7 +223,7 @@ inline PyArrayObject *create_np_matrix(const int m, const int n)
 template <typename T>
 inline PyArrayObject *create_np_optim_info(const int nclass, const int m, const int n)
 {
-    int nd = 3;
+    const int nd = 3;
     npy_intp dims[nd] = {nclass, m, n};
     return (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>());
 }
