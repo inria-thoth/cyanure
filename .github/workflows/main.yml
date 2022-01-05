@@ -132,12 +132,12 @@ jobs:
         path: dist
     
     - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
           
-      - name: Switch to Current Branch
-        run: git checkout ${{ env.BRANCH }}
+    - name: Switch to Current Branch
+      run: git checkout ${{ env.BRANCH }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
