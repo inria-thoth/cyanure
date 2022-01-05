@@ -148,7 +148,13 @@ jobs:
       run: git checkout ${{ env.BRANCH }}
 
     - name: Try to import cyanure
-      run: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
+      run:    |
+         if [ "$RUNNER_OS" == "Windows" ]; then
+              rmdir cyanure /s /q && rmdir cyanure_lib /s /q
+         else
+              rm -rf cyanure && rm -rf cyanure_lib
+         fi
+         python -m pip install pytest && python -m pytest test/
 
 
 
