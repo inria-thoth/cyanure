@@ -147,8 +147,8 @@ jobs:
     - name: Switch to Current Branch
       run: git checkout ${{ env.BRANCH }}
 
-    - name: Try to import cyanure
-       - uses: knicknic/os-specific-run@v1.0.3
+    - name: Run tests without the lib
+      uses: knicknic/os-specific-run@v1.0.3
       with:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
         linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
