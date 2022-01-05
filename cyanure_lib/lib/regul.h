@@ -84,7 +84,7 @@ static regul_t regul_from_string(char *regul)
         return L2;
     if (strcmp(regul, "l2-ball") == 0)
         return L2BALL;
-    if (strcmp(regul, "elastic-net") == 0)
+    if (strcmp(regul, "elasticnet") == 0)
         return ELASTICNET;
     if (strcmp(regul, "l1l2") == 0)
         return L1L2;

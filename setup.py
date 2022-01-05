@@ -109,7 +109,8 @@ else:
         extra_compile_args_open_blas = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11', '-v', '-O0']
-        libs_open_blas = [np_blas]
+        if 'openblas' in np_blas:
+            libs_open_blas = ['openblas']
 
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
@@ -132,6 +133,7 @@ else:
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
+#   raise RuntimeError("Purpose crash")
 
 """
 ## setup openblass no openmp
@@ -168,7 +170,7 @@ setup(name='cyanure',
       license='bsd-3-clause',
       url="http://julien.mairal.org/cyanure/",
       description='optimization toolbox for machine learning',
-      install_requires=['scipy', 'numpy'],
+      install_requires=['scipy', 'numpy', 'scikit-learn'],
       ext_modules=[cyanure_wrap],
       packages=find_packages(),
       cmdclass={'sdist': sdistzip},

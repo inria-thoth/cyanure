@@ -6,7 +6,7 @@ based on stochastic variance-reduced stochastic optimization with
 acceleration mechanisms and Quasi-Newton principles.
 Arsenic can handle a large variety of loss functions (logistic, square,
 squared hinge, multinomial logistic) and regularization functions (:math:`\ell_2`,
-:math:`\ell_1`, elastic-net, fused Lasso, multi-task group Lasso).
+:math:`\ell_1`, elasticnet, fused Lasso, multi-task group Lasso).
 It provides a simple Python API, which is very close to that of scikit-learn,
 which should be extended to other languages such as R or Matlab in a near future.
 
@@ -26,7 +26,7 @@ Arsenic is build upon several goals and principles:
      copy as well. 
    * **Arsenic implements fast algorithms.** Arsenic builds upon two algorithmic principles: (i) variance-reduced stochastic optimization; (ii) Nesterov of Quasi-Newton acceleration. Variance-reduced stochastic optimization algorithms are now popular, but tend to perform poorly when the objective function is badly conditioned. We observe large gains when combining these approaches with Quasi-Newton. 
    * **Arsenic only depends on your BLAS implementation.** Arsenic does not depend on external libraries, except a BLAS library and numpy for Python. We show how to link with OpenBlas and Intel MKL in the python package, but any other BLAS implementation will do.
-   * **Arsenic can handle many combinations of loss and regularization functions.** Arsenic can handle a vast combination of loss functions (logistic, square, squared hinge, multiclass logistic) with regularization functions (:math:`\ell_2`, :math:`\ell_1`, elastic-net, fused lasso, multi-task group lasso).
+   * **Arsenic can handle many combinations of loss and regularization functions.** Arsenic can handle a vast combination of loss functions (logistic, square, squared hinge, multiclass logistic) with regularization functions (:math:`\ell_2`, :math:`\ell_1`, elasticnet, fused lasso, multi-task group lasso).
    * **Arsenic provides optimization guarantees.** We believe that reproducibility is important in research. For this reason, knowing if you have solved your problem when the algorithm stops is important. Arsenic provides such a guarantee with a mechanism called duality gap.
    * **Arsenic is easy to use.** We have developed a very simple API, relatively close to scikit-learn's API, and provide also compatibility functions with scikit-learn in order to use Arsenic with minimum effort.
    * **Arsenic should not be only for Python.** A python interface is provided for the C++ code, but it should be feasible to develop an interface for any language with a C++ API, such as R or Matlab. We are planning to develop such interfaces in the future.

@@ -39,6 +39,10 @@
     using Acc_SVRG_Solver<loss_type, allow_acc>::_thetak;             \
     using Acc_SVRG_Solver<loss_type, allow_acc>::_accelerated_solver; \
     USING_SVRG_SOLVER;
+
+
+static const int NUMBER_OPTIM_PROCESS_INFO = 6;
+
 enum solver_t
 {
     ISTA,
@@ -139,7 +143,7 @@ public:
         _best_dual = -INFINITY;
         _best_primal = INFINITY;
         _duality = _loss.provides_fenchel() && regul.provides_fenchel();
-        _optim_info.resize(6, MAX(param.max_iter / _it0, 1));
+        _optim_info.resize(NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / _it0, 1));
         _L = 0;
     };
     virtual ~Solver() {};
@@ -175,17 +179,16 @@ public:
     
     void get_optim_info(OptimInfo<T>& optim) const
     {
-        //FIXME Not clean
         int count = 0;
         for (int ii = 0; ii < _optim_info.n(); ++ii)
             if (_optim_info(0, ii) != 0)
                 ++count;
         if (count > 0)
         {
-            optim.resize(1, 6, count);
+            optim.resize(1, NUMBER_OPTIM_PROCESS_INFO, count);
         }
         for (int ii = 0; ii < count; ++ii)
-            for (int jj = 0; jj < 6; ++jj){
+            for (int jj = 0; jj < NUMBER_OPTIM_PROCESS_INFO; ++jj){
                 optim(0, jj, ii) = _optim_info(jj, ii);
             }
     };
@@ -508,7 +511,7 @@ protected:
     {
         if (x0.m() <= 15 || x0.n() <= 15)
         {
-            set_mkl_sequential(); // TODO should be local
+            set_mkl_sequential(); // TODO should be local --> demander des précisions à Julien
         }
     };
 
@@ -1803,7 +1806,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
         W.copy(W0);
         const int nclass = W0.n();
         const int duality_gap_interval = MAX(param.duality_gap_interval, 1);
-        optim_info.resize(nclass, 6, MAX(param.max_iter / duality_gap_interval, 1));
+        optim_info.resize(nclass, NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / duality_gap_interval, 1));
         optim_info.setZeros();
         ParamSolver<T> param2 = param;
         param2.verbose = false;

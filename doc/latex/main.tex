@@ -55,7 +55,7 @@ Julien Mairal \\
    acceleration mechanisms.
    Arsenic can handle a large variety of loss functions (logistic, square,
    squared hinge, multinomial logistic) and regularization functions ($\ell_2$,
-   $\ell_1$, elastic-net, fused Lasso, multi-task group Lasso).
+   $\ell_1$, elasticnet, fused Lasso, multi-task group Lasso).
    It provides a simple Python API, which is very close to that of scikit-learn,
    which should be extended to other languages such as R or Matlab in a near future.
 \end{abstract}
@@ -71,7 +71,7 @@ Arsenic is build upon several goals and principles:
       can be provided with integers coded in 32 or 64-bits. When fitting an intercept, there is no need to add a column of 1's and there is no matrix copy as well. 
    \item {\textbf{Arsenic implements fast algorithms.}} Arsenic builds upon two algorithmic principles: (i) variance-reduced stochastic optimization; (ii) Nesterov of Quasi-Newton acceleration. Variance-reduced stochastic optimization algorithms are now popular, but tend to perform poorly when the objective function is badly conditioned. We observe large gains when combining these approaches with Quasi-Newton. 
    \item {\textbf{Arsenic only depends on your BLAS implementation.}} Arsenic does not depend on external libraries, except a BLAS library and numpy for Python. We show how to link with OpenBlas and Intel MKL in the python package, but any other BLAS implementation will do.
-   \item {\textbf{Arsenic can handle many combinations of loss and regularization functions.}} Arsenic can handle a vast combination of loss functions (logistic, square, squared hinge, multiclass logistic) with regularization functions ($\ell_2$, $\ell_1$, elastic-net, fused lasso, multi-task group lasso).
+   \item {\textbf{Arsenic can handle many combinations of loss and regularization functions.}} Arsenic can handle a vast combination of loss functions (logistic, square, squared hinge, multiclass logistic) with regularization functions ($\ell_2$, $\ell_1$, elasticnet, fused lasso, multi-task group lasso).
    \item {\textbf{Arsenic provides optimization guarantees.}} We believe that reproducibility is important in research. For this reason, knowing if you have solved your problem when the algorithm stops is important. Arsenic provides such a guarantee with a mechanism called duality gap, see Appendix D.2 of~\citet{mairal2010sparse}.
    \item {\textbf{Arsenic is easy to use.}} We have developed a very simple API, relatively close to scikit-learn's API~\citep{scikit}, and provide also compatibility functions with scikit-learn in order to use Arsenic with minimum effort.
    \item {\textbf{Arsenic should not be only for Python.}} A python interface is provided for the C++ code, but it should be feasible to develop an interface for any language with a C++ API, such as R or Matlab. We are planning to develop such interfaces in the future.
@@ -152,7 +152,7 @@ The regularization function~$\psi$ is chosen among the following choices
       \hline
       \texttt{l1} &   $\lambda_1\|\w\|_1$ \\ 
       \hline
-      \texttt{elastic-net} &   $\lambda_1\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
+      \texttt{elasticnet} &   $\lambda_1\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
       \hline
       \texttt{fused-lasso} &   $\lambda_3\sum_{j=2}^p|\w[j]-\w[j-1]| + \lambda_1\|\w\|_1 + \frac{\lambda_2}{2}\|\w\|_2^2$ \\ 
       \hline
@@ -214,7 +214,7 @@ The regularization functions may be chosen according to the following table.
       \hline
       \multicolumn{2}{|c|}{Penalty or constraint $\psi$}     \\  
       \hline
-      \texttt{l2, l1, elastic-net, fused-lasso, none, l1-ball, l2-ball} & 
+      \texttt{l2, l1, elasticnet, fused-lasso, none, l1-ball, l2-ball} & 
       $\sum_{j=1}^k \tilde{\psi}(\w_j)$, with $\tilde{\psi}$ chosen from Table~\ref{table:penalty} \\
       \hline
       \texttt{l1l2} & $\lambda_1 \sum_{j=1}^p \| \W^j\|_2$ ($\W^j$ is the $j$-th row of $\W$) \\ 
