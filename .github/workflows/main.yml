@@ -152,7 +152,7 @@ jobs:
       with:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
         linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
-        windows: rmdir /s /q cyanure && rmdir /s /q cyanure_lib && python -m pip install pytest && python -m pytest test/
+        windows: rmdir /s/q cyanure && rmdir /s/q cyanure_lib && python -m pip install pytest && python -m pytest test/
 
   upload_pypi:
     needs: [build_wheels, build_sdist, test_depencies]
