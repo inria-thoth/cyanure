@@ -148,15 +148,11 @@ jobs:
       run: git checkout ${{ env.BRANCH }}
 
     - name: Try to import cyanure
-      run:    |
-         if [ "$RUNNER_OS" == "Windows" ]; then
-              rmdir cyanure /s /q && rmdir cyanure_lib /s /q
-         else
-              rm -rf cyanure && rm -rf cyanure_lib
-         fi
-         python -m pip install pytest && python -m pytest test/
-
-
+       - uses: knicknic/os-specific-run@v1.0.3
+      with:
+        macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
+        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
+        windows: rmdir cyanure /s /q && rmdir cyanure_lib /s /q && python -m pip install pytest && python -m pytest test/
 
   upload_pypi:
     needs: [build_wheels, build_sdist, test_depencies]
