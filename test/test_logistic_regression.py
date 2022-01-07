@@ -6,7 +6,7 @@ from sklearn.datasets import load_iris
 import scipy.sparse as sp
 from scipy import linalg, optimize, sparse
 
-from cyanure.cyanure import LogisticRegression
+from cyanure.estimators import LogisticRegression
 
 import os
 import re
@@ -400,15 +400,15 @@ def test_logreg_l1_sparse_data():
 
 def test_logreg_predict_proba_multinomial():
     X, y = make_classification(
-        n_samples=10, n_features=100, random_state=0, n_classes=3, n_informative=30
+        n_samples=10, n_features=50, random_state=0, n_classes=3, n_informative=30
     )
 
     # Predicted probabilities using the true-entropy loss should give a
     # smaller loss than those using the ovr method.
-    clf_multi = LogisticRegression(multi_class="multinomial", solver="svrg")
+    clf_multi = LogisticRegression(multi_class="multinomial", solver="qning-ista")
     clf_multi.fit(X, y)
     clf_multi_loss = log_loss(y, clf_multi.predict_proba(X))
-    clf_ovr = LogisticRegression(multi_class="ovr", solver="svrg")
+    clf_ovr = LogisticRegression(multi_class="ovr", solver="qning-ista")
     clf_ovr.fit(X, y)
     clf_ovr_loss = log_loss(y, clf_ovr.predict_proba(X))
     assert clf_ovr_loss > clf_multi_loss

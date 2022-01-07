@@ -11,7 +11,6 @@ import numpy as np
 import scipy.sparse
 
 from sklearn.base import BaseEstimator
-from sklearn.linear_model._base import SparseCoefMixin  
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, softmax
 from sklearn.exceptions import ConvergenceWarning
@@ -37,7 +36,7 @@ class ERM(BaseEstimator, ABC):
         return {"requires_y": True}
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual=None, tol=1e-4, solver="auto",
-                 random_state=0, max_iter=500, fista_restart=50,
+                 random_state=0, max_iter=2000, fista_restart=60,
                  verbose=True, warm_start=False, limited_memory_qning=50, multi_class="auto",
                  lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1):
         """Initialization function of the ERM class.

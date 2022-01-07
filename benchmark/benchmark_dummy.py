@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import scipy.sparse
 
-import cyanure.cyanure as ars
+import cyanure.estimators as ars
 
 def get_data(datapath, dataset):
     multiclass = False
