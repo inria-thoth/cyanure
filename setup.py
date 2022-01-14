@@ -108,11 +108,8 @@ else:
     if 'blas' in np_blas:
         extra_compile_args_open_blas = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11']
-        if 'openblas' in np_blas:
-            libs_open_blas = ['openblas']
-        else:
-            libs_open_blas = [np_blas]
+            '-std=c++11', '-v', '-O0']
+        libs_open_blas = [np_blas]
 
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
 
@@ -135,7 +132,6 @@ else:
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
-#   raise RuntimeError("Purpose crash")
 
 """
 ## setup openblass no openmp
@@ -163,7 +159,7 @@ cyanure_wrap = Extension(
     library_dirs=LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
-    sources=['cyanure_lib/cyanure_wrap.cpp'])
+    sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 setup(name='cyanure',
       version='0.22.4',
@@ -172,8 +168,8 @@ setup(name='cyanure',
       license='bsd-3-clause',
       url="http://julien.mairal.org/cyanure/",
       description='optimization toolbox for machine learning',
-      install_requires=['scikit-learn'],
+      install_requires=['scipy', 'numpy>=1.21.3', 'scikit-learn'],
       ext_modules=[cyanure_wrap],
       packages=find_packages(),
       cmdclass={'sdist': sdistzip},
-      py_modules=['cyanure_wrap'])
+      py_modules=['cyanure'])
