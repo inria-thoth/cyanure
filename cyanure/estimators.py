@@ -254,7 +254,7 @@ class ERM(BaseEstimator, ABC):
                     [n, nclasses], dtype=training_data_fortran.dtype)
 
         w = np.copy(w0)
-        optimization_info = cyanure_lib.erm_(
+        self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, w0, w, dual_variable=self.dual, loss=loss,
             penalty=self.penalty, solver=self.solver, lambda_1=float(self.lambda_1),
             lambda_2=float(self.lambda_2), lambda_3=float(self.lambda_3),
@@ -264,10 +264,10 @@ class ERM(BaseEstimator, ABC):
             univariate=bool(self._binary_problem), n_threads=int(self.n_threads), seed=int(self.random_state)
         )
 
-        if ((self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic") and optimization_info.shape[0] == 1:
-            optimization_info = np.repeat(optimization_info, nclasses, axis=0)
+        if ((self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic") and self.optimization_info_.shape[0] == 1:
+            self.optimization_info_ = np.repeat(self.optimization_info_, nclasses, axis=0)
 
-        self.n_iter_ = np.array([optimization_info[class_index][0][-1] for class_index in range(optimization_info.shape[0])])
+        self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1] for class_index in range(self.optimization_info_.shape[0])])
 
         # TODO Vérifier avec Julien
         for index in range(self.n_iter_.shape[0]):
