@@ -1258,9 +1258,9 @@ template <typename T> inline void Vector<T>::print(const string& name) const {
    std::cerr << name << std::endl;
    std::cerr << _n << std::endl;
    for (INTM j = 0; j<_n; ++j) {
-      printf("%10.5g ",static_cast<double>(_X[j]));
+      fprintf( stderr, "%10.5g ",static_cast<double>(_X[j]));
    }
-   printf("\n ");
+   fprintf( stderr, "\n ");
 };
 
 /// Print the matrix to std::cout
@@ -5198,11 +5198,11 @@ template <typename T> inline void Matrix<T>::fastSoftThrshold(const T nu) {
 };
 /// perform soft-thresholding of the matrix, with the threshold nu
 template <typename T> inline void Matrix<T>::fastSoftThrshold(Matrix<T>& output, const T nu) const {
-   output.resize(_m,_n,false);
-   Vector<T> vec, vec2;
-   toVect(vec);
-   output.toVect(vec2);
-   vec.fastSoftThrshold(vec2,nu);
+    output.resize(_m,_n,false);
+    Vector<T> vec, vec2;
+    toVect(vec);
+    output.toVect(vec2);
+    vec.fastSoftThrshold(vec2,nu);
 };
 
 
