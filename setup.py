@@ -6,6 +6,8 @@ import struct
 import contextlib
 import os
 
+os.system("ls")
+
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
 from openmp_helpers import add_openmp_flags_if_available
