@@ -278,6 +278,7 @@ def add_openmp_flags_if_available(extension):
         extension.extra_compile_args.extend(compile_flags)
         extension.extra_link_args.extend(link_flags)
     else:
+        assert False
         log.warn("Cannot compile Cython/C/C++ extension with OpenMP, reverting "
                  "to non-parallel code")
 
