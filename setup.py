@@ -117,14 +117,9 @@ else:
         else:
             libs_open_blas = [np_blas]
 
-        if platform.system() != 'Darwin':
-            extra_compile_args_open_blas = [
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-                '-std=c++11', '-fopenmp']
-        else:
-                extra_compile_args_open_blas = [
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-                '-std=c++11']        
+        extra_compile_args_open_blas = [
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11', '-fopenmp']      
 
         include_dirs_open_blas = [numpy.get_include()]
 
@@ -157,7 +152,7 @@ n argumentss
 
 """
 
-if platform.system() == "Linux":
+if platform.system() != "Windows":
     EXTRA_LINK_ARGS = ['-fopenmp']
 else:
     EXTRA_LINK_ARGS = []
@@ -173,9 +168,6 @@ cyanure_wrap = Extension(
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
     extra_link_args=EXTRA_LINK_ARGS,
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
-
-if platform.system() == 'Darwin':
-    add_openmp_flags_if_available(cyanure_wrap)
 
 setup(name='cyanure',
       version='0.22.4',
