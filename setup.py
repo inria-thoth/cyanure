@@ -9,7 +9,6 @@ import os
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
 
-
 class sdistzip(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
@@ -106,21 +105,26 @@ else:
 
     ##### setup openblas
     if 'blas' in np_blas:
+        
+        if 'openblas' in np_blas:
+            libs_open_blas = ['openblas']
+        else:
+            libs_open_blas = [np_blas]
+
         extra_compile_args_open_blas = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-v', '-O0', '-fopenmp']
-        libs_open_blas = [np_blas]
+            '-std=c++11', '-fopenmp']
+        
 
-        include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
+        include_dirs_open_blas = [numpy.get_include()]
 
         LIBS = libs_open_blas
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
         if platform.system() == "Linux":
-            os.system("find /usr -xdev -name '*libgomp*' 2>/dev/null")
-            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', '/usr/lib64/'] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/lib64/']
+            INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
+            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
             LIBS = LIBS
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
@@ -132,7 +136,6 @@ else:
             EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
-
 """
 ## setup openblass no openmp
 
@@ -150,6 +153,7 @@ extra_compile_args_mkl_no_openmp =[
 n argumentss
 
 """
+assert False
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
