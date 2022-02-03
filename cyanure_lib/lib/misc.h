@@ -314,7 +314,7 @@ static inline int init_omp(const int numThreads) {
    //omp_set_nested(0);
    omp_set_dynamic(0);
    omp_set_num_threads(NUM_THREADS);
-   //omp_set_max_active_levels(1);
+   omp_set_max_active_levels(1);
    set_mkl_parallel();
 #else
    NUM_THREADS = 1;

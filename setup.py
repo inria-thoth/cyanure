@@ -69,7 +69,7 @@ if platform.system() == "Windows":
     if np_blas == "" or "openblas" in np_blas:
         extra_compile_args_open_blas = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
+            '/permissive-', '/W1', '/openmp']
         libs_open_blas = ["libopenblas"]
         include_dirs_open_blas = [numpy.get_include()]
 
@@ -80,7 +80,7 @@ if platform.system() == "Windows":
     elif 'blas' in np_blas:
         extra_compile_args_open_blas = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
+            '/permissive-', '/W1', '/openmp']
         libs_open_blas = np_blas
         include_dirs_open_blas = [numpy.get_include()]
         LIBS = libs_open_blas
