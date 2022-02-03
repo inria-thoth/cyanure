@@ -157,6 +157,12 @@ n argumentss
 
 """
 
+if platform.system() == "Darwin":
+    EXTRA_LINK_ARGS = ['-fopenmp']
+else:
+    EXTRA_LINK_ARGS = []
+    
+
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
     libraries=LIBS,
@@ -165,7 +171,7 @@ cyanure_wrap = Extension(
     library_dirs=LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
-    extra_link_args=['-fopenmp'],
+    extra_link_args=EXTRA_LINK_ARGS,
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 if platform.system() == 'Darwin':
