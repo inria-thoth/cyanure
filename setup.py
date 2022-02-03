@@ -8,6 +8,7 @@ import os
 
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
+from openmp_helpers import add_openmp_flags_if_available
 
 class sdistzip(_sdist):
     def initialize_options(self):
@@ -111,10 +112,14 @@ else:
         else:
             libs_open_blas = [np_blas]
 
-        extra_compile_args_open_blas = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp']
-        
+        if platform.system() != 'Darwin':
+            extra_compile_args_open_blas = [
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+                '-std=c++11', '-fopenmp']
+        else:
+                extra_compile_args_open_blas = [
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+                '-std=c++11']        
 
         include_dirs_open_blas = [numpy.get_include()]
 
@@ -122,18 +127,11 @@ else:
         INCLUDE_DIRS = include_dirs_open_blas
         EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
 
-        if platform.system() == "Linux":
-            INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-            LIBS = LIBS
-            RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-            EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
-
-        if platform.system() == "Darwin":
-            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/opt/libomp/include"] + INCLUDE_DIRS
-            LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-            LIBS = LIBS
-            EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
+        INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
+        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
+        LIBS = LIBS
+        RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
+        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
 print("DEBUG INSTALL: " + np_blas)
 """
@@ -164,6 +162,9 @@ cyanure_wrap = Extension(
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
     extra_link_args=['-fopenmp'],
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
+
+if platform.system() == 'Darwin':
+    add_openmp_flags_if_available(cyanure_wrap)
 
 setup(name='cyanure',
       version='0.22.4',
