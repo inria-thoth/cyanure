@@ -153,7 +153,6 @@ extra_compile_args_mkl_no_openmp =[
 n argumentss
 
 """
-assert False
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
