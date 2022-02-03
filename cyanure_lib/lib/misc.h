@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "utils.h"
+#include <omp.h>
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(WINDOWS)
 #define isnan _isnan
