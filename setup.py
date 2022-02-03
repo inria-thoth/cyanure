@@ -157,7 +157,7 @@ n argumentss
 
 """
 
-if platform.system() != "Darwin":
+if platform.system() == "Linux":
     EXTRA_LINK_ARGS = ['-fopenmp']
 else:
     EXTRA_LINK_ARGS = []
