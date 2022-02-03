@@ -21,6 +21,7 @@ class sdistzip(_sdist):
 
 
 if platform.system() == "Darwin":
+    pass
     # os.environ["CC"] = "/usr/bin/clang"
     # os.environ["CXX"] = "/usr/bin/clang++"
     # os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
