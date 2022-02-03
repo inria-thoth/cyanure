@@ -108,7 +108,7 @@ else:
     if 'blas' in np_blas:
         extra_compile_args_open_blas = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-v', '-O0']
+            '-std=c++11', '-v', '-O0', '-fopenmp']
         libs_open_blas = [np_blas]
 
         include_dirs_open_blas = [numpy.get_include(), '/usr/local/lib/']
@@ -159,6 +159,7 @@ cyanure_wrap = Extension(
     library_dirs=LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
     runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
+    extra_link_args=['-fopenmp'],
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 setup(name='cyanure',
