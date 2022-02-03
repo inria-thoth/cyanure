@@ -134,6 +134,7 @@ else:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
         if platform.system == "Darwin":
+            os.system("find /usr -xdev -name '*omp*' 2>/dev/null")
             INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
 
