@@ -133,6 +133,10 @@ else:
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
 
+        if platform.system == "Darwin":
+            INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
+            LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
+
 print("DEBUG INSTALL: " + np_blas)
 """
 ## setup openblass no openmp
