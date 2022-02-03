@@ -19,6 +19,7 @@ test-command =  ["cd  {package}",]
 before-all = [
   "brew install openblas",
   "brew install libomp",
+  "brew install llvm",
 ]
 test-command =  ["cd  {package}",]
 
