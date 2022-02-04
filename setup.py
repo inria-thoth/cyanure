@@ -19,13 +19,7 @@ class sdistzip(_sdist):
         _sdist.initialize_options(self)
         self.formats = ['zip', 'gztar']
 
-
-if platform.system() == "Darwin":
-    pass
-    os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
-    os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
-    # os.environ["LDFLAGS"] = '-Wl,-rpath,/usr/local/opt/libomp/lib -L/usr/local/opt/libomp/lib -lomp'
-    # os.environ["CPPFLAGS"] = '-Xpreprocessor -fopenmp'
+print(numpy.show_config())
 
 
 def getBlas():
