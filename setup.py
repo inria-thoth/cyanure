@@ -6,13 +6,8 @@ import struct
 import contextlib
 import os
 
-import sys 
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
-from openmp_helper.openmp_helpers import add_openmp_flags_if_available
 
 class sdistzip(_sdist):
     def initialize_options(self):
