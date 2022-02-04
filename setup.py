@@ -18,9 +18,12 @@ class sdistzip(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
         self.formats = ['zip', 'gztar']
-
+        
 print(numpy.show_config())
 
+if platform.system() == "Darwin":
+    os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
+    os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
 
 def getBlas():
     file_ = open("npConfg_file.txt", "w")
