@@ -6,6 +6,10 @@ import struct
 import contextlib
 import os
 
+import sys
+
+os.system("$(brew --prefix openblas)")
+
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
 
