@@ -19,7 +19,9 @@ print(numpy.show_config())
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
     os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
-
+    os.environ["LDFLAGS"] = "-L/usr/local/opt/openblas/lib"
+    os.environ["CPPFLAGS"] = "-I/usr/local/opt/openblas/include"
+    
 def getBlas():
     file_ = open("npConfg_file.txt", "w")
     with contextlib.redirect_stdout(file_):
