@@ -6,10 +6,6 @@ import struct
 import contextlib
 import os
 
-import sys
-
-os.system("$(brew --prefix openblas)")
-
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
 
@@ -17,8 +13,6 @@ class sdistzip(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
         self.formats = ['zip', 'gztar']
-        
-print(numpy.show_config())
 
 if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
@@ -56,34 +50,25 @@ RUNTIME_LIRABRY_DIRS = []
 
 if platform.system() == "Windows":
     if 'mkl' in np_blas:
-        libs_mkl_windows = ['mkl_rt', 'iomp5']
-        include_dirs_mkl_windows = [numpy.get_include()]
-        extra_compile_args_mkl_windows = [
+        libs = ['mkl_rt', 'iomp5']
+        extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
-        LIBS = libs_mkl_windows
-        INCLUDE_DIRS = include_dirs_mkl_windows
-        EXTRA_COMPILE_ARGS = extra_compile_args_mkl_windows
 
     if np_blas == "" or "openblas" in np_blas:
-        extra_compile_args_open_blas = [
+        extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
             '/permissive-', '/W1', '/openmp']
-        libs_open_blas = ["libopenblas"]
-        include_dirs_open_blas = [numpy.get_include()]
-
-        LIBS = libs_open_blas
-        INCLUDE_DIRS = include_dirs_open_blas
-        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+        libs = ["libopenblas"]
 
     elif 'blas' in np_blas:
-        extra_compile_args_open_blas = [
+        extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
             '/permissive-', '/W1', '/openmp']
-        libs_open_blas = np_blas
-        include_dirs_open_blas = [numpy.get_include()]
-        LIBS = libs_open_blas
-        INCLUDE_DIRS = include_dirs_open_blas
-        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+        libs = np_blas
+    
+    LIBS = libs
+    INCLUDE_DIRS = [numpy.get_include()]
+    EXTRA_COMPILE_ARGS = extra_compile_args
 
     if struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
@@ -100,63 +85,34 @@ else:
         extra_compile_args_mkl = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
             '-fopenmp', '-std=c++11']
-        libs_mkl = ['mkl_rt', 'iomp5']
-        include_dirs_mkl = [numpy.get_include()]
 
-        LIBS = libs_mkl
-        INCLUDE_DIRS = include_dirs_mkl
+        LIBS = ['mkl_rt', 'iomp5']
+        INCLUDE_DIRS = [numpy.get_include()]
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
     ##### setup openblas
     if 'blas' in np_blas:
         
-        if 'openblas' in np_blas:
-            libs_open_blas = ['openblas']
+        if 'openblas' in np_blas or np_blas == "":
+            libs = ['openblas']
         else:
-            libs_open_blas = [np_blas]
+            libs = [np_blas]
 
-        extra_compile_args_open_blas = [
+        extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11', '-fopenmp']      
 
-        include_dirs_open_blas = [numpy.get_include()]
-        print(numpy.get_include())
-        LIBS = libs_open_blas
-        INCLUDE_DIRS = include_dirs_open_blas
-        EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+        INCLUDE_DIRS = [numpy.get_include()]
 
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-        LIBS = LIBS
+        LIBS = libs
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
+        EXTRA_COMPILE_ARGS = extra_compile_args
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
-
-if np_blas == "":
-    
-    libs_open_blas = ['openblas']
-
-    extra_compile_args_open_blas = [
-        '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-        '-std=c++11', '-fopenmp']      
-
-    include_dirs_open_blas = [numpy.get_include()]
-    LIBS = libs_open_blas
-    INCLUDE_DIRS = include_dirs_open_blas
-    EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
-
-    INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-    LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
-    LIBS = LIBS
-    RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-    EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
-
-    if platform.system() == "Darwin":
-        INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
-        LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
 
 print("DEBUG INSTALL: " + np_blas)
 """
