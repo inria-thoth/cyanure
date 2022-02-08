@@ -38,7 +38,7 @@ extensions = [
         'sphinx.ext.doctest',
         'sphinx.ext.inheritance_diagram',
         'numpydoc',
-        'jupyter_sphinx.execute'
+        'jupyter_sphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
