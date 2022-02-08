@@ -144,7 +144,6 @@ if np_blas == "":
         '-std=c++11', '-fopenmp']      
 
     include_dirs_open_blas = [numpy.get_include()]
-    print(numpy.get_include())
     LIBS = libs_open_blas
     INCLUDE_DIRS = include_dirs_open_blas
     EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
