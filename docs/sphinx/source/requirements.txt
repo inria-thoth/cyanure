@@ -1,2 +1,3 @@
 furo==2021.11.16
 numpydoc==1.2
+jupyter-sphinx==0.3.2
