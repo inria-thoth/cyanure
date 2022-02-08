@@ -135,6 +135,30 @@ else:
             INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
 
+if np_blas == "":
+    
+    libs_open_blas = ['openblas']
+
+    extra_compile_args_open_blas = [
+        '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+        '-std=c++11', '-fopenmp']      
+
+    include_dirs_open_blas = [numpy.get_include()]
+    print(numpy.get_include())
+    LIBS = libs_open_blas
+    INCLUDE_DIRS = include_dirs_open_blas
+    EXTRA_COMPILE_ARGS = extra_compile_args_open_blas
+
+    INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
+    LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
+    LIBS = LIBS
+    RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
+    EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS
+
+    if platform.system() == "Darwin":
+        INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
+        LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
+
 print("DEBUG INSTALL: " + np_blas)
 """
 ## setup openblass no openmp
