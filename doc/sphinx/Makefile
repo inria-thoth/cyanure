@@ -20,4 +20,4 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 move:
-	scp -r build/html/* mairal@solaris.inrialpes.fr:~/public_html/arsenic/ 
+	scp -r build/html/* mairal@solaris.inrialpes.fr:~/public_html/cyanure/ 

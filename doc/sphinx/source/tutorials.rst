@@ -1,20 +1,24 @@
 Tutorials
 =========
 
+.. note:: Many of the datasets I used are available `here <http://pascal.inrialpes.fr/data2/mairal/data/>`_.  I am waiting for the authorization from Criteo before putting their dataset online as well in .npz format.
+
 Examples for binary classification
 ----------------------------------
 The following code performs binary classification with :math:`\ell_2`-regularized logistic regression, with no intercept, on the criteo dataset (21Gb, huge sparse matrix)
 ::
-   import arsenic as ars
+   import cyanure as cyan
+   import scipy.sparse
+   import numpy as np
    #load criteo dataset 21Gb, n=45840617, p=999999
    dataY=np.load('criteo_y.npz',allow_pickle=True); y=dataY['y']
    X = scipy.sparse.load_npz('criteo_X.npz')
    #normalize the rows of X in-place, without performing any copy
-   ars.preprocess(X,normalize=True,columns=False) 
+   cyan.preprocess(X,normalize=True,columns=False) 
    #declare a binary classifier for l2-logistic regression
-   classifier=ars.BinaryClassifier(loss='logistic',penalty='l2')
+   classifier=cyan.BinaryClassifier(loss='logistic',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambda_1=0.1/X.shape[0],max_iter=500,tol=1e-3,duality_gap_interval=5) 
+   classifier.fit(X,y,lambd=0.1/X.shape[0],max_epochs=500,tol=1e-3,it0=5) 
 
 Before we comment the previous choices, let us 
 run the above code on a regular three-years-old quad-core workstation with 32Gb of memory
@@ -45,9 +49,9 @@ run the above code on a regular three-years-old quad-core workstation with 32Gb 
    Time elapsed : 928.114
 
 The solver used was *catalyst-miso*; the problem was solved up to
-accuracy tol=0.001 in about $15$mn after 35 epochs (without taking into account
+accuracy tol=0.001 in about 15mn after 35 epochs (without taking into account
 the time to load the dataset from the hard drive). The regularization
-parameter was chosen to be :math:`\lambda_1=\frac{1}{10n}`, which is close to the
+parameter was chosen to be :math:`\lambda=\frac{1}{10n}`, which is close to the
 optimal one given by cross-validation.  Even though performing a grid search with
 cross-validation would be more costly, it nevertheless shows that processing such 
 a large dataset does not necessarily require to massively invest in Amazon EC2 credits,
@@ -59,16 +63,18 @@ obtained solution has about 10\% non-zero coefficients.
 We also fit an intercept. As shown below, the solution is obtained in 26s on a
 laptop with a quad-core i7-8565U CPU (specifically a dell XPS 13 9380).
 ::
-   import arsenic as ars
+   import cyanure as cyan
+   import numpy as np
+   import scipy.sparse
    #load rcv1 dataset about 1Gb, n=781265, p=47152
    data = np.load('rcv1.npz',allow_pickle=True); y=data['y']; X=data['X']
    X = scipy.sparse.csc_matrix(X.all()).T # n x p matrix, csr format 
    #normalize the rows of X in-place, without performing any copy
-   ars.preprocess(X,normalize=True,columns=False) 
+   cyan.preprocess(X,normalize=True,columns=False) 
    #declare a binary classifier for squared hinge loss + l1 regularization
-   classifier=ars.BinaryClassifier(loss='sqhinge',penalty='l2')
+   classifier=cyan.BinaryClassifier(loss='sqhinge',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambda_1=0.000005,max_iter=500,tol=1e-3) 
+   classifier.fit(X,y,lambd=0.000005,max_epochs=500,tol=1e-3) 
 which yields
 ::
    Matrix X, n=781265, p=47152
@@ -96,15 +102,16 @@ Let us now do something a bit more involved and perform multinomial logistic reg
 *ckn_mnist* dataset (10 classes, n=60000, p=2304, dense matrix), with multi-task group lasso regularization,
 using the same laptop as previously, and choosing a regularization parameter that yields a solution with 5\% non zero coefficients.
 ::
-   import arsenic as ars
+   import cyanure as cyan
+   import numpy as np
    #load ckn_mnist dataset 10 classes, n=60000, p=2304
    data=np.load('ckn_mnist.npz'); y=data['y']; X=data['X']
    #center and normalize the rows of X in-place, without performing any copy
-   ars.preprocess(X,centering=True,normalize=True,columns=False) 
+   cyan.preprocess(X,centering=True,normalize=True,columns=False) 
    #declare a multinomial logistic classifier with group Lasso regularization
-   classifier=ars.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
+   classifier=cyan.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambda_1=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5) 
+   classifier.fit(X,y,lambd=0.0001,max_epochs=500,tol=1e-3,it0=5) 
 which produces
 ::
    Matrix X, n=60000, p=2304
@@ -135,18 +142,19 @@ which produces
 Learning the multiclass classifier took about 3mn and 35s. To conclude, we provide a last more classical example
 of learning l2-logistic regression classifiers on the same dataset, in a one-vs-all fashion.
 ::
-   import arsenic as ars
+   import cyanure as cyan
+   import numpy as np
    #load ckn_mnist dataset 10 classes, n=60000, p=2304
    data=np.load('ckn_mnist.npz'); y=data['y']; X=data['X']
    #center and normalize the rows of X in-place, without performing any copy
-   ars.preprocess(X,centering=True,normalize=True,columns=False) 
+   cyan.preprocess(X,centering=True,normalize=True,columns=False) 
    #declare a multinomial logistic classifier with group Lasso regularization
-   classifier=ars.MultiClassifier(loss='logistic',penalty='l2')
+   classifier=cyan.MultiClassifier(loss='logistic',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambda_1=0.01/X.shape[0],max_iter=500,tol=1e-3) 
+   classifier.fit(X,y,lambd=0.01/X.shape[0],max_epochs=500,tol=1e-3) 
 
-Then, the $10$ classifiers are learned in parallel using the four cpu cores
-(still on the same laptop), which gives the following output after about $1$mn
+Then, the 10 classifiers are learned in parallel using the four cpu cores
+(still on the same laptop), which gives the following output after about 1mn
 ::
    Matrix X, n=60000, p=2304
    Solver 4 has terminated after 30 epochs in 36.3953 seconds

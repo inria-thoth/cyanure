@@ -1,7 +1,7 @@
 Python API
 ==========
 
-.. automodule:: arsenic 
+.. automodule:: cyanure 
 
 The BinaryClassifier Class
 --------------------------

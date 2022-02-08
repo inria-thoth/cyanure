@@ -1,11 +1,11 @@
 References
 ==========
 
-We provide here various references regarding the solvers implemented in Arsenic. 
+We provide here various references regarding the solvers implemented in Cyanure. 
 
 Accelerators
 ------------
-Arsenic uses two types of accelerators. The QNing approach builds upon Quasi-Newton principles and was introduced in
+Cyanure uses two types of accelerators. The QNing approach builds upon Quasi-Newton principles and was introduced in
 
 .. [QNING] H. Lin, J. Mairal and Z. Harchaoui. `An Inexact Variable Metric Proximal Point Algorithm for Generic Quasi-Newton Acceleration <https://arxiv.org/pdf/1610.00960v4>`_. SIAM Journal on Optimization. 29(2), pages 1408–1443, 2019.
 
@@ -27,17 +27,17 @@ The svrg algorithm was introduced in
 
 .. [SVRG] R. Johnson and T. Zhang. Accelerating stochastic gradient descent using predictive variance reduction. In Advances in Neural Information Processing Systems (NIPS). 2013. 
 
-but the variant Arsenic uses (and its accelerated variant acc-svrg) were introduced in
+but the variant Cyanure uses (and its accelerated variant acc-svrg) were introduced in
 
 .. [ACC_SVRG] A. Kulunchakov and J. Mairal. `Estimate Sequences for Stochastic Composite Optimization: Variance Reduction, Acceleration, and Robustness to Noise <https://arxiv.org/pdf/1901.08788.pdf>`_. preprint arXiv:1901.08788. 2019 
 
-Sadly, Arsenic does not implement yet saga, which should nevertheless be mentioned here
+Sadly, Cyanure does not implement yet saga, which should nevertheless be mentioned here
 
 .. [SAGA] A. Defazio, F. Bach and S. Lacoste-Julien. SAGA: A fast incremental gradient method with support for non-strongly convex composite objectives. In Advances in Neural Information Processing Systems (NIPS). 2014.
 
 Batch algorithms
 ----------------
-Arsenic also implements ISTA and FISTA with line-search, as described in 
+Cyanure also implements ISTA and FISTA with line-search, as described in 
 
 .. [FISTA] A. Beck and M. Teboulle. A fast iterative shrinkage-thresholding algorithm for linear inverse problems. SIAM journal on imaging sciences, 2(1), 183-202. 2009.
 
@@ -45,7 +45,7 @@ It is perhaps worth noting that qing-ista seems to perform always better than fi
 
 Other frameworks
 ----------------
-Even though Arsenic does not depend on it, our goal is to make it easy to use within Scikit-learn
+Even though Cyanure does not depend on it, our goal is to make it easy to use within Scikit-learn
 
 .. [SKLEARN] F. Pedregosa, G. Varoquaux, A. Gramfort and others.Scikit-learn: Machine learning in Python. Journal of machine learning research, 12(Oct), 2825-2830. 2011.
 

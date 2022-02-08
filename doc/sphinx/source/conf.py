@@ -17,12 +17,12 @@ sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Arsenic'
+project = 'Cyanure'
 copyright = '2019, Julien Mairal'
 author = 'Julien Mairal'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '0.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,6 +38,7 @@ extensions = [
         'sphinx.ext.doctest',
         'sphinx.ext.inheritance_diagram',
         'numpydoc',
+        'jupyter_sphinx.execute'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
