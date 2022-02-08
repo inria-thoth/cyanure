@@ -91,7 +91,7 @@ else:
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
     ##### setup openblas
-    if 'blas' in np_blas:
+    else:
         
         if 'openblas' in np_blas or np_blas == "":
             libs = ['openblas']
