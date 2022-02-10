@@ -2,8 +2,9 @@ import logging
 
 LEVEL_CORRESPONDANCE = {'CRITICAL': 50, 'ERROR': 40, 'WARNING': 30, 'INFO': 20, 'DEBUG': 10}
 
+logger = None
 
-def setup_custom_logger(name, level):
+def setup_custom_logger(level):
     """
     Init the logger for the application
 
@@ -11,13 +12,15 @@ def setup_custom_logger(name, level):
     :param level: Level of the expected log
     :return: Logger
     """
-    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
+    global logger
 
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
+    if logger is None:        
+        formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
-    logger = logging.getLogger(name)
-    logger.setLevel(LEVEL_CORRESPONDANCE[level])
-    logger.addHandler(handler)
-
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        
+        logger = logging.getLogger("Cyanure")
+        logger.setLevel(LEVEL_CORRESPONDANCE[level])
+        logger.addHandler(handler)
     return logger

@@ -21,7 +21,7 @@ from cyanure.data_processing import check_input_fit, check_input_inference
 
 from cyanure.logger import setup_custom_logger
 
-logger = setup_custom_logger('project', "INFO")
+logger = setup_custom_logger("INFO")
 
 
 class ERM(BaseEstimator, ABC):

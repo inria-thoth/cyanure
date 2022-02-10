@@ -12,7 +12,7 @@ import cyanure_lib
 
 from cyanure.logger import setup_custom_logger
 
-logger = setup_custom_logger('project', "INFO")
+logger = setup_custom_logger("INFO")
 
 
 def preprocess(X, centering=False, normalize=True, columns=False):
