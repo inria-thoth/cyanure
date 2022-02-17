@@ -247,11 +247,27 @@ private:
             const T dual = get_dual(x);
             _best_dual = MAX(_best_dual, dual);
             const T duality_gap = (_best_primal - _best_dual) / abs<T>(_best_primal);
+            bool stop = false;
+            cout << duality_gap << endl;
+            cout << _optim_info(3, it) << endl;
+            if (it >= 4){
+                if (_optim_info(3, it - 4) == duality_gap){
+                    stop = true;
+                }
+            }
             if (_verbose)
                 cout << "Best relative duality gap: " << duality_gap << endl;
             optim[2] = _best_dual;
             optim[3] = duality_gap;
-            return duality_gap < _tol;
+            if(duality_gap < _tol){
+                stop = true;
+            }
+            else if(duality_gap <= 0 ){
+                if (_verbose)
+                    cout << "Stopped because stopping criterion is negative." << duality_gap << endl;
+                stop = true;
+            }
+            return stop;
         }
         else
         {
@@ -604,10 +620,11 @@ public:
     MISO_Solver(const loss_type& loss, const Regularizer<D, I>& regul, const ParamSolver<T>& param, const Vector<T>* Li = NULL) : IncrementalSolver<loss_type>(loss, regul, param, Li)
     {
         _minibatch = 1;
-        _mu = _regul.id() == L2 ? _regul.strong_convexity() : 0;
+        _mu = _regul.id() == L2 || _regul.id() == ELASTICNET ? _regul.strong_convexity() : 0;
         _kappa = _loss.kappa();
-        if (_loss.id() == PPA)
+        if (_loss.id() == PPA){
             _mu += _kappa;
+        }
         _isprox = (_regul.id() != L2 || _regul.intercept()) && _regul.id() != NONE;
         _is_lazy = _isprox && _regul.is_lazy() && _loss.is_sparse();
         _extern_zis = false;
@@ -1618,6 +1635,7 @@ void simple_erm(const M& X, const Vector<typename M::value_type>& y, const Vecto
         for (int ii = 0; ii < w.n(); ++ii)
             if (abs<T>(w[ii]) < EPSILON)
                 w[ii] = 0;
+   
     solver->get_optim_info(optim_info);
     delete (solver);
     delete (loss);
@@ -1770,6 +1788,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
 
     init_omp(param.threads);
     typedef Matrix<T> D;
+     
     if (is_loss_for_matrices(model.loss) || is_regul_for_matrices(model.regul))
     {
         DataMatrixLinear<M> data(X, model.intercept);
@@ -1796,6 +1815,7 @@ void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const
             loss = new SquareLossMat<M>(data, y);
         }
         const int nclass = W0.n();
+       
         Regularizer<D, I>* regul = get_regul_mat<T, I>(model, nclass, loss->transpose());
         solve_mat<LinearLossMat<M, Matrix<T>>>(*loss, *regul, param, W0, W, dual_variable, optim_info);
         delete (regul);
@@ -1867,6 +1887,7 @@ void multivariate_erm(const M& X, const Vector<int>& y, const Matrix<typename M:
         cerr << "Dimension of initial point is not consistent." << endl;
         return;
     }
+    cout << "Ici!" << endl;
 
     const int nclass = y.maxval() + 1;
     if ((is_regression_loss(model.loss) || !is_loss_for_matrices(model.loss)))
@@ -1893,6 +1914,7 @@ void multivariate_erm(const M& X, const Vector<int>& y, const Matrix<typename M:
         cerr << "Not implemented, multilog loss is chosen by default";
         loss = new MultiClassLogisticLoss<M>(data, y);
     }
+    cout << "La?" << endl;
     Regularizer<D, I>* regul = get_regul_mat<T, I>(model, nclass, loss->transpose());
     solve_mat<LinearLossMat<M, Vector<int>>>(*loss, *regul, param, W0, W, dual_variable, optim_info);
     delete (regul);
