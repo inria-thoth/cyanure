@@ -10,3 +10,4 @@ build/
 coverage.xml
 *.npy
 .scannerwork/
+*.npz
