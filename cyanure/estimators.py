@@ -35,7 +35,7 @@ class ERM(BaseEstimator, ABC):
     def _more_tags(self):
         return {"requires_y": True}
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual=None, tol=1e-4, solver="auto",
+    def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual=None, tol=1e-3, solver="auto",
                  random_state=0, max_iter=2000, fista_restart=60,
                  verbose=True, warm_start=False, limited_memory_qning=50, multi_class="auto",
                  lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1):
@@ -372,10 +372,12 @@ class ERM(BaseEstimator, ABC):
         default format of ``coef_`` and is required for fitting, so calling
         this method is only required on models that have previously been
         sparsified; otherwise, it is a no-op.
+
         Returns
         -------
         self
             Fitted estimator.
+
         """
         msg = "Estimator, %(name)s, must be fitted before densifying."
         check_is_fitted(self, msg=msg)
@@ -390,10 +392,12 @@ class ERM(BaseEstimator, ABC):
         L1-regularized models can be much more memory- and storage-efficient
         than the usual numpy.ndarray representation.
         The ``intercept_`` member is not converted.
+
         Returns
         -------
         self
             Fitted estimator.
+
         Notes
         -----
         For non-sparse models, i.e. when there are not many zeros in ``coef_``,
@@ -403,6 +407,7 @@ class ERM(BaseEstimator, ABC):
         to provide significant benefits.
         After calling this method, further fitting with the partial_fit
         method (if any) will not work until you call densify.
+
         """
         msg = "Estimator, %(name)s, must be fitted before sparsifying."
         check_is_fitted(self, msg=msg)
@@ -491,10 +496,11 @@ class Regression(ERM):
 
 
 class MultiClassifier(Classifier):
-    r"""The multi-class classification class. The goal is to minimize the
+    """The multi-class classification class. The goal is to minimize the
     following objective
 
     .. math::
+
         \\min_{W,b} \\frac{1}{n} \\sum_{i=1}^n
         L\\left( y_i, W^\\top x_i + b\\right)   + \\psi(W),
 
@@ -514,12 +520,13 @@ class MultiClassifier(Classifier):
             ('square', 'logistic', 'sqhinge', 'safe-logistic'). In such a case,
             the loss function encodes a one vs. all strategy based on the
             chosen binary-classification loss.
+
         - 'multiclass-logistic', which is also called multinomial or
-            softmself.le_ = leax logistic:
+            softmax logistic:
 
         .. math::
-            L(y, W^\\top x + b) = \\sum_{j=1}^k
-            \\log\\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right)
+          L(y, W^\\top x + b) = \\sum_{j=1}^k
+          \\log\\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right)
 
     penalty: string, default='l2'
         Regularization function psi. Possible choices are
@@ -527,15 +534,17 @@ class MultiClassifier(Classifier):
         - any penalty function compatible with the class BinaryClassifier such
           as ('none', 'l2', 'l1', 'elasticnet', 'fused-lasso', 'l1-ball',
           'l2-ball'). In such a case,. the penalty is applied on each predictor
-           :math:`w_j` individually:
+          :math:`w_j` individually:
 
         .. math::
-            \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+           \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+
         - 'l1l2', which is the multi-task group Lasso regularization
 
         .. math::
-            \\psi(W) = \\lambda_1 \\sum_{j=1}^p \\|W^j\\|_2~~~~
-            \\text{where}~W^j~\\text{is the j-th row of}~W.
+           \\psi(W) = \\lambda_1 \\sum_{j=1}^p \\|W^j\\|_2~~~~
+           \\text{where}~W^j~\\text{is the j-th row of}~W.
+
         - 'l1linf'
 
         .. math::
@@ -549,11 +558,12 @@ class MultiClassifier(Classifier):
 
 
     fit_intercept: boolean, default='False'
-        learns an unregularized intercept b, which is a k-dimensional vector
+      learns an unregularized intercept b, which is a k-dimensional vector
+        
     """
     _estimator_type = "classifier"
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=0.001, solver="auto",
+    def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=1e-3, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50, verbose=True, warm_start=False, multi_class="auto",
                  limited_memory_qning=20, lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1, dual=None):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept, tol=tol, solver=solver,
@@ -581,7 +591,7 @@ class MultiClassifier(Classifier):
         else:
             self.classes_ = unique
 
-        if (nb_classes != unique.shape[0] or
+        if nb_classes != 2 and (nb_classes != unique.shape[0] or
                 not all(np.unique(y) == np.arange(nb_classes))):
             logger.info("Class y should be of the form")
             logger.info(np.arange(nb_classes))
