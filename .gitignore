@@ -11,3 +11,15 @@ coverage.xml
 *.npy
 .scannerwork/
 *.npz
+*.pygtex
+docs/_minted-main/default-pyg-prefix.pygstyle
+docs/_minted-main/default.pygstyle
+*.pdf
+docs/figure.aux
+docs/figure.dvi
+docs/figure.log
+docs/main.aux
+docs/main.bbl
+docs/main.blg
+docs/main.log
+docs/main.out
