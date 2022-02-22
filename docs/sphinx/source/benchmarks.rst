@@ -43,10 +43,10 @@ All datasets samples are normalized with :math:`\ell_2`-norm and centered for de
 
 Setup
 -----
-To select a reasonable regularization parameter :math:`\lambda` for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid :math:`2^{-i}/n` with :math:`i=1,\ldots,16` when evaluating trained model on the validation set. Then, we keep the optimal parameter :math:`\lambda`, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Cyanure are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, fista, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
+To select a reasonable regularization parameter :math:`\lambda` for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid :math:`2^{-i}/n` with :math:`i=1,\ldots,16` when evaluating trained model on the validation set. Then, we keep the optimal parameter :math:`\lambda`, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Cyanure are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, [FISTA]_, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
 Experiments were conducted on Linux using the Anaconda Python 3.7 distribution.
 
-In the evaluation, we include solvers that can be called from scikit-learn, such as Liblinear, LBFGS, newton-cg, or the saga implementation of scikit-learn. We run each solver with different tolerance parameter tol=0.1,0.01,0.001,0.0001 in order to obtain several points illustrating their accuracy-speed trade-off. Each method is run for at most 500 epochs. 
+In the evaluation, we include solvers that can be called from scikit-learn, such as [LIBLINEAR]_, [LBFGS]_, newton-cg, or the [SAGA]_ implementation of scikit-learn. We run each solver with different tolerance parameter tol=0.1,0.01,0.001,0.0001 in order to obtain several points illustrating their accuracy-speed trade-off. Each method is run for at most 500 epochs. 
 
 
 Results
@@ -76,21 +76,21 @@ the dimension p for covtype is so small that regularization is useless.
 This leads to an interesting setting with clear conclusions.
 
 Conclusions
- - **qning and catalyst accelerations are very useful**. Note that catalyst works well in practice both for svrg and miso (regular miso, not shown on the plots, is an order of magnitude slower than its accelerated variants).  
+ - **qning and catalyst accelerations are very useful**. Note that catalyst works well in practice both for [SVRG]_ and miso (regular miso, not shown on the plots, is an order of magnitude slower than its accelerated variants).  
  - **qning-miso and catalyst-miso are the best solvers here**, better than svrg variants. The main reason is the fact that for t iterations, svrg computes 3t gradients, vs. only t for the miso algorithms. miso also better handle sparse matrices (no need to code lazy update strategies, which can be painful to implement).
  - **Cyanure does better than sklearn-saga, lbfgs, and liblinear**, sometimes with several orders of magnitudes. Note that sklearn-saga does as bad as our regular srvg solver for these dataset, which confirms that the key to obtain faster results is acceleration.
    Note that Liblinear-dual is very competitive on large sparse datasets (see next part of the benchmark).
- - **Direct acceleration (acc-svrg) works a bit better than catalyst-svrg**: in fact acc-svrg is close to qning-svrg here.
+ - **Direct acceleration (acc-svrg) works a bit better than catalyst-svrg**: in fact [ACC_SVRG]_ is close to qning-svrg here.
 
-.. figure:: figs/covtype_logistic_l2.png
+.. image:: figs/covtype_logistic_l2.png
 
-.. figure:: figs/epsilon_logistic_l2.png
+.. image:: figs/epsilon_logistic_l2.png
 
-.. figure:: figs/webspam_logistic_l2.png
+.. image:: figs/webspam_logistic_l2.png
 
-.. figure:: figs/ckn_mnist_logistic_l2.png
+.. image:: figs/ckn_mnist_logistic_l2.png
 
-.. figure:: figs/svhn_logistic_l2.png
+.. image:: figs/svhn_logistic_l2.png
 
 optimal :math:`\lambda`: alpha, rcv1, real-sim, ocr, kddb, criteo -- the easy ones 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -105,15 +105,15 @@ The results below are consistent with theory and we can draw the following concl
 - **Liblinear-dual is competitive on large sparse
   datasets**.
 
-.. figure:: figs/alpha_logistic_l2.png
+.. image:: figs/alpha_logistic_l2.png
 
-.. figure:: figs/real-sim_logistic_l2.png
+.. image:: figs/real-sim_logistic_l2.png
 
-.. figure:: figs/ocr_logistic_l2.png
+.. image:: figs/ocr_logistic_l2.png
 
-.. figure:: figs/rcv1_logistic_l2.png
+.. image:: figs/rcv1_logistic_l2.png
 
-.. figure:: figs/kddb_logistic_l2.png
+.. image:: figs/kddb_logistic_l2.png
 
-.. figure:: figs/criteo_logistic_l2.png
+.. image:: figs/criteo_logistic_l2.png
 

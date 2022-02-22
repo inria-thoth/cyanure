@@ -13,7 +13,6 @@
    tutorials
    benchmarks
    references
-   ...
 
 * :ref:`genindex`
 * :ref:`modindex`

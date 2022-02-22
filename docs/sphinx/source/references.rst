@@ -19,7 +19,7 @@ The miso algorithm was introduced in
 
 .. [MISO] J. Mairal. `Incremental Majorization-Minimization Optimization with Application to Large-Scale Machine Learning <http://thoth.inrialpes.fr/people/mairal/resources/pdf/95763.pdf>`_. SIAM Journal on Optimization. volume 25, number 2, pages 829–855, 2015.
 
-It may be seen as a primal variant of the stochastic dual coordinate ascent method SDCA
+It may be seen as a primal variant of the stochastic dual coordinate ascent method [SDCA]_
 
 .. [SDCA] S. Shalev-Shwartz, and T. Zhang . Stochastic dual coordinate ascent methods for regularized loss minimization. Journal of Machine Learning Research (JMLR), 14, 567-599. 2013.
 
@@ -47,7 +47,7 @@ Other frameworks
 ----------------
 Even though Cyanure does not depend on it, our goal is to make it easy to use within Scikit-learn
 
-.. [SKLEARN] F. Pedregosa, G. Varoquaux, A. Gramfort and others.Scikit-learn: Machine learning in Python. Journal of machine learning research, 12(Oct), 2825-2830. 2011.
+.. [SKLEARN] F. Pedregosa, G. Varoquaux, A. Gramfort and others. `Scikit-learn: Machine learning in Python <https://www.jmlr.org/papers/volume12/pedregosa11a/pedregosa11a.pdf>`_. Journal of machine learning research, 12(Oct), 2825-2830. 2011.
 
 Other solvers in our comparisons include also 
 

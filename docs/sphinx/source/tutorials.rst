@@ -5,8 +5,8 @@ Tutorials
 
 Examples for binary classification
 ----------------------------------
-The following code performs binary classification with :math:`\ell_2`-regularized logistic regression, with no intercept, on the criteo dataset (21Gb, huge sparse matrix)
-::
+The following code performs binary classification with :math:`\ell_2`-regularized logistic regression, with no intercept, on the criteo dataset (21Gb, huge sparse matrix)::
+
    import cyanure as cyan
    import scipy.sparse
    import numpy as np
@@ -22,8 +22,8 @@ The following code performs binary classification with :math:`\ell_2`-regularize
 
 Before we comment the previous choices, let us 
 run the above code on a regular three-years-old quad-core workstation with 32Gb of memory
-(Intel Xeon CPU E5-1630 v4, 400\$ retail price). 
-::
+(Intel Xeon CPU E5-1630 v4, 400\$ retail price). ::
+
    Matrix X, n=45840617, p=999999
    *********************************
    Catalyst Accelerator
@@ -61,8 +61,8 @@ In the next example, we use the squared hinge loss with
 :math:`\ell_1`-regularization, choosing the regularization parameter such that the
 obtained solution has about 10\% non-zero coefficients.
 We also fit an intercept. As shown below, the solution is obtained in 26s on a
-laptop with a quad-core i7-8565U CPU (specifically a dell XPS 13 9380).
-::
+laptop with a quad-core i7-8565U CPU (specifically a dell XPS 13 9380).::
+
    import cyanure as cyan
    import numpy as np
    import scipy.sparse
@@ -75,8 +75,9 @@ laptop with a quad-core i7-8565U CPU (specifically a dell XPS 13 9380).
    classifier=cyan.BinaryClassifier(loss='sqhinge',penalty='l2')
    # uses the auto solver by default, performs at most 500 epochs
    classifier.fit(X,y,lambd=0.000005,max_epochs=500,tol=1e-3) 
-which yields
-::
+
+which yields::
+
    Matrix X, n=781265, p=47152
    Memory parameter: 20
    *********************************
@@ -100,8 +101,8 @@ Multiclass classification
 -------------------------
 Let us now do something a bit more involved and perform multinomial logistic regression on the
 *ckn_mnist* dataset (10 classes, n=60000, p=2304, dense matrix), with multi-task group lasso regularization,
-using the same laptop as previously, and choosing a regularization parameter that yields a solution with 5\% non zero coefficients.
-::
+using the same laptop as previously, and choosing a regularization parameter that yields a solution with 5\% non zero coefficients.::
+
    import cyanure as cyan
    import numpy as np
    #load ckn_mnist dataset 10 classes, n=60000, p=2304
@@ -112,8 +113,9 @@ using the same laptop as previously, and choosing a regularization parameter tha
    classifier=cyan.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
    # uses the auto solver by default, performs at most 500 epochs
    classifier.fit(X,y,lambd=0.0001,max_epochs=500,tol=1e-3,it0=5) 
-which produces
-::
+
+which produces::
+
    Matrix X, n=60000, p=2304
    Memory parameter: 20
    *********************************
@@ -140,8 +142,8 @@ which produces
    Total skipping l-bfgs steps: 0
 
 Learning the multiclass classifier took about 3mn and 35s. To conclude, we provide a last more classical example
-of learning l2-logistic regression classifiers on the same dataset, in a one-vs-all fashion.
-::
+of learning l2-logistic regression classifiers on the same dataset, in a one-vs-all fashion.::
+
    import cyanure as cyan
    import numpy as np
    #load ckn_mnist dataset 10 classes, n=60000, p=2304
@@ -154,8 +156,8 @@ of learning l2-logistic regression classifiers on the same dataset, in a one-vs-
    classifier.fit(X,y,lambd=0.01/X.shape[0],max_epochs=500,tol=1e-3) 
 
 Then, the 10 classifiers are learned in parallel using the four cpu cores
-(still on the same laptop), which gives the following output after about 1mn
-::
+(still on the same laptop), which gives the following output after about 1mn::
+    
    Matrix X, n=60000, p=2304
    Solver 4 has terminated after 30 epochs in 36.3953 seconds
       Primal objective: 0.00877348, relative duality gap: 8.54385e-05

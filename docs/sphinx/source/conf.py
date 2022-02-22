@@ -62,6 +62,7 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 autosummary_generate = True
+numpydoc_show_class_members = False 
 
 source_encoding = 'utf-8'
 #source_encoding = 'iso-8859-15'

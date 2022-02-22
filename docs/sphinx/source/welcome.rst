@@ -10,7 +10,7 @@ squared hinge, multinomial logistic) and regularization functions (:math:`\ell_2
 It provides a simple Python API, which is very close to that of scikit-learn,
 which should be extended to other languages such as R or Matlab in a near future.
 
-The code is written by `Julien Mairal <http://julien.mairal.org>`_ (Inria, Univ. Grenoble-Alpes), and 
+The code is written by `Julien Mairal <http://julien.mairal.org>`_ (Inria, Univ. Grenoble-Alpes) and Thomas Ryckeboer (Inria), and 
 a documentation is provided in pdf in the following arXiv document
 
 * Julien Mairal. `Cyanure: An Open-Source Toolbox for Empirical Risk Minimization for Python, C++, and soon more <https://arxiv.org/abs/1912.08165>`_ arXiv:1912.08165.  2019 
@@ -25,10 +25,10 @@ Cyanure is build upon several goals and principles:
      intercept, there is no need to add a column of 1's and there is no matrix
      copy as well. 
    * **Cyanure implements fast algorithms.** Cyanure builds upon two algorithmic principles: (i) variance-reduced stochastic optimization; (ii) Nesterov of Quasi-Newton acceleration. Variance-reduced stochastic optimization algorithms are now popular, but tend to perform poorly when the objective function is badly conditioned. We observe large gains when combining these approaches with Quasi-Newton. 
-   * **Cyanure only depends on your BLAS implementation.** Cyanure does not depend on external libraries, except a BLAS library and numpy for Python. We show how to link with OpenBlas and Intel MKL in the python package, but any other BLAS implementation will do.
+   * **Cyanure only depends on your BLAS implementation.** Cyanure depends on usual machine learning libraries,  BLAS library, numpy, scipy and scikit-learn for Python. We show how to link with OpenBLAS and Intel MKL in the python package, but any other BLAS implementation will do. By default pre-compiled packages are shipped with OpenBLAS.
    * **Cyanure can handle many combinations of loss and regularization functions.** Cyanure can handle a vast combination of loss functions (logistic, square, squared hinge, multiclass logistic) with regularization functions (:math:`\ell_2`, :math:`\ell_1`, elastic-net, fused lasso, multi-task group lasso).
    * **Cyanure provides optimization guarantees.** We believe that reproducibility is important in research. For this reason, knowing if you have solved your problem when the algorithm stops is important. Cyanure provides such a guarantee with a mechanism called duality gap.
-   * **Cyanure is easy to use.** We have developed a very simple API, relatively close to scikit-learn's API, and provide also compatibility functions with scikit-learn in order to use Cyanure with minimum effort.
+   * **Cyanure is easy to use.** All the classes of the library are compatible with the [SKLEARN]_'s API, in order to use Cyanure with minimum effort.
    * **Cyanure should not be only for Python.** A python interface is provided for the C++ code, but it should be feasible to develop an interface for any language with a C++ API, such as R or Matlab. We are planning to develop such interfaces in the future.
 
 Besides all these nice features, Cyanure has also probably some drawbacks, which we will let you discover by yourself.  
@@ -43,37 +43,37 @@ Note that if you have chosen the solver 'auto', you are likely to use [QNING]_ o
 Installation
 ============
 
-You can either install Cyanure from its source on `its github repository <https://github.com/jmairal/cyanure>`_, or on PyPI. 
-Cyanure requires Python 3 and was tested on Anaconda on Linux.
+You can install Cyanure from its source on `its github repository <https://github.com/jmairal/cyanure>`_.
+But we recommend to install it with Anaconda from the conda-forge channel, you can also find Cyanure on PyPI. 
 
 * If you want to use Github on Linux, simply clone the repository, and then
 
-   If you are using Anaconda and have the package mkl installed, simply type 
-   ::
-      python setup_cyanure_mkl.py install
+   If you are using Anaconda and have the package mkl installed, simply type::   
 
-   If instead your numpy relies on openblas, you should use
-   ::
+      python setup.py install
+
+   If instead your numpy relies on openblas, you should use::
+
       python setup_cyanure_openblas.py install
 
 * If you prefer to use PyPI on Linux, 
   
-   Simply replace the two previous commands by
-   ::
+   Simply replace the two previous commands by::
+
       pip install cyanure-mkl 
 
-   or by the following command
-   ::
+   or by the following command::
+
       pip install cyanure-openblas
 
 * If you work on Mac, you need a C++ compiler, provided for instance with XCode, which is unlikely to support openmp. If your compiler supports it, follow the Linux instructions. Otherwise, use the "no_openmp" variants.
 
-   if you download the sources on github, 
-   ::
+   if you download the sources on github,::
+
       python setup_cyanure_mkl_no_openmp.py install    or     python setup_cyanure_openblas_no_openmp.py install
 
-   or if you use PyPI
-   ::
+   or if you use PyPI::
+       
       pip install cyanure-mkl-no-openmp    or       pip install cyanure-openblas-no-openmp   
 
 .. image:: logo-inria-scientifique-couleur.jpg 

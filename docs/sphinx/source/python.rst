@@ -1,16 +1,7 @@
 Python API
 ==========
 
-.. automodule:: cyanure 
-
-The BinaryClassifier Class
---------------------------
-
-.. autoclass:: BinaryClassifier
-   :members:
-   :inherited-members:
-   :show-inheritance:
-   :member-order: bysource
+.. automodule:: cyanure.estimators
 
 The Regression Class
 --------------------
@@ -25,16 +16,6 @@ The MultiClassifier Class
 -------------------------
 
 .. autoclass:: MultiClassifier
-   :members:
-   :inherited-members:
-   :show-inheritance:
-   :member-order: bysource
-
-
-The MultiVariateRegression Class
---------------------------------
-
-.. autoclass:: MultiVariateRegression
    :members:
    :inherited-members:
    :show-inheritance:
@@ -57,5 +38,18 @@ Scikit-learn compatible classes
    :show-inheritance:
    :member-order: bysource
 
+
+.. autoclass:: Lasso
+   :members:
+   :inherited-members:
+   :show-inheritance:
+   :member-order: bysource
+
+
+.. autoclass:: L1Logistic
+    :members:
+    :inherited-members:
+    :show-inheritance:
+    :member-order: bysource
 
 

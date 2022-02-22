@@ -61,8 +61,8 @@ Julien Mairal \\
 \end{abstract}
 
 \section{License and Citations}
-Cyanure is distributed under BSD-3-Clause license. Even though this is non-legally binding, the author kindly ask users to cite the present arXiv document in their publications, as well as the publication related to the algorithm they have chosen (see Section~\ref{sec:formulations} for the related publications). If the default solver is used, the publication is most likely to be~\citep{lin2019inexact}.
-
+Cyanure is distributed under BSD-3-Clause license. Even though this is non-legally binding, the author kindly ask users to cite the previous arXiv document in their publications, as well as the publication related to the algorithm they have chosen (see References section). 
+Note that if you have chosen the solver 'auto', you are likely to use [QNING]_ or [CATALYST]_ combined with [MISO]_.
 
 \section{Main Features}
 Cyanure is build upon several goals and principles:
@@ -73,7 +73,7 @@ Cyanure is build upon several goals and principles:
    \item {\textbf{Cyanure only depends on your BLAS implementation.}} Cyanure does not depend on external libraries, except a BLAS library and numpy for Python. We show how to link with OpenBlas and Intel MKL in the python package, but any other BLAS implementation will do.
    \item {\textbf{Cyanure can handle many combinations of loss and regularization functions.}} Cyanure can handle a vast combination of loss functions (logistic, square, squared hinge, multiclass logistic) with regularization functions ($\ell_2$, $\ell_1$, elastic-net, fused lasso, multi-task group lasso).
    \item {\textbf{Cyanure provides optimization guarantees.}} We believe that reproducibility is important in research. For this reason, knowing if you have solved your problem when the algorithm stops is important. Cyanure provides such a guarantee with a mechanism called duality gap, see Appendix D.2 of~\citet{mairal2010sparse}.
-   \item {\textbf{Cyanure is easy to use.}} We have developed a very simple API, relatively close to scikit-learn's API~\citep{scikit}, and provide also compatibility functions with scikit-learn in order to use Cyanure with minimum effort.
+   \item {\textbf{Cyanure is easy to use.}} We have developed a very simple API, relatively close to scikit-learn's API ~\citep{scikit}, and provide also compatibility functions with scikit-learn in order to use Cyanure with minimum effort.
    \item {\textbf{Cyanure should not be only for Python.}} A python interface is provided for the C++ code, but it should be feasible to develop an interface for any language with a C++ API, such as R or Matlab. We are planning to develop such interfaces in the future.
 \end{itemize}
 Besides all these nice features, Cyanure has also probably some drawbacks, which we will let you discover by yourself.  
@@ -483,21 +483,21 @@ The results below are consistent with theory and we can draw the following concl
 \end{itemize}
 
 \begin{figure}
-   \subfloat[][Dataset covtype]{\includegraphics[width=0.32\linewidth]{plots/figs/covtype_logistic_l2.eps}}
-   \subfloat[][Dataset epsilon]{\includegraphics[width=0.32\linewidth]{plots/figs/epsilon_logistic_l2.eps}}
-   \subfloat[][Dataset webspam]{\includegraphics[width=0.32\linewidth]{plots/figs/webspam_logistic_l2.eps}} \\
-   \subfloat[][Dataset ckn\_mnist]{\includegraphics[width=0.32\linewidth]{plots/figs/ckn_mnist_logistic_l2.eps}}
-   \subfloat[][Dataset svhn]{\includegraphics[width=0.32\linewidth]{plots/figs/svhn_logistic_l2.eps}}
+   \subfloat[][Dataset covtype]{\includegraphics[width=0.32\linewidth]{plots/figs/covtype_logistic_l2.png}}
+   \subfloat[][Dataset epsilon]{\includegraphics[width=0.32\linewidth]{plots/figs/epsilon_logistic_l2.png}}
+   \subfloat[][Dataset webspam]{\includegraphics[width=0.32\linewidth]{plots/figs/webspam_logistic_l2.png}} \\
+   \subfloat[][Dataset ckn\_mnist]{\includegraphics[width=0.32\linewidth]{plots/figs/ckn_mnist_logistic_l2.png}}
+   \subfloat[][Dataset svhn]{\includegraphics[width=0.32\linewidth]{plots/figs/svhn_logistic_l2.png}}
    \caption{Comparison for $\ell_2$-logistic regression for covtype, epsilon, webspam, ckn\_mnist, svhn -- the hard datasets.}\label{fig:bench1}
 \end{figure}
 
 \begin{figure}
-   \subfloat[][Dataset alpha]{\includegraphics[width=0.32\linewidth]{plots/figs/alpha_logistic_l2.eps}}
-   \subfloat[][Dataset rcv1]{\includegraphics[width=0.32\linewidth]{plots/figs/rcv1_logistic_l2.eps}}
-   \subfloat[][Dataset real-sim]{\includegraphics[width=0.32\linewidth]{plots/figs/real-sim_logistic_l2.eps}} \\
-   \subfloat[][Dataset ocr]{\includegraphics[width=0.32\linewidth]{plots/figs/ocr_logistic_l2.eps}}
-   \subfloat[][Dataset kddb]{\includegraphics[width=0.32\linewidth]{plots/figs/kddb_logistic_l2.eps}}
-   \subfloat[][Dataset criteo]{\includegraphics[width=0.32\linewidth]{plots/figs/criteo_logistic_l2.eps}}
+   \subfloat[][Dataset alpha]{\includegraphics[width=0.32\linewidth]{plots/figs/alpha_logistic_l2.png}}
+   \subfloat[][Dataset rcv1]{\includegraphics[width=0.32\linewidth]{plots/figs/rcv1_logistic_l2.png}}
+   \subfloat[][Dataset real-sim]{\includegraphics[width=0.32\linewidth]{plots/figs/real-sim_logistic_l2.png}} \\
+   \subfloat[][Dataset ocr]{\includegraphics[width=0.32\linewidth]{plots/figs/ocr_logistic_l2.png}}
+   \subfloat[][Dataset kddb]{\includegraphics[width=0.32\linewidth]{plots/figs/kddb_logistic_l2.png}}
+   \subfloat[][Dataset criteo]{\includegraphics[width=0.32\linewidth]{plots/figs/criteo_logistic_l2.png}}
    \caption{Comparison for $\ell_2$-logistic regression for alpha, rcv1, real-sim, ocr, kddb, criteo -- the easy datasets.}\label{fig:bench2}
 \end{figure}
 
