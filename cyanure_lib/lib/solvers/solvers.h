@@ -1,10 +1,13 @@
 #ifndef SOLVERS_H
 #define SOLVERS_H
 
-#include "exception.h"
-#include "loss.h"
-#include "regul.h"
-#include "list.h"
+#include "../exception.h"
+#include "../loss.h"
+#include "../regul/regul.h"
+#include "../list.h"
+#include "../logger.h"
+#include  "../BLAS/configure_blas.h"
+#include  "../utils/timer.h"
 
 #define USING_SOLVER                             \
     typedef typename loss_type::variable_type D; \
@@ -42,6 +45,8 @@
 
 
 static const int NUMBER_OPTIM_PROCESS_INFO = 6;
+
+loglevel_e loglevel = logDEBUG4;
 
 enum solver_t
 {
@@ -157,7 +162,7 @@ public:
         solver_init(x0);
         if (_verbose)
         {
-            cout << "*********************************" << endl;
+            logging(logINFO) << "*********************************";
             print();
             _loss.print();
             _regul.print();
@@ -171,8 +176,7 @@ public:
             solver_aux(x);
         }
         _time.stop();
-        if (_verbose)
-            _time.printElapsed();
+        if (_verbose) {_time.printElapsed();}
         if (_best_primal != INFINITY)
             x.copy(_bestx);
     }
@@ -209,7 +213,7 @@ private:
     {
         if (!_regul.provides_fenchel() || !_loss.provides_fenchel())
         {
-            cerr << "Error: no duality gap available" << endl;
+            cerr << "Error: no duality gap available";
             return -INFINITY;
         }
         D grad1, grad2;
@@ -232,11 +236,11 @@ private:
         {
             if (primal == _best_primal)
             {
-                cout << "Epoch: " << it << ", primal objective: " << primal << ", time: " << sec << endl;
+                logging(logINFO) << "Epoch: " << it << ", primal objective: " << primal << ", time: " << sec;
             }
             else
             {
-                cout << "Epoch: " << it << ", primal objective: " << primal << ", best primal: " << _best_primal << ", time: " << sec << endl;
+                logging(logINFO) << "Epoch: " << it << ", primal objective: " << primal << ", best primal: " << _best_primal << ", time: " << sec;
             }
         }
         optim[0] = it;
@@ -247,24 +251,21 @@ private:
             const T dual = get_dual(x);
             _best_dual = MAX(_best_dual, dual);
             const T duality_gap = (_best_primal - _best_dual) / abs<T>(_best_primal);
-            bool stop = false;
-            cout << duality_gap << endl;
-            cout << _optim_info(3, it) << endl;
-            if (it >= 4){
-                if (_optim_info(3, it - 4) == duality_gap){
+            bool stop = false;            
+            if ((it / _it0) >= 4){
+                if (_optim_info(3, (it / _it0) - 4) == duality_gap){
                     stop = true;
+                    logging(logWARNING) << "Your problem is prone to numerical instability. It would be safer to use double.";
                 }
             }
-            if (_verbose)
-                cout << "Best relative duality gap: " << duality_gap << endl;
+            if (_verbose) {logging(logINFO) << "Best relative duality gap: " << duality_gap;}
             optim[2] = _best_dual;
             optim[3] = duality_gap;
             if(duality_gap < _tol){
                 stop = true;
             }
             else if(duality_gap <= 0 ){
-                if (_verbose)
-                    cout << "Stopped because stopping criterion is negative." << duality_gap << endl;
+                logging(logWARNING) << "Your problem is prone to numerical instability. It would be safer to use double.";
                 stop = true;
             }
             return stop;
@@ -349,17 +350,15 @@ protected:
                 break;
             }
             _L *= T(1.5);
-            if (_verbose)
-                cout << "new value for L: " << _L << endl;
+            if (_verbose) {logging(logINFO) << "new value for L: " << _L;}
             ++iter;
-            if (iter == _max_iter_backtracking)
-                cout << "Warning: maximum number of backtracking iterations has been reached" << endl;
+            if (iter == _max_iter_backtracking) {logging(logINFO) << "Warning: maximum number of backtracking iterations has been reached";}
         }
     };
     
     void print() const
     {
-        cout << "ISTA Solver" << endl;
+        logging(logINFO) << "ISTA Solver";
     };
     
     T init_kappa_acceleration(const D& x0)
@@ -398,7 +397,7 @@ protected:
     
     virtual void print() const
     {
-        cout << "FISTA Solver" << endl;
+        logging(logINFO) << "FISTA Solver";
     };
 
     T _t;
@@ -443,16 +442,16 @@ protected:
     
     void print() const
     {
-        cout << "Incremental Solver ";
+        logging(logINFO) << "Incremental Solver ";
         if (_non_uniform_sampling)
         {
-            cout << "with non uniform sampling" << endl;
+            logging(logINFO) << "with non uniform sampling";
         }
         else
         {
-            cout << "with uniform sampling" << endl;
+            logging(logINFO) << "with uniform sampling";
         }
-        cout << "Lipschitz constant: " << _L << endl;
+        logging(logINFO) << "Lipschitz constant: " << _L;
     };
 
     bool _non_uniform_sampling;
@@ -534,8 +533,7 @@ protected:
 private:
     void heuristic_L(const D& x)
     {
-        if (_verbose)
-            cout << "Heuristic: Initial L=" << _L;
+        if (_verbose) {logging(logINFO) << "Heuristic: Initial L=" << _L;}
         const T Lmax = _L;
         _L /= _minibatch;
         int iter = 0;
@@ -556,8 +554,7 @@ private:
                 _L = MIN(MAX(2.0 * _L, (ftmp - s1) / s2), Lmax);
             ++iter;
         }
-        if (_verbose)
-            cout << ", Final L=" << _L << endl;
+        if (_verbose) {logging(logINFO) << ", Final L=" << _L;}
     }
 };
 
@@ -606,7 +603,7 @@ protected:
     
     void print() const
     {
-        cout << "SVRG Solver" << endl;
+        logging(logINFO) << "SVRG Solver";
         IncrementalSolver<loss_type>::print();
     };
     D _xtilde, _gtilde;
@@ -754,7 +751,7 @@ protected:
     
     void print() const
     {
-        cout << "MISO Solver" << endl;
+        logging(logINFO) << "MISO Solver";
         IncrementalSolver<loss_type>::print();
     };
 
@@ -858,8 +855,7 @@ protected:
         }
         else
         {
-            if (_verbose)
-                cout << "Switching to regular solver, problem is well conditioned" << endl;
+            if (_verbose) {logging(logINFO) << "Switching to regular solver, problem is well conditioned";}
             SolverType::solver_init(x0);
         }
     };
@@ -892,7 +888,7 @@ protected:
     
     void print() const
     {
-        cout << "Catalyst Accelerator" << endl;
+        logging(logINFO) << "Catalyst Accelerator";
         SolverType::print();
     };
 
@@ -926,9 +922,10 @@ public:
     {
         Solver<loss_type>::solve(x0, x);
         if (_verbose)
-            cout << "Total additional line search steps: " << _line_search_steps << endl;
-        if (_verbose)
-            cout << "Total skipping l-bfgs steps: " << _skipping_steps << endl;
+            {
+            logging(logINFO) << "Total additional line search steps: " << _line_search_steps;
+            logging(logINFO) << "Total skipping l-bfgs steps: " << _skipping_steps;
+            }
     };
 
 protected:
@@ -939,8 +936,7 @@ protected:
         {
             _h0 = T(1.0) / _kappa;
             _m = 0;
-            if (_verbose)
-                cout << "Memory parameter: " << _l_memory << endl;
+            if (_verbose) {logging(logINFO) << "Memory parameter: " << _l_memory;}
             _ys.resize(x0.size(), _l_memory);
             _ss.resize(x0.size(), _l_memory);
             _rhos.resize(_l_memory);
@@ -1012,7 +1008,7 @@ protected:
     
     void print() const
     {
-        cout << "QNing Accelerator" << endl;
+        logging(logINFO) << "QNing Accelerator";
         SolverType::print();
     };
 
@@ -1141,8 +1137,7 @@ public:
         }
         else
         {
-            if (_verbose && allow_acc)
-                cout << "Problem is well conditioned, switching to regular solver" << endl;
+            if (allow_acc) {logging(logWARNING) << "Problem is well conditioned, switching to regular solver";}
             SVRG_Solver<loss_type>::solver_init(x0);
         }
     };
@@ -1190,9 +1185,8 @@ public:
 protected:
     void print() const
     {
-        cout << "Accelerated SVRG Solver" << endl;
-        if (!_accelerated_solver)
-            cout << "Problem is well conditioned, switching to regular solver" << endl;
+        logging(logINFO) << "Accelerated SVRG Solver";
+        if (!_accelerated_solver) {logging(logWARNING) << "Problem is well conditioned, switching to regular solver";}
         IncrementalSolver<loss_type>::print();
     };
 
@@ -1220,7 +1214,7 @@ public:
         _is_lazy(loss_type::is_sparse())
     {
         if (param.minibatch > 1)
-            cerr << "Minibatch is not compatible with lazy updates" << endl;
+            cerr << "Minibatch is not compatible with lazy updates";
         _minibatch = 1;
     };
     virtual void solver_init(const D& x0)
@@ -1391,19 +1385,19 @@ protected:
     {
         if (_accelerated_solver)
         {
-            cout << "Accelerated SVRG Solver, ";
+            logging(logINFO) << "Accelerated SVRG Solver, ";
         }
         else
         {
-            cout << "SVRG Solver, ";
+            logging(logINFO) << "SVRG Solver, ";
         }
         if (_is_lazy)
         {
-            cout << "specialized for sparse matrices and L2 regularization" << endl;
+            logging(logINFO) << "specialized for sparse matrices and L2 regularization";
         }
         else
         {
-            cout << "specialized for L2 regularization" << endl;
+            logging(logINFO) << "specialized for L2 regularization";
         }
         IncrementalSolver<loss_type>::print();
     };
@@ -1484,162 +1478,6 @@ Solver<loss_type>* get_solver(const loss_type& loss, const Regularizer<typename 
         solver = NULL;
     }
     return solver;
-};
-
-template <typename M>
-void simple_erm(const M& X, const Vector<typename M::value_type>& y, const Vector<typename M::value_type>& w0, Vector<typename M::value_type>& w, Vector<typename M::value_type>& dual_variable, OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
-{
-    init_omp(param.threads);
-    typedef typename M::value_type T;
-    typedef typename M::index_type I;
-    typedef Vector<T> D;
-    typedef LinearLossVec<M> loss_type;
-
-    if (model.intercept)
-    {
-        if (X.m() + 1 != w0.n())
-        {
-            cerr << "Dimension of initial point is not consistent. With intercept, if X is m x n, w0 should be (n+1)-dimensional." << endl;
-            return;
-        }
-    }
-    else
-    {
-        if (X.m() != w0.n())
-        {
-            cerr << "Dimension of initial point is not consistent. If X is m x n, w0 should be n-dimensional." << endl;
-            return;
-        }
-    }
-
-    if (param.max_iter < 0)
-    {
-        throw ValueError("Maximum number of iteration must be positive");
-    }
-    if (model.lambda_1 < 0)
-    {
-        throw ValueError("Penalty term must be positive");
-    }
-    if (param.tol < 0)
-    {
-        throw ValueError("Tolerance for stopping criteria must be positive");
-    }
-
-    DataLinear<M> data(X, model.intercept);
-    if (param.verbose)
-        data.print();
-    LinearLossVec<M>* loss;
-    switch (model.loss)
-    {
-    case SQUARE:
-        loss = new SquareLoss<M>(data, y);
-        break;
-    case LOGISTIC:
-        loss = new LogisticLoss<M>(data, y);
-        break;
-    case SQHINGE:
-        loss = new SquaredHingeLoss<M>(data, y);
-        break;
-        // case HINGE: loss = new HingeLoss<M>(data,y); break;
-    case SAFE_LOGISTIC:
-        loss = new SafeLogisticLoss<M>(data, y);
-        break;
-    default:
-        cerr << "Not implemented, square loss is chosen by default";
-        loss = new SquareLoss<M>(data, y);
-    }
-    Regularizer<D, I>* regul;
-    switch (model.regul)
-    {
-    case L2:
-        regul = new Ridge<D, I>(model);
-        break;
-    case L1:
-        regul = new Lasso<D, I>(model);
-        break;
-    case L1BALL:
-        regul = new L1Ball<D, I>(model);
-        break;
-    case L2BALL:
-        regul = new L2Ball<D, I>(model);
-        break;
-    case FUSEDLASSO:
-        regul = new FusedLasso<D, I>(model);
-        break;
-    case ELASTICNET:
-        regul = new ElasticNet<D, I>(model);
-        break;
-    case NONE:
-        regul = new None<D, I>(model);
-        break;
-    default:
-        cerr << "Not implemented, no regularization is chosen";
-        regul = new None<D, I>(model);
-    }
-    Solver<loss_type>* solver;
-    if (param.max_iter == 0)
-    {
-        ParamSolver<typename D::value_type> param2 = param;
-        param2.verbose = false;
-        solver = new ISTA_Solver<loss_type>(*loss, *regul, param2);
-        solver->eval(w0);
-        w.copy(w0);
-    }
-    else
-    {
-        if (param.solver == SVRG && model.regul == L2 && !model.intercept)
-        {
-            solver = new SVRG_Solver_FastRidge<loss_type, false>(*loss, *regul, param);
-        }
-        else if (param.solver == ACC_SVRG && model.regul == L2 && !model.intercept)
-        {
-            solver = new SVRG_Solver_FastRidge<loss_type, true>(*loss, *regul, param);
-        }
-        else if (param.solver == CATALYST_SVRG && model.regul == L2 && !model.intercept)
-        {
-            solver = new Catalyst<SVRG_Solver_FastRidge<loss_type, false>>(*loss, *regul, param);
-        }
-        else if (param.solver == QNING_SVRG && model.regul == L2 && !model.intercept)
-        {
-            solver = new QNing<SVRG_Solver_FastRidge<loss_type, false>>(*loss, *regul, param);
-        }
-        else
-        {
-            solver = get_solver<loss_type>(*loss, *regul, param);
-            if (!solver)
-            {
-                w.copy(w0);
-                delete (loss);
-                delete (regul);
-                return;
-            }
-        }
-        D new_w0;
-        if (model.intercept)
-        {
-            data.set_intercept(w0, new_w0);
-        }
-        else
-        {
-            new_w0.copyRef(w0);
-        }
-        if (dual_variable.n() != 0)
-            solver->set_dual_variable(dual_variable);
-        solver->solve(new_w0, w);
-        if (model.intercept)
-        {
-            data.reverse_intercept(w);
-        }
-    }
-    if (model.regul == L1)
-        for (int ii = 0; ii < w.n(); ++ii)
-            if (abs<T>(w[ii]) < EPSILON)
-                w[ii] = 0;
-   
-    solver->get_optim_info(optim_info);
-    delete (solver);
-    delete (loss);
-    delete (regul);
 };
 
 template <typename T, typename I>
@@ -1758,167 +1596,6 @@ void solve_mat(loss_type& loss, const Regularizer<typename loss_type::variable_t
     delete (solver);
 };
 
-// X is p x n
-// y is nclasses x n
-// W0 is p x nclasses if no intercept (or p+1 x nclasses with intercept)
-// prediction model is   W0^T X  gives  nclasses x n
-template <typename M>
-void multivariate_erm(const M& X, const Matrix<typename M::value_type>& y, const Matrix<typename M::value_type>& W0, Matrix<typename M::value_type>& W, Matrix<typename M::value_type>& dual_variable, OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
-{
-    typedef typename M::value_type T;
-    typedef typename M::index_type I;
-    if ((model.intercept && X.m() + 1 != W0.m()) || (!model.intercept && X.m() != W0.m()))
-    {
-        cerr << "Dimension of initial point is not consistent." << endl;
-        return;
-    }
 
-    if (param.max_iter < 0)
-    {
-        throw ValueError("Maximum number of iteration must be positive");
-    }
-    if (model.lambda_1 < 0)
-    {
-        throw ValueError("Penalty term must be positive");
-    }
-    if (param.tol < 0)
-    {
-        throw ValueError("Tolerance for stopping criteria must be positive");
-    }
-
-    init_omp(param.threads);
-    typedef Matrix<T> D;
-     
-    if (is_loss_for_matrices(model.loss) || is_regul_for_matrices(model.regul))
-    {
-        DataMatrixLinear<M> data(X, model.intercept);
-        if (param.verbose)
-            data.print();
-        LinearLossMat<M, Matrix<T>>* loss;
-        switch (model.loss)
-        {
-        case SQUARE:
-            loss = new SquareLossMat<M>(data, y);
-            break;
-        case LOGISTIC:
-            loss = new LossMat<LogisticLoss<M>>(data, y);
-            break;
-        case SQHINGE:
-            loss = new LossMat<SquaredHingeLoss<M>>(data, y);
-            break;
-            // case HINGE:  loss = new LossMat< HingeLoss<M> >(data,y); break;
-        case SAFE_LOGISTIC:
-            loss = new LossMat<SafeLogisticLoss<M>>(data, y);
-            break;
-        default:
-            cerr << "Not implemented, square loss is chosen by default";
-            loss = new SquareLossMat<M>(data, y);
-        }
-        const int nclass = W0.n();
-       
-        Regularizer<D, I>* regul = get_regul_mat<T, I>(model, nclass, loss->transpose());
-        solve_mat<LinearLossMat<M, Matrix<T>>>(*loss, *regul, param, W0, W, dual_variable, optim_info);
-        delete (regul);
-        delete (loss);
-    }
-    else
-    {
-        W.copy(W0);
-        const int nclass = W0.n();
-        const int duality_gap_interval = MAX(param.duality_gap_interval, 1);
-        optim_info.resize(nclass, NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / duality_gap_interval, 1));
-        optim_info.setZeros();
-        ParamSolver<T> param2 = param;
-        param2.verbose = false;
-        if (param.verbose)
-        {
-            DataMatrixLinear<M> data(X, model.intercept);
-            data.print();
-        }
-        Timer global_all;
-        global_all.start();
-#pragma omp parallel for
-        for (int ii = 0; ii < nclass; ++ii)
-        {
-            Vector<T> w0col, wcol, ycol, dualcol;
-            OptimInfo<T> optim_info_col;
-            W0.refCol(ii, w0col);
-            W.refCol(ii, wcol);
-            y.copyRow(ii, ycol);
-            if (dual_variable.m() == nclass)
-                dual_variable.copyRow(ii, dualcol);
-            simple_erm(X, ycol, w0col, wcol, dualcol, optim_info_col, param2, model);
-            if (dual_variable.m() == nclass)
-                dual_variable.copyToRow(ii, dualcol);
-#pragma omp critical
-            {
-                optim_info.add(optim_info_col, ii);
-                if (param.verbose)
-                {
-                    const int noptim = optim_info_col.n() - 1;
-                    cout << "Solver " << ii << " has terminated after " << optim_info_col(0, 0, noptim) << " epochs in " << optim_info_col(0, 5, noptim) << " seconds" << endl;
-                    if (optim_info_col(0, 4, noptim) == 0)
-                    {
-                        cout << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", relative duality gap: " << optim_info_col(0, 3, noptim) << endl;
-                    }
-                    else
-                    {
-                        cout << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", tol: " << optim_info_col(0, 4, noptim) << endl;
-                    }
-                }
-            }
-        }
-        global_all.stop();
-        if (param.verbose)
-        {
-            cout << "Time for the one-vs-all strategy" << endl;
-            global_all.printElapsed();
-        }
-    }
-};
-
-template <typename M>
-void multivariate_erm(const M& X, const Vector<int>& y, const Matrix<typename M::value_type>& W0, Matrix<typename M::value_type>& W, Matrix<typename M::value_type>& dual_variable, OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model)
-{
-    typedef typename M::value_type T;
-    typedef typename M::index_type I;
-    if ((model.intercept && X.m() + 1 != W0.m()) || (!model.intercept && X.m() != W0.m()))
-    {
-        cerr << "Dimension of initial point is not consistent." << endl;
-        return;
-    }
-    cout << "Ici!" << endl;
-
-    const int nclass = y.maxval() + 1;
-    if ((is_regression_loss(model.loss) || !is_loss_for_matrices(model.loss)))
-    {
-        const int n = y.n();
-        Matrix<typename M::value_type> labels(nclass, n);
-        labels.set(-(1.0));
-        for (int ii = 0; ii < n; ++ii)
-            labels(y[ii], ii) = (1.0);
-        return multivariate_erm(X, labels, W0, W, dual_variable, optim_info, param, model);
-    }
-    init_omp(param.threads);
-    typedef Matrix<T> D;
-    DataMatrixLinear<M> data(X, model.intercept);
-    if (param.verbose)
-        data.print();
-    LinearLossMat<M, Vector<int>>* loss;
-    switch (model.loss)
-    {
-    case MULTI_LOGISTIC:
-        loss = new MultiClassLogisticLoss<M>(data, y);
-        break;
-    default:
-        cerr << "Not implemented, multilog loss is chosen by default";
-        loss = new MultiClassLogisticLoss<M>(data, y);
-    }
-    cout << "La?" << endl;
-    Regularizer<D, I>* regul = get_regul_mat<T, I>(model, nclass, loss->transpose());
-    solve_mat<LinearLossMat<M, Vector<int>>>(*loss, *regul, param, W0, W, dual_variable, optim_info);
-    delete (regul);
-    delete (loss);
-};
 
 #endif

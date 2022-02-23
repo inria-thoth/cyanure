@@ -134,11 +134,11 @@ template <typename T> class List {
          }
       }
       void inline print() const {
-         cerr << " print list " << endl;
+         cerr << " print list ";
          for (ListIterator<T> it = this->begin(); it != this->end(); ++it) {
             cerr << *it << " ";
          }
-         cerr << endl;
+         cerr;
       }
 
    private:

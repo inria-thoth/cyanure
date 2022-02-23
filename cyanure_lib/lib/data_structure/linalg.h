@@ -28,15 +28,17 @@
 #ifndef LINALG_H
 #define LINALG_H
 
-#include "misc.h"
-#include "cblas_alt_template.h"
+#include "../misc.h"
+#include "../BLAS/cblas_alt_template.h"
 #include <fstream>
 #ifdef WINDOWS
 #include <string>
 #else
 #include <cstring>
 #endif
-#include "utils.h"
+#include "../utils/macro.h"
+#include "../logger.h"
+#include "../BLAS/configure_blas.h"
 
 #undef max
 #undef min
@@ -78,7 +80,7 @@ static inline T softThrs(const T x, const T lambda_1) {
 
 template <typename T>
 static inline T fastSoftThrs(const T x, const T lambda_1) {
-   return x + T(0.5)*(abs<T>(x-lambda_1) - abs<T>(x+lambda_1));
+    return x + T(0.5)*(abs<T>(x-lambda_1) - abs<T>(x+lambda_1));
 };
 
 
@@ -1512,9 +1514,11 @@ template <typename T> inline void Vector<T>::softThrshold(const T nu) {
 
 /// performs soft-thresholding of the vector
 template <typename T> inline void Vector<T>::fastSoftThrshold(const T nu) {
-//#pragma omp parallel for
-   for (INTM i = 0; i<_n; ++i) 
-      _X[i]=fastSoftThrs(_X[i],nu);
+    //#pragma omp parallel for
+    for (INTM i = 0; i<_n; ++i)
+    {
+        _X[i]=fastSoftThrs(_X[i],nu);
+    }
 };
 
 /// performs soft-thresholding of the vector
@@ -2802,11 +2806,11 @@ template <typename T, typename I> inline void SpMatrix<T,I>::refCol(I i,
 
 /// print the sparse matrix
 template<typename T, typename I> inline void SpMatrix<T,I>::print(const string& name) const {
-   cerr << name << endl;
-   cerr << _m << " x " << _n << " , " << _nzmax << endl;
+   cerr << name;
+   cerr << _m << " x " << _n << " , " << _nzmax;
    for (I i = 0; i<_n; ++i) {
       for (I j = _pB[i]; j<_pE[i]; ++j) {
-         cerr << "(" <<_r[j] << "," << i << ") = " << _v[j] << endl;
+         cerr << "(" <<_r[j] << "," << i << ") = " << _v[j];
       }
    }
 };
@@ -3630,7 +3634,7 @@ template <typename T, typename I> inline void SpVector<T,I>::print(const string&
    std::cerr << name << std::endl;
    std::cerr << _nzmax << std::endl;
    for (I i = 0; i<_L; ++i)
-      cerr << "(" <<_r[i] << ", " <<  _v[i] << ")" << endl;
+      cerr << "(" <<_r[i] << ", " <<  _v[i] << ")";
 };
 
 /// create a reference on the vector r
@@ -4069,7 +4073,7 @@ template <typename T> inline void Matrix<T>::center(Vector<T>& centers) {
 
 /// scale the matrix by the a
 template <typename T> inline void Matrix<T>::scal(const T a) {
-   cblas_scal<T>(_n*_m,a,_X,1);
+    cblas_scal<T>(_n*_m,a,_X,1);
 };
 
 /// make a copy of the matrix mat in the current matrix
@@ -5192,9 +5196,9 @@ template <typename T> inline void Matrix<T>::softThrshold(const T nu) {
 
 /// perform soft-thresholding of the matrix, with the threshold nu
 template <typename T> inline void Matrix<T>::fastSoftThrshold(const T nu) {
-   Vector<T> vec;
-   toVect(vec);
-   vec.fastSoftThrshold(nu);
+    Vector<T> vec;
+    toVect(vec);
+    vec.fastSoftThrshold(nu);
 };
 /// perform soft-thresholding of the matrix, with the threshold nu
 template <typename T> inline void Matrix<T>::fastSoftThrshold(Matrix<T>& output, const T nu) const {
@@ -5436,7 +5440,7 @@ template <typename T> inline void Matrix<T>::drop(char* fileName) const {
    f.precision(12);
    f.flags(std::ios_base::scientific);
    f.open(fileName, ofstream::trunc);
-   std::cout << "Matrix written in " << fileName << std::endl;
+   logging(logINFO) << "Matrix written in " << fileName;
    for (INTM i = 0; i<_n; ++i) {
       for (INTM j = 0; j<_m; ++j) 
          f << _X[i*_m+j] << " ";

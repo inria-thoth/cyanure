@@ -1,7 +1,8 @@
 #ifndef REGUL_H
 #define REGUL_H
 
-#include "linalg.h"
+#include "../data_structure/linalg.h"
+#include "../utils/timer.h"
 Timer timer_global, timer_global2, timer_global3;
 
 enum regul_t
@@ -120,6 +121,7 @@ public:
     virtual bool intercept() const { return _intercept; };
     virtual T strong_convexity() const { return 0; };
     virtual T lambda_1() const { return 0; };
+    virtual std::string getName() {return _name;};
 
 protected:
     const bool _intercept;
@@ -128,6 +130,7 @@ private:
     explicit Regularizer<D, I>(const Regularizer<D, I> &reg);
     Regularizer<D, I> &operator=(const Regularizer<D, I> &reg);
     const regul_t _id;
+    inline static const std::string _name = "Regulizer";
 };
 
 template <typename D, typename I>
@@ -146,7 +149,7 @@ public:
     bool provides_fenchel() const { return false; };
     void print() const
     {
-        cout << "No regularization" << endl;
+        logging(logINFO) << "No regularization";
     }
 };
 
@@ -183,7 +186,7 @@ public:
     };
     void print() const
     {
-        cout << "L2 regularization" << endl;
+        logging(logINFO) << _name;
     }
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda; };
     virtual T lambda_1() const { return _lambda; };
@@ -201,6 +204,7 @@ public:
 
 private:
     const T _lambda;
+    inline static const std::string _name = "L2 regularization";
 };
 
 template <typename D, typename I>
@@ -237,7 +241,7 @@ public:
     };
     void print() const
     {
-        cout << "L1 regularization" << endl;
+        logging(logINFO) << "L1 regularization";
     }
     virtual T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
@@ -256,6 +260,7 @@ public:
 
 private:
     const T _lambda;
+    inline static const std::string _name = "L1 regularization";
 };
 
 template <typename D, typename I>
@@ -308,7 +313,7 @@ public:
     };
     void print() const
     {
-        cout << "Elastic Net regularization" << endl;
+        logging(logINFO) << "Elastic Net regularization";
     }
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda2; };
     virtual T lambda_1() const { return _lambda; };
@@ -330,6 +335,7 @@ public:
 private:
     const T _lambda;
     const T _lambda2;
+    inline static const std::string _name = "Elastic Net regularization";
 };
 
 template <typename D, typename I>
@@ -365,12 +371,13 @@ public:
     };
     void print() const
     {
-        cout << "L1 ball regularization" << endl;
+        logging(logINFO) << "L1 ball regularization";
     }
     virtual T lambda_1() const { return _lambda; };
 
 private:
     const T _lambda;
+    inline static const std::string _name = "L1 ball regularization";
 };
 
 template <typename D, typename I>
@@ -410,12 +417,13 @@ public:
     };
     void print() const
     {
-        cout << "L1 ball regularization" << endl;
+        logging(logINFO) << "L1 ball regularization";
     }
     virtual T lambda_1() const { return _lambda; };
 
 private:
     const T _lambda;
+    inline static const std::string _name = "L2 ball regularization";
 };
 
 template <typename D, typename I>
@@ -444,7 +452,7 @@ public:
     inline T fenchel(D &grad1, D &grad2) const { return 0; };
     void print() const
     {
-        cout << "Fused Lasso regularization" << endl;
+        logging(logINFO) << "Fused Lasso regularization";
     }
     bool provides_fenchel() const { return false; };
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda3; };
@@ -454,6 +462,7 @@ private:
     const T _lambda;
     const T _lambda2;
     const T _lambda3;
+    inline static const std::string _name = "Fused Lasso regularization";
 };
 
 template <typename Reg>
@@ -558,7 +567,7 @@ public:
     };
     void print() const
     {
-        cout << "Regularization for matrices" << endl;
+        logging(logINFO) << "Regularization for matrices";
         _regs[0]->print();
     };
     virtual T lambda_1() const { return _regs[0]->lambda_1(); };
@@ -696,15 +705,17 @@ public:
     };
     static inline void print()
     {
-        cout << "L2";
+        logging(logINFO) << "L2";
     };
     inline T eval_dual(const Vector<T> &x) const
     {
         return x.nrm2() / _lambda;
     };
+    static inline std::string getName() {return _name;};
 
 private:
     const T _lambda;
+    inline static const std::string _name = "L2";
 };
 
 template <typename T>
@@ -726,15 +737,17 @@ public:
     };
     static inline void print()
     {
-        cout << "LInf";
+        logging(logINFO) << "LInf";
     }
     inline T eval_dual(const Vector<T> &x) const
     {
         return x.asum() / _lambda;
     };
+    static inline std::string getName() {return _name;};
 
 private:
     const T _lambda;
+    inline static const std::string _name = "LInf";
 };
 
 template <typename T>
@@ -764,7 +777,7 @@ public:
     };
     static inline void print()
     {
-        cout << "L2+L1";
+        logging(logINFO) << "L2+L1";
     };
     inline T eval_dual(const Vector<T> &x) const
     {
@@ -792,10 +805,12 @@ public:
         }
         return 0;
     };
+    static inline std::string getName() {return _name;};
 
 private:
     const T _lambda;
     const T _lambda2;
+    inline static const std::string _name = "L2+L1";
 };
 
 template <typename N, typename I>
@@ -913,9 +928,7 @@ public:
 
     void print() const
     {
-        cout << "Mixed L1-";
-        N::print();
-        cout << " norm regularization" << endl;
+        logging(logINFO) << "Mixed L1-" << N::getName() << " norm regularization";
     }
     inline T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const

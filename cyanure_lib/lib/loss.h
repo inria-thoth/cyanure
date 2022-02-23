@@ -229,7 +229,7 @@ class SquareLoss final : public LinearLossVec<M> {
          return T(0.5)*res*res;
       };
       inline void print() const {
-         cout << "Square Loss is used" << endl;
+         logging(logINFO) << "Square Loss is used";
       };
       inline T fenchel(const Vector<T>& input) const {
          return 0.5*input.nrm2sq()/input.n()+input.dot(_y)/input.n();
@@ -274,7 +274,7 @@ class LogisticLoss final : public LinearLossVec<M> {
          return tmp.sum()/tmp.n(); 
       };
       inline void print() const {
-         cout << "Logistic Loss is used" << endl;
+         logging(logINFO) << "Logistic Loss is used";
       };
       inline T fenchel(const Vector<T>& input) const {
          T sum=0;
@@ -334,7 +334,7 @@ class SquaredHingeLoss final : public LinearLossVec<M> {
       };
 
       inline void print() const {
-         cout << "Squared Hinge Loss is used" << endl;
+         logging(logINFO) << "Squared Hinge Loss is used";
       };
       inline T fenchel(const Vector<T>& input) const {
          const int n = input.n();
@@ -405,7 +405,7 @@ class HingeLoss final : public LinearLossVec<M> {
       };
 
       inline void print() const {
-         cout << "Hinge Loss is used" << endl;
+         logging(logINFO) << "Hinge Loss is used";
       };
       inline T fenchel(const Vector<T>& input) const {
          const int n = input.n();
@@ -460,7 +460,7 @@ class SafeLogisticLoss final : public LinearLossVec<M> {
          return res <= T(1.0) ? exp_alt<T>(res-T(1.0)) - res : 0;
       };
       inline void print() const {
-         cout << "Safe Logistic Loss is used" << endl;
+         logging(logINFO) << "Safe Logistic Loss is used";
       };
       inline T fenchel(const Vector<T>& input) const {
          T sum=0;
@@ -552,7 +552,7 @@ class ProximalPointLoss final : public loss_type {
          grad.add(_z,-_kappa);
       };
       inline void print() const {
-         cout << "Proximal point loss with" << endl;
+         logging(logINFO) << "Proximal point loss with";
          _loss.print();
       }
       virtual bool provides_fenchel() const { return false; };
@@ -581,14 +581,14 @@ class ProximalPointLoss final : public loss_type {
       };
    protected:
       virtual void get_grad_aux(const D& input, D& grad1) const { 
-         cerr << "Not used" << endl;
+         cerr << "Not used";
       };
       virtual T lipschitz_constant() const {
-         cerr << "Not used" << endl;
+         cerr << "Not used";
          return 0;
       };
       virtual void get_dual_constraints(D& grad1) const {
-         cerr << "Not used" << endl;
+         cerr << "Not used";
       };
 
    
@@ -682,7 +682,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
          }
       }
       inline void print() const {
-         cout << "Loss for matrices" << endl;
+         logging(logINFO) << "Loss for matrices";
          _losses[0]->print();
       };
       inline bool provides_fenchel() const {
@@ -748,14 +748,14 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
          return false; 
       };
       virtual void get_grad_aux(const Matrix<T>& input, Matrix<T>& grad1) const { 
-         cerr << "Not used" << endl;
+         cerr << "Not used";
       };
       virtual T lipschitz_constant() const {
-         cerr << "Not used" << endl;
+         cerr << "Not used";
          return 0;
       };
       virtual void get_dual_constraints(Matrix<T>& grad1) const {
-         cerr << "Not used" << endl;
+         cerr << "Not used";
       };
 
    protected:
@@ -790,7 +790,7 @@ class SquareLossMat final : public LinearLossMat<M, Matrix<typename M::value_typ
          return T(0.5)*tmp.nrm2sq();
       };
       inline void print() const {
-         cout << "Square Loss is used" << endl;
+         logging(logINFO) << "Square Loss is used";
       };
       inline T fenchel(const Matrix<T>& input) const {
          return 0.5*input.normFsq()/(input.n())+input.dot(_y)/(input.n());
@@ -846,7 +846,7 @@ class MultiClassLogisticLoss final : public LinearLossMat<M, Vector<int> > {
          return tmp.logsumexp();
       }
       inline void print() const {
-         cout << "Multiclass logistic Loss is used" << endl;
+         logging(logINFO) << "Multiclass logistic Loss is used";
       };
      inline T fenchel(const Matrix<T>& input) const {
         T sum = 0;

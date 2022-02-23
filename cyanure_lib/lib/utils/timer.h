@@ -1,71 +1,5 @@
-/*!
- * \file
- *                toolbox Linalg 
- *
- *                by Julien Mairal
- *                julien.mairal@inria.fr
- *
- *                File utils.h
- * \brief Contains various variables and class timer */
-
-
-#ifndef UTILS_H
-#define UTILS_H
-
-#include <iostream>
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
-
-//#ifdef HAVE_MKL   // obsolete
-//#include <mkl_cblas.h>
-//#else
-//#include "cblas.h"
-//#endif
-//#ifdef USE_BLAS_LIB
-//#include "blas.h"
-//#else
-//#include "cblas.h"  // dependency upon cblas libraries has been removed in a recent version
-//#endif
-
-#include <limits>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-#ifdef CUDA
-#include <cuda_runtime.h>
-#endif
-
-
-#ifndef MATLAB_MEX_FILE
-typedef int mwSize;
-#endif
-
-#ifndef MAX_THREADS
-#define MAX_THREADS 64
-#endif
-
-// MIN, MAX macros
-#define MIN(a,b) (((a) > (b)) ? (b) : (a))
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define SIGN(a) (((a) < 0) ? -1.0 : 1.0)
-#define ABS(a) (((a) < 0) ? -(a) : (a))
-// DEBUG macros
-#define PRINT_I(name) printf(#name " : %d\n",name);
-#define PRINT_F(name) printf(#name " : %g\n",name);
-#define PRINT_S(name) printf("%s\n",name);
-#define FLAG(a) printf("flag : %d \n",a);
-
-// ALGORITHM constants
-#define EPSILON 10e-10
-#ifndef INFINITY
-#define INFINITY 10e20
-#endif
-#define EPSILON_OMEGA 0.001
-#define TOL_CGRAD 10e-6
-#define MAX_ITER_CGRAD 40
+#ifndef TIMER_H
+#define TIMER_H
 
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(WINDOWS)
@@ -136,7 +70,7 @@ int gettimeofday(struct timeval *tv, struct spams_timezone *tz)
 #endif
 
 
-#include "linalg.h"
+#include "../data_structure/linalg.h"
 
 using namespace std;
 
@@ -195,10 +129,10 @@ Timer::~Timer() {
 inline void Timer::printElapsed() {
    if (_running) {
       gettimeofday(_time2,NULL);
-      cout << "Time elapsed : " << _cumul + static_cast<double>((_time2->tv_sec -
-               _time1->tv_sec)*1000000 + _time2->tv_usec-_time1->tv_usec)/1000000.0 << endl;
+      logging(logINFO) << "Time elapsed : " << _cumul + static_cast<double>((_time2->tv_sec -
+               _time1->tv_sec)*1000000 + _time2->tv_usec-_time1->tv_usec)/1000000.0;
    } else {
-      cout << "Time elapsed : " << _cumul << endl;
+      logging(logINFO) << "Time elapsed : " << _cumul;
    }
 };
 
@@ -214,6 +148,5 @@ double inline Timer::getElapsed() const {
       return _cumul;
    }
 }
-
 
 #endif

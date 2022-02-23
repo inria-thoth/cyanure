@@ -1,7 +1,8 @@
 #ifndef DATA_H 
 #define DATA_H 
 
-#include "linalg.h"
+#include "data_structure/linalg.h"
+#include "logger.h"
 
 #define GET_WB(a)  Matrix<T> W; Vector<T> b; get_wb(a,W,b); 
 #define GET_w(a)  Vector<T> w; get_w(a,w); 
@@ -117,7 +118,7 @@ class DataLinear final : public Data<M, Vector<typename M::value_type> > {
          }
       };
       virtual void print() const  {
-         cout << "Matrix X, n=" << _X.n() <<  ", p=" << _X.m() << endl; 
+         logging(logINFO) << "Matrix X, n=" << _X.n() <<  ", p=" << _X.m(); 
       };
       virtual void reverse_intercept(Vector<T>& x) {
          if (_scale_intercept != T(1.0))
@@ -202,7 +203,7 @@ class DataMatrixLinear final : public Data<M, Matrix<typename M::value_type> > {
          }
       };
       virtual void print() const  {
-         cout << "Matrix X, n=" << _X.n() <<  ", p=" << _X.m() << endl; 
+         logging(logINFO) << "Matrix X, n=" << _X.n() <<  ", p=" << _X.m(); 
       };
       virtual DataLinear<M>* toDataLinear() const {
          return new DataLinear<M>(_X,_intercept);

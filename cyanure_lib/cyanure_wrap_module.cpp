@@ -1,9 +1,10 @@
 #include <string>
 
-#include "lib/linalg.h"
-#include "lib/wrapper_utils.h"
-#include "lib/solvers.h"
+#include "lib/data_structure/linalg.h"
+#include "lib/utils/wrapper_utils.h"
+#include "lib/solvers/solvers.h"
 #include "lib/exception.h"
+#include "lib/erm.h"
 
 template <typename T, typename I>
 static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0, PyArrayObject* inw, PyArrayObject* in_dual, const int max_iter, const int limited_memory_qning, const int fista_restart, const T tol, const int duality_gap_interval, const bool verbose, char* solver, char* loss, char* regul, const T lambda_1, const T lambda_2, const T lambda_3, const bool intercept, const bool univariate, const int n_threads)
