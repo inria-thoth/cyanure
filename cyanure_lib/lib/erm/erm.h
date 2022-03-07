@@ -16,20 +16,20 @@
 #include "../data.h"
 
 
-template <typename M, typename loss_type>
+template <typename InputMatrixType>
 class ERM {
 public:
 
-    ERM(OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model) : optim_info(optim_info), param(param), model(model) {
+    ERM(OptimInfo<typename InputMatrixType::value_type>& optim_info, const ParamSolver<typename InputMatrixType::value_type>& param, const ParamModel<typename InputMatrixType::value_type>& model) : optim_info(optim_info), param(param), model(model) {
     }
 
 protected:
 
-    OptimInfo<typename M::value_type>& optim_info;
-    const ParamSolver<typename M::value_type>& param;
-    const ParamModel<typename M::value_type>& model;
+    OptimInfo<typename InputMatrixType::value_type>& optim_info;
+    const ParamSolver<typename InputMatrixType::value_type>& param;
+    const ParamModel<typename InputMatrixType::value_type>& model;
 
-    virtual void verify_input(const M& X);
+    virtual void verify_input(const InputMatrixType& X);
 
     inline bool is_loss_for_matrices(const loss_t& loss) {
         return loss == SQUARE || loss == MULTI_LOGISTIC;
