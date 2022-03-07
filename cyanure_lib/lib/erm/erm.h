@@ -1,0 +1,50 @@
+#ifndef ERM_H 
+#define ERM_H
+
+
+#include "../utils/macro.h"
+#include "../data_structure/linalg.h"
+#include "../solvers/solvers.h"
+#include "../losses/loss_vec/loss_vec.h"
+#include "../losses/loss_mat/loss_mat.h"
+#include "../losses/loss_mat/loss/square_loss.h"
+#include "../losses/loss_vec/loss/square_loss.h"
+#include "../losses/loss_vec/loss/square_hinge_loss.h"
+#include "../losses/loss_vec/loss/logistic_loss.h"
+#include "../losses/loss_vec/loss/safe_logistic_loss.h"
+#include "../losses/loss_mat/loss/multi_logistic_loss.h"
+#include "../data.h"
+
+
+template <typename M, typename loss_type>
+class ERM {
+public:
+
+    ERM(OptimInfo<typename M::value_type>& optim_info, const ParamSolver<typename M::value_type>& param, const ParamModel<typename M::value_type>& model) : optim_info(optim_info), param(param), model(model) {
+    }
+
+protected:
+
+    OptimInfo<typename M::value_type>& optim_info;
+    const ParamSolver<typename M::value_type>& param;
+    const ParamModel<typename M::value_type>& model;
+
+    virtual void verify_input(const M& X);
+
+    inline bool is_loss_for_matrices(const loss_t& loss) {
+        return loss == SQUARE || loss == MULTI_LOGISTIC;
+    };
+
+    inline bool is_regression_loss(const loss_t& loss) {
+        return loss == SQUARE;
+    };
+
+    inline bool is_regul_for_matrices(const regul_t& reg)
+    {
+        return reg == L1L2 || reg == L1LINF;
+    }
+};
+
+
+
+#endif

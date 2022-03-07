@@ -20,11 +20,6 @@ enum regul_t
     INCORRECT_REG
 };
 
-static bool is_regul_for_matrices(const regul_t &reg)
-{
-    return reg == L1L2 || reg == L1LINF;
-}
-
 template <typename T>
 struct ParamModel
 {

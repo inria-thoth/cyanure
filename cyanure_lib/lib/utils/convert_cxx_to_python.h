@@ -1,5 +1,5 @@
-#ifndef WRAPPER_UTILS_H
-#define WRAPPER_UTILS_H
+#ifndef CONVERT_CXX_TO_PYTHON_H
+#define CONVERT_CXX_TO_PYTHON_H
 
 #include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
