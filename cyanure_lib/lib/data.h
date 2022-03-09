@@ -2,7 +2,7 @@
 #define DATA_H 
 
 #include "data_structure/linalg.h"
-#include "logger.h"
+#include "logging/logger.h"
 
 #define GET_WB(a)  Matrix<T> W; Vector<T> b; get_wb(a,W,b); 
 #define GET_w(a)  Vector<T> w; get_w(a,w); 

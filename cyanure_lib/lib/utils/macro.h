@@ -17,7 +17,7 @@
 #include <math.h>
 #include <assert.h>
 #include <limits>
-#include "../logger.h"
+#include "../logging/logger.h"
 
 
 #ifdef _OPENMP

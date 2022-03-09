@@ -37,7 +37,7 @@
 #include <cstring>
 #endif
 #include "../utils/macro.h"
-#include "../logger.h"
+#include "../logging/logger.h"
 #include "../BLAS/configure_blas.h"
 
 #undef max

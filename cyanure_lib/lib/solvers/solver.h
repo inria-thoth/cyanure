@@ -1,11 +1,11 @@
 #ifndef SOLVERS_H
 #define SOLVERS_H
 
-#include "../exception.h"
+#include "../error_management/exception.h"
 #include "../losses/loss.h"
 #include "../regul/regul.h"
 #include "../list.h"
-#include "../logger.h"
+#include "../logging/logger.h"
 #include  "../BLAS/configure_blas.h"
 #include  "../utils/timer.h"
 
