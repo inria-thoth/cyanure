@@ -1,6 +1,11 @@
 #ifndef SIMPLE_ERM_H
 #define SIMPLE_ERM_H
 
+#include "../solvers/ista.h"
+#include "../solvers/accelerator.h"
+#include "../solvers/incremental_solvers/svrg.h"
+#include "../solvers/incremental_solvers/miso.h"
+
 template <typename InputMatrixType, typename LossType>
 class SIMPLE_ERM : ERM<InputMatrixType> {
 public:

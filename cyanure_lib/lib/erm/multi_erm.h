@@ -1,6 +1,9 @@
 #ifndef MULTI_ERM_H
 #define MULTI_ERM_H
 
+#include "../solvers/ista.h"
+#include "../solvers/accelerator.h"
+
 template <typename InputMatrixType, typename LossType>
 class MULTI_ERM : public ERM<InputMatrixType> {
 
