@@ -2,7 +2,7 @@
 #define ERM_H
 
 
-#include "../utils/macro.h"
+#include "../macro.h"
 #include "../data_structure/linalg.h"
 #include "../solvers/solver.h"
 #include "../losses/loss_vec/loss_vec.h"

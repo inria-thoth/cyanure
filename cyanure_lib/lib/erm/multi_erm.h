@@ -3,6 +3,9 @@
 
 #include "../solvers/ista.h"
 #include "../solvers/accelerator.h"
+#include "../regul/regularizers.h"
+#include "../regul/compute_regularization.h"
+#include "../regul/mixed_l1_norm/mixed_l1_norm.h"
 
 template <typename InputMatrixType, typename LossType>
 class MULTI_ERM : public ERM<InputMatrixType> {

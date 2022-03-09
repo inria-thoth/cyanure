@@ -70,7 +70,7 @@ int gettimeofday(struct timeval *tv, struct spams_timezone *tz)
 #endif
 
 
-#include "../data_structure/linalg.h"
+#include "data_structure/linalg.h"
 
 using namespace std;
 

@@ -28,7 +28,7 @@
 #ifndef LINALG_H
 #define LINALG_H
 
-#include "../utils/basic_math_template.h"
+#include "../basic_math_template.h"
 #include "../BLAS/cblas_alt_template.h"
 #include <fstream>
 #ifdef WINDOWS
@@ -36,7 +36,7 @@
 #else
 #include <cstring>
 #endif
-#include "../utils/macro.h"
+#include "../macro.h"
 #include "../logging/logger.h"
 #include "../BLAS/configure_blas.h"
 

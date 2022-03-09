@@ -5,6 +5,7 @@
 #include "../solvers/accelerator.h"
 #include "../solvers/incremental_solvers/svrg.h"
 #include "../solvers/incremental_solvers/miso.h"
+#include "../regul/regularizers.h"
 
 template <typename InputMatrixType, typename LossType>
 class SIMPLE_ERM : ERM<InputMatrixType> {

@@ -1,7 +1,7 @@
 #include <string>
 
 #include "lib/data_structure/linalg.h"
-#include "lib/utils/convert_cxx_to_python.h"
+#include "lib/convert_cxx_to_python.h"
 #include "lib/solvers/solver.h"
 #include "lib/error_management/exception.h"
 #include "lib/erm/erm.h"
