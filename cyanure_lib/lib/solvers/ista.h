@@ -1,7 +1,7 @@
 #ifndef ISTA_H
 #define ISTA_H
 
-#include "solvers.h"
+#include "solver.h"
 
 template <typename loss_type>
 class ISTA_Solver : public Solver<loss_type>

@@ -1,7 +1,7 @@
 #ifndef INCREMENTAL_SOLVER_H
 #define INCREMENTAL_SOLVER_H
 
-#include "solvers.h"
+#include "solver.h"
 
 
 #define USING_INCREMENTAL_SOLVER                               \

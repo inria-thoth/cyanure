@@ -4,7 +4,7 @@
 
 #include "../utils/macro.h"
 #include "../data_structure/linalg.h"
-#include "../solvers/solvers.h"
+#include "../solvers/solver.h"
 #include "../losses/loss_vec/loss_vec.h"
 #include "../losses/loss_mat/loss_mat.h"
 #include "../losses/loss_mat/loss/square_loss.h"
