@@ -4,7 +4,7 @@
 #include "../error_management/exception.h"
 #include "../losses/loss.h"
 #include "../regul/regul.h"
-#include "../list.h"
+#include "../data_structure/list.h"
 #include "../logging/logger.h"
 #include  "../BLAS/configure_blas.h"
 #include  "../utils/timer.h"

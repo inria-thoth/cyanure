@@ -28,7 +28,7 @@
 #ifndef LINALG_H
 #define LINALG_H
 
-#include "../misc.h"
+#include "../utils/basic_math_template.h"
 #include "../BLAS/cblas_alt_template.h"
 #include <fstream>
 #ifdef WINDOWS

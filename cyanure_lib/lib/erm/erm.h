@@ -13,7 +13,7 @@
 #include "../losses/loss_vec/loss/logistic_loss.h"
 #include "../losses/loss_vec/loss/safe_logistic_loss.h"
 #include "../losses/loss_mat/loss/multi_logistic_loss.h"
-#include "../data.h"
+#include "../data_structure/data.h"
 
 
 template <typename InputMatrixType>

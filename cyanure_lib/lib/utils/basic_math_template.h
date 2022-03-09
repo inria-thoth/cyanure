@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "utils/macro.h"
+#include "macro.h"
 
 using namespace std;
 
@@ -26,14 +26,10 @@ static inline void stop();
 static int seed = 0;
 /// first random number generator from Numerical Recipe
 template <typename T> static inline T ran1(); 
-/// standard random number generator 
-template <typename T> static inline T ran1b(); 
 /// random sampling from the normal distribution
 template <typename T> static inline T normalDistrib();
 /// reorganize a sparse table between indices beg and end,
 
-template <typename T>
-T power(const T x, const T y);
 /// template version of the fabs function
 template <typename T>
 T abs(const T x);
@@ -89,11 +85,6 @@ template <typename T> static inline T ran1() {
    else return temp;
 };
 
-/// standard random number generator 
-template <typename T> T ran1b() {
-   return static_cast<T>(rand())/RAND_MAX;
-}
-
 /// random sampling from the normal distribution
 template <typename T>
 static inline T normalDistrib() {
@@ -115,16 +106,6 @@ static inline T normalDistrib() {
       iset = true;
       return gset;
    }
-};
-
-/// template version of the power function
-template <>
-inline double power(const double x, const double y) {
-   return pow(x,y);
-};
-template <>
-inline float power(const float x, const float y) {
-   return powf(x,y);
 };
 
 /// template version of the fabs function

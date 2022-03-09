@@ -1,7 +1,7 @@
 #ifndef LOSS_H 
 #define LOSS_H 
 
-#include "../data.h"
+#include "../data_structure/data.h"
 #define VECM Vector<typename M::value_type>
 
 enum loss_t { SQUARE, LOGISTIC, HINGE, SQHINGE, SAFE_LOGISTIC, MULTI_LOGISTIC, PPA, INCORRECT_LOSS };
