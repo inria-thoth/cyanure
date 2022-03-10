@@ -67,8 +67,8 @@ template<typename floating_type> class OptimInfo {
 
     /// Debugging function
    /// Print the matrix to std::cout
-   inline void print(const string& name) const;
-   inline void dump(const string& name) const;
+   inline void print(const std::string& name) const;
+   inline void dump(const std::string& name) const;
 
     /// clear the vector
    inline void clear();
@@ -135,7 +135,7 @@ template <typename floating_type> inline floating_type OptimInfo<floating_type>:
 };
 
 /// Print the OptimInfo to std::cout
-template <typename floating_type> inline void OptimInfo<floating_type>::print(const string& name) const {
+template <typename floating_type> inline void OptimInfo<floating_type>::print(const std::string& name) const {
    std::cerr << name << std::endl;
    std::cerr << _m << " x " << _n << std::endl;
    for (INTM i = 0; i<_m; ++i) {
@@ -151,8 +151,8 @@ template <typename floating_type> inline void OptimInfo<floating_type>::print(co
 };
 
 /// Print the OptimInfo to std::cout
-template <typename floating_type> inline void OptimInfo<floating_type>::dump(const string& name) const {
-   ofstream f; 
+template <typename floating_type> inline void OptimInfo<floating_type>::dump(const std::string& name) const {
+   std::ofstream f; 
    const char * cname = name.c_str();
    f.open(cname);
    f.precision(20);

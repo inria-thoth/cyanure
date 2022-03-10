@@ -157,7 +157,7 @@ private:
         {
             if (X.m() + 1 != W0.n())
             {
-                cerr << "Dimension of initial point is not consistent. With intercept, if X is m x n, w0 should be (n+1)-dimensional.";
+                std::cerr << "Dimension of initial point is not consistent. With intercept, if X is m x n, w0 should be (n+1)-dimensional.";
                 return;
             }
         }
@@ -165,7 +165,7 @@ private:
         {
             if (X.m() != W0.n())
             {
-                cerr << "Dimension of initial point is not consistent. If X is m x n, w0 should be n-dimensional.";
+                std::cerr << "Dimension of initial point is not consistent. If X is m x n, w0 should be n-dimensional.";
                 return;
             }
         }
@@ -202,7 +202,7 @@ private:
             loss = new LossMat<SafeLogisticLoss<InputMatrixType>>(data, y);
             break;
         default:
-            cerr << "Not implemented, square loss is chosen by default";
+            std::cerr << "Not implemented, square loss is chosen by default";
             loss = new SquareLossMat<InputMatrixType>(data, y);
         }
         return loss;
@@ -389,7 +389,7 @@ private:
             regul = new None<D, PointerType>(super::model);
             break;
         default:
-            cerr << "Not implemented, no regularization is chosen";
+            std::cerr << "Not implemented, no regularization is chosen";
             regul = new None<D, PointerType>(super::model);
         }
         return regul;

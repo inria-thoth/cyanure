@@ -82,8 +82,8 @@ template<typename floating_type> class Matrix {
 
    /// Debugging function
    /// Print the matrix to std::cout
-   inline void print(const string& name) const;
-   inline void dump(const string& name) const;
+   inline void print(const std::string& name) const;
+   inline void dump(const std::string& name) const;
 
 
    /// Modifiers
@@ -471,7 +471,7 @@ template <typename floating_type> inline floating_type Matrix<floating_type>::op
 };
 
 /// Print the matrix to std::cout
-template <typename floating_type> inline void Matrix<floating_type>::print(const string& name) const {
+template <typename floating_type> inline void Matrix<floating_type>::print(const std::string& name) const {
    std::cerr << name << std::endl;
    std::cerr << _m << " x " << _n << std::endl;
    for (INTM i = 0; i<_m; ++i) {
@@ -484,8 +484,8 @@ template <typename floating_type> inline void Matrix<floating_type>::print(const
 };
 
 /// Print the matrix to std::cout
-template <typename floating_type> inline void Matrix<floating_type>::dump(const string& name) const {
-   ofstream f; 
+template <typename floating_type> inline void Matrix<floating_type>::dump(const std::string& name) const {
+   std::ofstream f; 
    const char * cname = name.c_str();
    f.open(cname);
    f.precision(20);
@@ -2117,7 +2117,7 @@ template <typename floating_type> inline void Matrix<floating_type>::drop(char* 
    std::ofstream f;
    f.precision(12);
    f.flags(std::ios_base::scientific);
-   f.open(fileName, ofstream::trunc);
+   f.open(fileName, std::ofstream::trunc);
    logging(logINFO) << "Matrix written in " << fileName;
    for (INTM i = 0; i<_n; ++i) {
       for (INTM j = 0; j<_m; ++j) 

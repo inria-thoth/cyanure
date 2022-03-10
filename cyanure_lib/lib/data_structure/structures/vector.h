@@ -40,7 +40,7 @@ public:
     /// Accessors
     /// Print the vector to std::cout
     inline void print(const char* name) const;
-    inline void dump(const string& name) const;
+    inline void dump(const std::string& name) const;
     /// returns the index of the largest value
     inline INTM max() const;
     /// returns the index of the minimum value
@@ -87,7 +87,7 @@ public:
     inline void refData(const Vector<floating_type>& vec) { this->setPointer(vec.rawX(), vec.n()); };
     inline void refSubVec(INTM i, INTM n, Vector<floating_type>& mat) const { mat.setData(_X + i, n); };
     //inline void print(const char* name) const;
-    inline void print(const string& name) const;
+    inline void print(const std::string& name) const;
 
     /// put a random permutation of size n (for integral vectors)
     inline void randperm(int n);
@@ -304,7 +304,7 @@ template <typename floating_type> Vector<floating_type>::~Vector() {
 };
 
 /// Print the matrix to std::cout
-template <typename floating_type> inline void Vector<floating_type>::print(const string& name) const {
+template <typename floating_type> inline void Vector<floating_type>::print(const std::string& name) const {
     std::cerr << name << std::endl;
     std::cerr << _n << std::endl;
     for (INTM j = 0; j < _n; ++j) {
@@ -314,8 +314,8 @@ template <typename floating_type> inline void Vector<floating_type>::print(const
 };
 
 /// Print the matrix to std::cout
-template <typename floating_type> inline void Vector<floating_type>::dump(const string& name) const {
-    ofstream f;
+template <typename floating_type> inline void Vector<floating_type>::dump(const std::string& name) const {
+    std::ofstream f;
     const char* cname = name.c_str();
     f.open(cname);
     f.precision(20);
@@ -1113,7 +1113,7 @@ template <typename floating_type> inline void Vector<floating_type>::l1project(V
 
     while (sizeU > 0) {
         // put the pivot in prU[0]
-        swap(prU[0], prU[sizeU / 2]);
+        std::swap(prU[0], prU[sizeU / 2]);
         floating_type pivot = prU[0];
         INTM sizeG = 1;
         floating_type sumG = pivot;
@@ -1121,7 +1121,7 @@ template <typename floating_type> inline void Vector<floating_type>::l1project(V
         for (INTM i = 1; i < sizeU; ++i) {
             if (prU[i] >= pivot) {
                 sumG += prU[i];
-                swap(prU[sizeG++], prU[i]);
+                std::swap(prU[sizeG++], prU[i]);
             }
         }
 
@@ -1374,7 +1374,7 @@ inline void Vector<floating_type>::l1l2project(Vector<floating_type>& out, const
 
     while (sizeU > 0) {
         // put the pivot in prU[0]
-        swap(prU[0], prU[sizeU / 2]);
+        std::swap(prU[0], prU[sizeU / 2]);
         floating_type pivot = prU[0];
         INTM sizeG = 1;
         floating_type sumG = pivot + 0.5 * gamma * pivot * pivot;
@@ -1382,7 +1382,7 @@ inline void Vector<floating_type>::l1l2project(Vector<floating_type>& out, const
         for (INTM i = 1; i < sizeU; ++i) {
             if (prU[i] >= pivot) {
                 sumG += prU[i] + 0.5 * gamma * prU[i] * prU[i];
-                swap(prU[sizeG++], prU[i]);
+                std::swap(prU[sizeG++], prU[i]);
             }
         }
         if (sum + sumG - pivot * (1 + 0.5 * gamma * pivot) * (sum_card + sizeG) <

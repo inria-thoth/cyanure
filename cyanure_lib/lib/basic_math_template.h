@@ -17,7 +17,6 @@
 #include <math.h>
 #include "macro.h"
 
-using namespace std;
 
 
 /// a useful debugging function

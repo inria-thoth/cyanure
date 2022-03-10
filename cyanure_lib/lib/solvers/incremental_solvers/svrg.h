@@ -174,7 +174,7 @@ public:
         _is_lazy(loss_type::is_sparse())
     {
         if (param.minibatch > 1)
-            cerr << "Minibatch is not compatible with lazy updates";
+            std::cerr << "Minibatch is not compatible with lazy updates";
         _minibatch = 1;
     };
     virtual void solver_init(const D& x0)

@@ -15,15 +15,15 @@
 #define is_array(a) ((a) && PyArray_Check((PyArrayObject *)a))
 
 template <typename T>
-inline string getTypeName();
+inline std::string getTypeName();
 template <>
-inline string getTypeName<int>() { return "intc"; };
+inline std::string getTypeName<int>() { return "intc"; };
 template <>
-inline string getTypeName<unsigned char>() { return "uint8"; };
+inline std::string getTypeName<unsigned char>() { return "uint8"; };
 template <>
-inline string getTypeName<float>() { return "float32"; };
+inline std::string getTypeName<float>() { return "float32"; };
 template <>
-inline string getTypeName<double>() { return "float64"; };
+inline std::string getTypeName<double>() { return "float64"; };
 
 template <typename T>
 inline int getTypeNumber();
@@ -93,7 +93,7 @@ void getTypeObject(PyObject *input, int &T, int &I)
 }
 
 template <typename T, typename I>
-static int npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, string obj_name)
+static int npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
@@ -138,7 +138,7 @@ static int npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, string obj_nam
 }
 
 template <typename T>
-static int npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, string obj_name)
+static int npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
@@ -160,7 +160,7 @@ static int npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, string obj_name)
 }
 
 template <typename T>
-static int npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, string obj_name)
+static int npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
@@ -183,7 +183,7 @@ static int npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, string obj
 }
 
 template <typename T>
-static int npyToVector(PyArrayObject *array, Vector<T> &vector, string obj_name)
+static int npyToVector(PyArrayObject *array, Vector<T> &vector, std::string obj_name)
 {
     if (array == NULL)
     {

@@ -46,7 +46,7 @@ template <typename floating_type, typename I> class SpVector {
    /// computes the linf norm  of the vector
    inline floating_type fmaxval() const;
    /// print the vector to std::cerr
-   inline void print(const string& name) const;
+   inline void print(const std::string& name) const;
    inline void refIndices(Vector<I>& indices) const;
    /// creates a reference on the vector val
    inline void refVal(Vector<floating_type>& val) const;
@@ -151,11 +151,11 @@ template <typename floating_type, typename I> inline floating_type SpVector<floa
 };
 
 /// print the vector to std::cerr
-template <typename floating_type, typename I> inline void SpVector<floating_type,I>::print(const string& name) const {
+template <typename floating_type, typename I> inline void SpVector<floating_type,I>::print(const std::string& name) const {
    std::cerr << name << std::endl;
    std::cerr << _nzmax << std::endl;
    for (I i = 0; i<_L; ++i)
-      cerr << "(" <<_r[i] << ", " <<  _v[i] << ")";
+      std::cerr << "(" <<_r[i] << ", " <<  _v[i] << ")";
 };
 
 /// create a reference on the vector r

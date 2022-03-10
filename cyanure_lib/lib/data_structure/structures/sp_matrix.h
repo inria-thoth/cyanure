@@ -56,7 +56,7 @@ public:
     void setData(floating_type* v, I* r, I* pB, I* pE, I m, I n, I nzmax);
 
     /// print the sparse matrix
-    inline void print(const string& name) const;
+    inline void print(const std::string& name) const;
     /// compute the sum of the matrix elements
     inline floating_type asum() const;
     /// compute the sum of the matrix elements
@@ -238,12 +238,12 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
 };
 
 /// print the sparse matrix
-template<typename floating_type, typename I> inline void SpMatrix<floating_type, I>::print(const string& name) const {
-    cerr << name;
-    cerr << _m << " x " << _n << " , " << _nzmax;
+template<typename floating_type, typename I> inline void SpMatrix<floating_type, I>::print(const std::string& name) const {
+    std::cerr << name;
+    std::cerr << _m << " x " << _n << " , " << _nzmax;
     for (I i = 0; i < _n; ++i) {
         for (I j = _pB[i]; j < _pE[i]; ++j) {
-            cerr << "(" << _r[j] << "," << i << ") = " << _v[j];
+            std::cerr << "(" << _r[j] << "," << i << ") = " << _v[j];
         }
     }
 };

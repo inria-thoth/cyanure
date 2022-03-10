@@ -71,9 +71,6 @@ int gettimeofday(struct timeval *tv, struct spams_timezone *tz)
 
 
 #include "data_structure/linalg.h"
-
-using namespace std;
-
 /// Class Timer 
 class Timer {
    public:

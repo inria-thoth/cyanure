@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "utils.h"
-
-using namespace std;
 
 
 /// using quicksort
