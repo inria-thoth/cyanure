@@ -1,5 +1,6 @@
 #include <string>
 
+#include "lib/data_structure/structures/optim_info.h"
 #include "lib/data_structure/linalg.h"
 #include "lib/convert_cxx_to_python.h"
 #include "lib/solvers/solver.h"

@@ -4,7 +4,7 @@
 #include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
-#include "data_structure/linalg.h"
+#include "data_structure/structures/vector.h"
 
 #define array_type(a) (int)(PyArray_TYPE(a))
 #define PyArray_SimpleNewF(nd, dims, typenum) PyArray_New(&PyArray_Type, nd, dims, typenum, NULL, NULL, 0, NPY_ARRAY_FARRAY, NULL)
