@@ -2,6 +2,9 @@
 #define LOSS_H 
 
 #include "../data_structure/data.h"
+#include "../timer.h"
+
+
 #define VECM Vector<typename M::value_type>
 
 enum loss_t { SQUARE, LOGISTIC, HINGE, SQHINGE, SAFE_LOGISTIC, MULTI_LOGISTIC, PPA, INCORRECT_LOSS };
