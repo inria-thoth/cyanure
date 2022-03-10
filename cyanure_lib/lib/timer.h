@@ -4,8 +4,11 @@
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(WINDOWS)
 
-#include <time.h>
+#ifndef NOMINMAX
+# define NOMINMAX
+#endif
 #include <windows.h>
+#include <time.h>
 #include <random>
 std::random_device rd;
 std::mt19937 gen(rd());
