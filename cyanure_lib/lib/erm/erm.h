@@ -32,8 +32,6 @@ protected:
     const ParamSolver<typename InputMatrixType::value_type>& param;
     const ParamModel<typename InputMatrixType::value_type>& model;
 
-    virtual void verify_input(const InputMatrixType& X);
-
     inline bool is_loss_for_matrices(const loss_t& loss) {
         return loss == SQUARE || loss == MULTI_LOGISTIC;
     };

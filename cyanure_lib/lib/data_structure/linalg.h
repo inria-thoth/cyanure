@@ -32,9 +32,6 @@
 #include "../macro.h"
 #include "../logging/logger.h"
 
-#undef max
-#undef min
-
 template <typename floating_type> 
 static inline bool isZero(const floating_type lambda_1) {
    return static_cast<double>(abs<floating_type>(lambda_1)) < 1e-99;

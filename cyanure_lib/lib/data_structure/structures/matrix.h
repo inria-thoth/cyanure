@@ -8,10 +8,6 @@
 #include <cstring>
 #endif
 
-#undef max
-#undef min
-
-
 #include "../declare_structures.h"
 
 
