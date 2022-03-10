@@ -52,18 +52,18 @@ if platform.system() == "Windows":
     if 'mkl' in np_blas:
         libs = ['mkl_rt', 'iomp5']
         extra_compile_args = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1', '/std:c++17']
 
     if np_blas == "" or "openblas" in np_blas:
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
+            '/permissive-', '/W1', '/std:c++17']
         libs = ["libopenblas"]
 
     elif 'blas' in np_blas:
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
+            '/permissive-', '/W1', '/std:c++17']
         libs = np_blas
     
     LIBS = libs
