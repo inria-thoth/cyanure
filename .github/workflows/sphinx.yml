@@ -19,7 +19,7 @@ jobs:
         pip install .
     - name: Install the package your documenting together with its dependencies.
       run: |
-        pip install sphinx, ipywidgets, beautifulsoup4, sphinx-rtd-theme, numpydoc, jupyter-sphinx, furo
+        pip install -y sphinx, ipywidgets, beautifulsoup4, sphinx-rtd-theme, numpydoc, jupyter-sphinx, furo
     - name: Build the sphinx documentation and posts warnings as github comments.
       uses: rickstaa/sphinx-action@master
       with:
