@@ -21,7 +21,6 @@ jobs:
       uses: rickstaa/sphinx-action@master
       with:
         docs-folder: "docs/sphinx/source"
-        build-command: "sphinx-build -b html . _build"
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
