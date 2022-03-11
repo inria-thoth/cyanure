@@ -25,7 +25,7 @@ def install_cyanure(package):
 install("numpy")
 install("scipy")
 install("scikit-learn")
-install("../../../")
+install_cyanure("../../../")
 sys.path.insert(0, os.path.abspath('../../../'))
 
 
