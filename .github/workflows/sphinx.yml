@@ -12,6 +12,12 @@ jobs:
       with:
         docs-folder: "docs/sphinx/source"
         build-command: "sphinx-build -b html . _build"
+     - name: Fetch action
+        id: pl
+        uses: Rishabh510/Path-lister-action@master
+        with:
+          path: "docs/"
+          type: ".html"
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
