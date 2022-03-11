@@ -153,23 +153,10 @@ private:
     Matrix<FeatureType>& dual_variable;
 
     inline void verify_input(const InputMatrixType& X) {
-        if (super::model.intercept)
-        {
-            if (X.m() + 1 != W0.n())
-            {
-                std::cerr << "Dimension of initial point is not consistent. With intercept, if X is m x n, w0 should be (n+1)-dimensional.";
-                return;
-            }
+        if ((super::model.intercept && X.m() + 1 != W0.m()) || (!super::model.intercept && X.m() != W0.m())){
+            std::cerr << "Dimension of initial point is not consistent." << std::endl;
+            return;
         }
-        else
-        {
-            if (X.m() != W0.n())
-            {
-                std::cerr << "Dimension of initial point is not consistent. If X is m x n, w0 should be n-dimensional.";
-                return;
-            }
-        }
-
         if (super::param.max_iter < 0)
         {
             throw ValueError("Maximum number of iteration must be positive");
