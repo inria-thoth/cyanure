@@ -19,9 +19,7 @@ import sys
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
-install("numpy")
-install("scipy")
-install("scikit-learn")
+install("../../../")
 sys.path.insert(0, os.path.abspath('../../../'))
 
 
