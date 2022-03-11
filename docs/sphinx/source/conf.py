@@ -20,7 +20,7 @@ def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def install_cyanure(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--no--build-isolation", package])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--no-build-isolation", package])
 
 install("numpy")
 install("scipy")
