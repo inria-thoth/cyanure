@@ -225,7 +225,7 @@ class ERM(BaseEstimator, ABC):
                 yf = np.asfortranarray(y.T)
             else:
                 nclasses = int(np.max(y) + 1)
-                yf = np.squeeze(np.int32(y))
+                yf = np.squeeze(np.intc(np.float64(y)))
             w0 = np.zeros(
                 [p, nclasses], dtype=training_data_fortran.dtype, order='F')
 

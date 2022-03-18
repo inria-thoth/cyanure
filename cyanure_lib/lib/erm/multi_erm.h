@@ -42,7 +42,7 @@ public:
         if (super::param.verbose)
             data.print();
 
-        LinearLossMat<InputMatrixType, Vector<int>>* loss = new MultiClassLogisticLoss<InputMatrixType>(data, y);;
+        LinearLossMat<InputMatrixType, Vector<int>>* loss = new MultiClassLogisticLoss<InputMatrixType>(data, y);
         if (super::model.loss != MULTI_LOGISTIC) {
             logging(logERROR) << "Multilog loss is the only multi class implemented loss!";
             logging(logINFO) << "Multilog loss is used!";

@@ -111,7 +111,7 @@ protected:
     
     int nonu_sampling()
     {
-        const double x = static_cast<double>(random() - 1) / RAND_MAX;
+        const double x = static_cast<double>(random() - 1) / INT_MAX;
         const int ind = static_cast<int>(floor(_n * x)) + 1;
         const double y = _n * x + 1 - ind;
         if (y < _Ui[ind - 1])
