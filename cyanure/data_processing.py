@@ -36,6 +36,8 @@ def preprocess(X, centering=False, normalize=True, columns=False):
 
     if scipy.sparse.issparse(X):
         training_data_fortran = X.T
+        training_data_fortran.indptr = training_data_fortran.indptr.astype(np.float64).astype(np.intc)
+        training_data_fortran.indices = training_data_fortran.indices.astype(np.float64).astype(np.intc)
     else:
         training_data_fortran = np.asfortranarray(X.T)
     return cyanure_lib.preprocess_(training_data_fortran, centering, normalize, not columns)
@@ -102,6 +104,15 @@ def check_input_type(X, y, estimator):
             raise TypeError("The library only supports CSR sparse data.")
         if scipy.sparse.issparse(y) and y.getformat() != "csr":
             raise TypeError("The library only supports CSR sparse data.")
+
+        if scipy.sparse.issparse(X):
+            X.indptr = X.indptr.astype(np.float64).astype(np.intc)
+            X.indices = X.indices.astype(np.float64).astype(np.intc)
+        if scipy.sparse.issparse(y):
+            y.indptr = y.indptr.astype(np.float64).astype(np.intc)
+            y.indices = y.indices.astype(np.float64).astype(np.intc)
+
+        
 
     return X, y, le
 
