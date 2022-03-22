@@ -103,83 +103,102 @@ Let us now do something a bit more involved and perform multinomial logistic reg
 *ckn_mnist* dataset (10 classes, n=60000, p=2304, dense matrix), with multi-task group lasso regularization,
 using the same laptop as previously, and choosing a regularization parameter that yields a solution with 5\% non zero coefficients.::
 
-   import cyanure as cyan
-   import numpy as np
-   #load ckn_mnist dataset 10 classes, n=60000, p=2304
-   data=np.load('ckn_mnist.npz'); y=data['y']; X=data['X']
-   #center and normalize the rows of X in-place, without performing any copy
-   cyan.preprocess(X,centering=True,normalize=True,columns=False) 
-   #declare a multinomial logistic classifier with group Lasso regularization
-   classifier=cyan.MultiClassifier(loss='multiclass-logistic',penalty='l1l2')
-   # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambd=0.0001,max_epochs=500,tol=1e-3,it0=5) 
+   from cyanure.estimators import MultiClassifier
+    from cyanure.data_processing import preprocess
+    import numpy as np
+
+
+    #load ckn_mnist dataset 10 classes, n=60000, p=2304
+    data=np.load('dataset/ckn_mnist.npz')
+    y=data['y'].astype("float64")
+    y = np.squeeze(y)
+    X=data['X'].astype("float64")
+
+    #center and normalize the rows of X in-place, without performing any copy
+    preprocess(X,centering=True,normalize=True,columns=False)
+    #declare a multinomial logistic classifier with group Lasso regularization
+    classifier=MultiClassifier(loss='multiclass-logistic',penalty='l1l2',lambda_1=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5, verbose=True)
+    # uses the auto solver by default, performs at most 500 epochs
+    classifier.fit(X,y) 
 
 which produces::
 
-   Matrix X, n=60000, p=2304
-   Memory parameter: 20
-   *********************************
-   QNing Accelerator
-   MISO Solver
-   Incremental Solver with uniform sampling
-   Lipschitz constant: 0.25
-   Multiclass logistic Loss is used
-   Mixed L1-L2 norm regularization
-   Epoch: 5, primal objective: 0.340267, time: 30.2643
-   Best relative duality gap: 0.332051
-   Epoch: 10, primal objective: 0.337646, time: 62.0562
-   Best relative duality gap: 0.0695877
-   Epoch: 15, primal objective: 0.337337, time: 93.9541
-   Best relative duality gap: 0.0172626
-   Epoch: 20, primal objective: 0.337293, time: 125.683
-   Best relative duality gap: 0.0106066
-   Epoch: 25, primal objective: 0.337285, time: 170.044
-   Best relative duality gap: 0.00409663
-   Epoch: 30, primal objective: 0.337284, time: 214.419
-   Best relative duality gap: 0.000677961
-   Time elapsed : 215.074
-   Total additional line search steps: 4
-   Total skipping l-bfgs steps: 0
+    Info : Matrix X, n=60000, p=2304
+    Info : Memory parameter: 20
+    Info : *********************************
+    Info : QNing Accelerator
+    Info : MISO Solver
+    Info : Incremental Solver 
+    Info : with uniform sampling
+    Info : Lipschitz constant: 0.25
+    Info : Multiclass logistic Loss is used
+    Info : Mixed L1-L2 norm regularization
+    Info : Epoch: 5, primal objective: 0.334992, time: 39.9396
+    Info : Best relative duality gap: 0.0922704
+    Info : Epoch: 10, primal objective: 0.332324, time: 75.1757
+    Info : Best relative duality gap: 0.0268615
+    Info : Epoch: 15, primal objective: 0.332051, time: 103.535
+    Info : Best relative duality gap: 0.0155829
+    Info : Epoch: 20, primal objective: 0.331984, time: 138.484
+    Info : Best relative duality gap: 0.0049912
+    Info : Epoch: 25, primal objective: 0.331973, time: 174.755
+    Info : Best relative duality gap: 0.00232949
+    Info : Epoch: 30, primal objective: 0.331972, time: 207.706
+    Info : Best relative duality gap: 0.00141096
+    Info : Epoch: 35, primal objective: 0.331972, time: 235.578
+    Info : Best relative duality gap: 0.000769221
+    Info : Time elapsed : 236.065
+    Info : Total additional line search steps: 3
+    Info : Total skipping l-bfgs steps: 0
+
 
 Learning the multiclass classifier took about 3mn and 35s. To conclude, we provide a last more classical example
 of learning l2-logistic regression classifiers on the same dataset, in a one-vs-all fashion.::
 
-   import cyanure as cyan
+   from cyanure.estimators import MultiClassifier
+   from cyanure.data_processing import preprocess
    import numpy as np
+
+
    #load ckn_mnist dataset 10 classes, n=60000, p=2304
-   data=np.load('ckn_mnist.npz'); y=data['y']; X=data['X']
+   data=np.load('dataset/ckn_mnist.npz')
+   y=data['y'].astype("float64")
+   y = np.squeeze(y)
+   X=data['X'].astype("float64")
+
    #center and normalize the rows of X in-place, without performing any copy
-   cyan.preprocess(X,centering=True,normalize=True,columns=False) 
+   preprocess(X,centering=True,normalize=True,columns=False)
    #declare a multinomial logistic classifier with group Lasso regularization
-   classifier=cyan.MultiClassifier(loss='logistic',penalty='l2')
+   classifier=MultiClassifier(loss='logistic',penalty='l2',lambda_1=0.01/X.shape[0],max_iter=500,tol=1e-3, multi_class="ovr",verbose=True)
    # uses the auto solver by default, performs at most 500 epochs
-   classifier.fit(X,y,lambd=0.01/X.shape[0],max_epochs=500,tol=1e-3) 
+   classifier.fit(X,y)
 
 Then, the 10 classifiers are learned in parallel using the four cpu cores
 (still on the same laptop), which gives the following output after about 1mn::
     
-   Matrix X, n=60000, p=2304
-   Solver 4 has terminated after 30 epochs in 36.3953 seconds
-      Primal objective: 0.00877348, relative duality gap: 8.54385e-05
-   Solver 8 has terminated after 30 epochs in 37.5156 seconds
-      Primal objective: 0.0150244, relative duality gap: 0.000311491
-   Solver 9 has terminated after 30 epochs in 38.4993 seconds
-      Primal objective: 0.0161167, relative duality gap: 0.000290268
-   Solver 7 has terminated after 30 epochs in 39.5971 seconds
-      Primal objective: 0.0105672, relative duality gap: 6.49337e-05
-   Solver 0 has terminated after 40 epochs in 45.1612 seconds
-      Primal objective: 0.00577768, relative duality gap: 3.6291e-05
-   Solver 6 has terminated after 40 epochs in 45.8909 seconds
-      Primal objective: 0.00687928, relative duality gap: 0.000175357
-   Solver 2 has terminated after 40 epochs in 45.9899 seconds
-      Primal objective: 0.0104324, relative duality gap: 1.63646e-06
-   Solver 5 has terminated after 40 epochs in 47.1608 seconds
-      Primal objective: 0.00900643, relative duality gap: 3.42144e-05
-   Solver 3 has terminated after 30 epochs in 12.8874 seconds
-      Primal objective: 0.00804966, relative duality gap: 0.000200631
-   Solver 1 has terminated after 40 epochs in 15.8949 seconds
-      Primal objective: 0.00487406, relative duality gap: 0.000584138
-   Time for the one-vs-all strategy
-   Time elapsed : 62.9996
+    Info : Matrix X, n=60000, p=2304
+    Info : Solver 7 has terminated after 30 epochs in 20.3963 seconds
+    Info :    Primal objective: 0.0105672, relative duality gap: 0.000304014
+    Info : Solver 4 has terminated after 30 epochs in 22.6081 seconds
+    Info :    Primal objective: 0.0087735, relative duality gap: 0.000198454
+    Info : Solver 0 has terminated after 35 epochs in 23.8481 seconds
+    Info :    Primal objective: 0.00577782, relative duality gap: 0.000326908
+    Info : Solver 8 has terminated after 30 epochs in 22.1619 seconds
+    Info :    Primal objective: 0.0150245, relative duality gap: 0.000373297
+    Info : Solver 5 has terminated after 30 epochs in 20.5889 seconds
+    Info :    Primal objective: 0.00900673, relative duality gap: 0.000429762
+    Info : Solver 1 has terminated after 35 epochs in 24.4471 seconds
+    Info :    Primal objective: 0.00487408, relative duality gap: 0.000178935
+    Info : Solver 9 has terminated after 25 epochs in 19.4686 seconds
+    Info :    Primal objective: 0.0161172, relative duality gap: 0.000812255
+    Info : Solver 6 has terminated after 30 epochs in 21.1479 seconds
+    Info :    Primal objective: 0.00687949, relative duality gap: 0.000246356
+    Info : Solver 2 has terminated after 35 epochs in 20.7598 seconds
+    Info :    Primal objective: 0.0104325, relative duality gap: 0.000125021
+    Info : Solver 3 has terminated after 25 epochs in 10.4471 seconds
+    Info :    Primal objective: 0.0080502, relative duality gap: 0.000679728
+    Info : Time for the one-vs-all strategy
+    Info : Time elapsed : 81.5488
+
 
 Note that the toolbox also provides the classes LinearSVC and LogisticRegression that are near-compatible with scikit-learn's API. 
