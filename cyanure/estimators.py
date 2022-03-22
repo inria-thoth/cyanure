@@ -248,10 +248,10 @@ class ERM(BaseEstimator, ABC):
             if not reset_dual and not self._binary_problem:
                 reset_dual = np.any(self.dual.shape != [n, nclasses])
             if reset_dual and self._binary_problem:
-                self.dual = np.zeros(n, dtype=training_data_fortran.dtype)
+                self.dual = np.zeros(n, dtype=training_data_fortran.dtype, order='F')
             if reset_dual and not self._binary_problem:
                 self.dual = np.zeros(
-                    [n, nclasses], dtype=training_data_fortran.dtype)
+                    [n, nclasses], dtype=training_data_fortran.dtype, order='F')
 
         w = np.copy(w0)
         self.optimization_info_ = cyanure_lib.erm_(
