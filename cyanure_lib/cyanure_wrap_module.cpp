@@ -37,14 +37,13 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         if (univariate)
         {
             Vector<M> y, w0, w, dual_variable;
-            if (!npyToVector<M>(inY, y, "Data y"))
-                ;
-            if (!npyToVector<M>(inw0, w0, "x0"))
-                ;
-            if (!npyToVector<M>(inw, w, "x"))
-                ;
-            if (reinterpret_cast<PyObject*>(in_dual) != Py_None && !npyToVector<M>(in_dual, dual_variable, "dual"))
-                ;
+            npyToVector<M>(inY, y, "Data y");
+            npyToVector<M>(inw0, w0, "x0");
+            npyToVector<M>(inw, w, "x");
+            if (reinterpret_cast<PyObject*>(in_dual) != Py_None)
+            {
+                npyToVector<M>(in_dual, dual_variable, "dual");
+            }
             if (w0.n() != w.n())
             {
                 PyErr_SetString(PyExc_TypeError, "Got wrong input size");
@@ -53,8 +52,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
             if (isSparseMatrix(inX))
             {
                 SpMatrix<M, sparse_type> X;
-                if (!npyToSpMatrix<M, sparse_type>(inX, X, "Data"))
-                    ;
+                npyToSpMatrix<M, sparse_type>(inX, X, "Data");
                 param.minibatch = MIN((int)floor((M(X.n()) * M(X.m())) / M(X.nzmax())), X.n() / 100); // aggressive strategy, but only uses minibatch if required
                 SIMPLE_ERM<SpMatrix<M, sparse_type>, LinearLossVec<SpMatrix<M, sparse_type>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                 problem_configuration.solve_problem(X, y);
@@ -63,8 +61,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
             {
                 Matrix<M> X;
                 param.minibatch = 1;
-                if (!npyToMatrix<M>((PyArrayObject*)inX, X, "Data X"))
-                    ;
+                npyToMatrix<M>((PyArrayObject*)inX, X, "Data X");
                 SIMPLE_ERM<Matrix<M>, LinearLossVec<Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                 problem_configuration.solve_problem(X, y);
 
@@ -74,31 +71,27 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         else
         {
             Matrix<M> w0, w, dual_variable;
-            if (!npyToMatrix<M>(inw0, w0, "x0"))
-                ;
-            if (!npyToMatrix<M>(inw, w, "x"))
-                ;
-            if (reinterpret_cast<PyObject*>(in_dual) != Py_None && !npyToMatrix<M>(in_dual, dual_variable, "dual"))
-                ;
+            npyToMatrix<M>(inw0, w0, "x0");
+            npyToMatrix<M>(inw, w, "x");
+            if (reinterpret_cast<PyObject*>(in_dual) != Py_None){
+                npyToMatrix<M>(in_dual, dual_variable, "dual");  
+            }
             if (isSparseMatrix(inX))
             {
                 SpMatrix<M, sparse_type> X;
-                if (!npyToSpMatrix<M, sparse_type>(inX, X, "Data"))
-                    ;
+                npyToSpMatrix<M, sparse_type>(inX, X, "Data");
                 param.minibatch = MIN((int)floor((M(X.n()) * M(X.m())) / M(X.nzmax())), X.n() / 100);
                 if (array_type(inY) == getTypeNumber<int>())
                 {
                     Vector<int> y;
-                    if (!npyToVector<int>(inY, y, "Data y"))
-                        ;
+                    npyToVector<int>(inY, y, "Data y");
                     MULTI_ERM<SpMatrix<M, sparse_type>, LinearLossMat<SpMatrix<M, sparse_type>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
                 else
                 {
                     Matrix<M> y;
-                    if (!npyToMatrix<M>(inY, y, "Data y"))
-                        ;
+                    npyToMatrix<M>(inY, y, "Data y");
                     MULTI_ERM<SpMatrix<M, sparse_type>, LinearLossMat<SpMatrix<M, sparse_type>, Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_matrix(X, y);
                 }
@@ -107,22 +100,18 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
             {
                 Matrix<M> X;
                 param.minibatch = 1;
-                if (!npyToMatrix<M>((PyArrayObject*)inX, X, "Data X"))
-                    ;
+                npyToMatrix<M>((PyArrayObject*)inX, X, "Data X");
                 if (array_type(inY) == getTypeNumber<int>())
                 {
                     Vector<int> y;
-                    if (!npyToVector<int>(inY, y, "Data y"))
-                        ;
-
+                    npyToVector<int>(inY, y, "Data y");
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
                 else
                 {
                     Matrix<M> y;
-                    if (!npyToMatrix<M>(inY, y, "Data y"))
-                        ;
+                    npyToMatrix<M>(inY, y, "Data y");
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_matrix(X, y);
                 }
@@ -145,6 +134,11 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
     catch (ValueError e)
     {
         PyErr_SetObject(PyExc_ValueError, PyBytes_FromString(e.what()));
+        return NULL;
+    }
+    catch (ConversionError e)
+    {
+        PyErr_SetObject(PyExc_RuntimeError, PyBytes_FromString(e.what()));
         return NULL;
     }
     catch (...)
@@ -204,8 +198,7 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
     }
     else
     {
-        // PyErr_SetString(PyExc_TypeError, ("Got wrong data type: " + std::to_string(M)).c_str()));
-        PyErr_SetString(PyExc_TypeError, ("Got wrong data type: " + std::to_string(M)).c_str());
+        PyErr_SetString(PyExc_TypeError, ("Wrong data type combinaison: data type is: " + std::to_string(M) + " and pointer type is: " + std::to_string(sparse_type)).c_str());
         return NULL;
     }
     return PyArray_Return(optim_info);
@@ -217,8 +210,7 @@ static void preprocess_generic(PyObject* in, const bool centering, const bool no
     if (isSparseMatrix(in))
     {
         SpMatrix<M, sparse_type> X;
-        if (!npyToSpMatrix<M, sparse_type>(in, X, "Data"))
-            ;
+        npyToSpMatrix<M, sparse_type>(in, X, "Data");
         if (columns)
         {
             if (normalize)
@@ -233,8 +225,7 @@ static void preprocess_generic(PyObject* in, const bool centering, const bool no
     else
     {
         Matrix<M> X;
-        if (!npyToMatrix<M>((PyArrayObject*)in, X, "Data"))
-            ;
+        npyToMatrix<M>((PyArrayObject*)in, X, "Data");
         if (columns)
         {
             if (centering)
@@ -254,41 +245,47 @@ static void preprocess_generic(PyObject* in, const bool centering, const bool no
 
 static PyObject* preprocess_(PyObject* self, PyObject* args, PyObject* keywds)
 {
-    PyObject* Ip = NULL;
-    int centering = false;
-    int normalize = false;
-    int columns = true;
-    static char* kwlist[] = { (char*)"", (char*)"centering", (char*)"normalize", (char*)"columns", NULL };
-    const char* format = (const char*)"O|ppp";
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &Ip, &centering, &normalize, &columns))
-        return NULL;
+    try {
+        PyObject* Ip = NULL;
+        int centering = false;
+        int normalize = false;
+        int columns = true;
+        static char* kwlist[] = { (char*)"", (char*)"centering", (char*)"normalize", (char*)"columns", NULL };
+        const char* format = (const char*)"O|ppp";
+        if (!PyArg_ParseTupleAndKeywords(args, keywds, format, kwlist, &Ip, &centering, &normalize, &columns))
+            return NULL;
 
-    int M, sparse_type;
-    getTypeObject(Ip, M, sparse_type);
-    if (M == getTypeNumber<float>() && sparse_type == getTypeNumber<int>())
-    {
-        preprocess_generic<float, int>(Ip, centering, normalize, columns);
-        Py_RETURN_NONE;
+        int M, sparse_type;
+        getTypeObject(Ip, M, sparse_type);
+        if (M == getTypeNumber<float>() && sparse_type == getTypeNumber<int>())
+        {
+            preprocess_generic<float, int>(Ip, centering, normalize, columns);
+            Py_RETURN_NONE;
+        }
+        else if ((M == getTypeNumber<float>() && sparse_type == getTypeNumber<long long int>()))
+        {
+            preprocess_generic<float, long long int>(Ip, centering, normalize, columns);
+            Py_RETURN_NONE;
+        }
+        else if ((M == getTypeNumber<double>() && sparse_type == getTypeNumber<int>()))
+        {
+            preprocess_generic<double, int>(Ip, centering, normalize, columns);
+            Py_RETURN_NONE;
+        }
+        else if ((M == getTypeNumber<double>() && sparse_type == getTypeNumber<long long int>()))
+        {
+            preprocess_generic<double, long long int>(Ip, centering, normalize, columns);
+            Py_RETURN_NONE;
+        }
+        else
+        {
+            PyErr_SetString(PyExc_TypeError, ("Wrong data type combinaison: data type is: " + std::to_string(M) + " and pointer type is: " + std::to_string(sparse_type)).c_str());
+            return NULL;
+        }
     }
-    else if ((M == getTypeNumber<float>() && sparse_type == getTypeNumber<long long int>()))
+    catch (ConversionError e)
     {
-        preprocess_generic<float, long long int>(Ip, centering, normalize, columns);
-        Py_RETURN_NONE;
-    }
-    else if ((M == getTypeNumber<double>() && sparse_type == getTypeNumber<int>()))
-    {
-        preprocess_generic<double, int>(Ip, centering, normalize, columns);
-        Py_RETURN_NONE;
-    }
-    else if ((M == getTypeNumber<double>() && sparse_type == getTypeNumber<long long int>()))
-    {
-        preprocess_generic<double, long long int>(Ip, centering, normalize, columns);
-        Py_RETURN_NONE;
-    }
-    else
-    {
-        // PyErr_SetString(PyExc_TypeError, ("Got wrong data type: " + std::to_string(M)).c_str()));
-        PyErr_SetString(PyExc_TypeError, ("Got wrong data type: " + std::to_string(M)).c_str());
+        PyErr_SetObject(PyExc_RuntimeError, PyBytes_FromString(e.what()));
         return NULL;
     }
 };

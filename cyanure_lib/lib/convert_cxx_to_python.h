@@ -11,6 +11,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 #include "data_structure/structures/vector.h"
+#include "error_management/exception.h"
 
 #define array_type(a) (int)(PyArray_TYPE(a))
 #define PyArray_SimpleNewF(nd, dims, typenum) PyArray_New(&PyArray_Type, nd, dims, typenum, NULL, NULL, 0, NPY_ARRAY_FARRAY, NULL)
@@ -99,11 +100,11 @@ void getTypeObject(PyObject *input, int &T, int &I)
 }
 
 template <typename T, typename I>
-static int npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string obj_name)
+static void npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
-        return 1;
+        throw ConversionError("The array to convert is NULL!");
     }
     PyArrayObject *indptr = (PyArrayObject *)PyObject_GetAttrString(array, "indptr");
     PyArrayObject *indices = (PyArrayObject *)PyObject_GetAttrString(array, "indices");
@@ -111,23 +112,19 @@ static int npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string ob
     PyObject *shape = PyObject_GetAttrString(array, "shape");
     if (check_array(indptr, getTypeNumber<I>()))
     {
-        PyErr_SetString(PyExc_TypeError, "spmatrix arg1: indptr array should be 1d int's");
-        return 0;
+        throw ConversionError("spmatrix arg1: indptr array should be 1d int's");
     }
     if (check_array(indices, getTypeNumber<I>()))
     {
-        PyErr_SetString(PyExc_TypeError, "spmatrix arg1: indices array should be 1d int's");
-        return 0;
+        throw ConversionError("spmatrix arg1: indices array should be 1d int's");
     }
     if (check_array(data, getTypeNumber<T>()))
     {
-        PyErr_SetString(PyExc_TypeError, "spmatrix arg1: data array should be 1d and match datatype");
-        return 0;
+        throw ConversionError("spmatrix arg1: data array should be 1d and match datatype");
     }
     if (!PyTuple_Check(shape))
     {
-        PyErr_SetString(PyExc_TypeError, "shape should be a tuple");
-        return 0;
+        throw ConversionError("shape should be a tuple");
     }
     I m = PyLong_AsLong(PyTuple_GetItem(shape, 0));
     I n = PyLong_AsLong(PyTuple_GetItem(shape, 1));
@@ -139,45 +136,40 @@ static int npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string ob
     Py_DECREF(data);
     Py_DECREF(shape);
     matrix.setData((T *)PyArray_DATA(data), (I *)PyArray_DATA(indices), pB, pE, m, n, nzmax);
-
-    return 1;
 }
 
 template <typename T>
-static int npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, std::string obj_name)
+static void npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
-        return 1;
+        throw ConversionError("The array to convert is NULL!");
     }
     if (!(PyArray_NDIM(array) == 2 &&
           PyArray_TYPE(array) == getTypeNumber<T>() &&
           (PyArray_FLAGS(array) & NPY_ARRAY_F_CONTIGUOUS)))
     {
-        PyErr_SetString(PyExc_TypeError, (obj_name + " matrices should be f-contiguous 2D " + getTypeName<T>() + " array").c_str());
-        return 0;
+        throw ConversionError((obj_name + " matrices should be f-contiguous 2D " + getTypeName<T>() + " array").c_str());
     }
     T *rawX = reinterpret_cast<T *>(PyArray_DATA(array));
     const npy_intp *shape = PyArray_DIMS(array);
     npy_intp m = shape[0];
     npy_intp n = shape[1];
     matrix.setData(rawX, m, n);
-    return 1;
 }
 
 template <typename T>
-static int npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
+static void npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
-        return 1;
+        throw ConversionError("The array to convert is NULL!");
     }
     if (!(PyArray_NDIM(array) == 3 &&
           PyArray_TYPE(array) == getTypeNumber<T>() &&
           (PyArray_FLAGS(array) & NPY_ARRAY_F_CONTIGUOUS)))
     {
-        PyErr_SetString(PyExc_TypeError, (obj_name + " matrices should be f-contiguous 3D " + getTypeName<T>() + " array").c_str());
-        return 0;
+        throw ConversionError((obj_name + " matrices should be f-contiguous 3D " + getTypeName<T>() + " array").c_str());
     }
     T *rawX = reinterpret_cast<T *>(PyArray_DATA(array));
     const npy_intp *shape = PyArray_DIMS(array);
@@ -185,15 +177,14 @@ static int npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::strin
     npy_intp m = shape[1];
     npy_intp n = shape[2];
     matrix.setData(rawX, nclass, m, n);
-    return 1;
 }
 
 template <typename T>
-static int npyToVector(PyArrayObject *array, Vector<T> &vector, std::string obj_name)
+static void npyToVector(PyArrayObject *array, Vector<T> &vector, std::string obj_name)
 {
     if (array == NULL)
     {
-        return 1;
+        throw ConversionError("The array to convert is NULL!");
     }
     T *rawX = reinterpret_cast<T *>(PyArray_DATA(array));
     const npy_intp *shape = PyArray_DIMS(array);
@@ -203,11 +194,9 @@ static int npyToVector(PyArrayObject *array, Vector<T> &vector, std::string obj_
           PyArray_TYPE(array) == getTypeNumber<T>() &&
           (PyArray_FLAGS(array) & NPY_ARRAY_ALIGNED)))
     {
-        PyErr_SetString(PyExc_TypeError, (obj_name + " should be aligned 1D " + getTypeName<T>() + " array").c_str());
-        return 0;
+        throw ConversionError((obj_name + " should be aligned 1D " + getTypeName<T>() + " array").c_str());
     }
     vector.setData(rawX, n);
-    return 1;
 }
 
 template <typename T>
