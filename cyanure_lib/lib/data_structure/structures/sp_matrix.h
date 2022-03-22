@@ -236,11 +236,11 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
 
 /// print the sparse matrix
 template<typename floating_type, typename I> inline void SpMatrix<floating_type, I>::print(const std::string& name) const {
-    std::cerr << name;
-    std::cerr << _m << " x " << _n << " , " << _nzmax;
+    logging(logERROR) << name;
+    logging(logERROR) << _m << " x " << _n << " , " << _nzmax;
     for (I i = 0; i < _n; ++i) {
         for (I j = _pB[i]; j < _pE[i]; ++j) {
-            std::cerr << "(" << _r[j] << "," << i << ") = " << _v[j];
+            logging(logERROR) << "(" << _r[j] << "," << i << ") = " << _v[j];
         }
     }
 };

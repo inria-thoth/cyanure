@@ -192,14 +192,14 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
          return false; 
       };
       virtual void get_grad_aux(const Matrix<T>& input, Matrix<T>& grad1) const { 
-         std::cerr << "Not used";
+         logging(logERROR) << "Not used";
       };
       virtual T lipschitz_constant() const {
-         std::cerr << "Not used";
+         logging(logERROR) << "Not used";
          return 0;
       };
       virtual void get_dual_constraints(Matrix<T>& grad1) const {
-         std::cerr << "Not used";
+         logging(logERROR) << "Not used";
       };
 
    protected:

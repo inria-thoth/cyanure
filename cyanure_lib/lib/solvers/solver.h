@@ -190,7 +190,7 @@ private:
     {
         if (!_regul.provides_fenchel() || !_loss.provides_fenchel())
         {
-            std::cerr << "Error: no duality gap available";
+            logging(logERROR) << "Error: no duality gap available";
             return -INFINITY;
         }
         D grad1, grad2;

@@ -148,10 +148,10 @@ template <typename floating_type, typename I> inline floating_type SpVector<floa
 
 /// print the vector to std::cerr
 template <typename floating_type, typename I> inline void SpVector<floating_type,I>::print(const std::string& name) const {
-   std::cerr << name << std::endl;
-   std::cerr << _nzmax << std::endl;
+   logging(logERROR) << name;
+   logging(logERROR) << _nzmax;
    for (I i = 0; i<_L; ++i)
-      std::cerr << "(" <<_r[i] << ", " <<  _v[i] << ")";
+      logging(logERROR) << "(" <<_r[i] << ", " <<  _v[i] << ")";
 };
 
 /// create a reference on the vector r

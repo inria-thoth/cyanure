@@ -216,14 +216,14 @@ class ProximalPointLoss final : public loss_type {
       };
    protected:
       virtual void get_grad_aux(const D& input, D& grad1) const { 
-         std::cerr << "Not used";
+         logging(logERROR) << "Not used";
       };
       virtual T lipschitz_constant() const {
-         std::cerr << "Not used";
+         logging(logERROR) << "Not used";
          return 0;
       };
       virtual void get_dual_constraints(D& grad1) const {
-         std::cerr << "Not used";
+         logging(logERROR) << "Not used";
       };
 
    

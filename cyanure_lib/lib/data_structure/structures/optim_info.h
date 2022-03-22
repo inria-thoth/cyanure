@@ -132,8 +132,8 @@ template <typename floating_type> inline floating_type OptimInfo<floating_type>:
 
 /// Print the OptimInfo to std::cout
 template <typename floating_type> inline void OptimInfo<floating_type>::print(const std::string& name) const {
-   std::cerr << name << std::endl;
-   std::cerr << _m << " x " << _n << std::endl;
+   logging(logERROR) << name;
+   logging(logERROR) << _m << " x " << _n;
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {
           for (INTM k = 0; k<_nclass; ++k) {
@@ -152,7 +152,7 @@ template <typename floating_type> inline void OptimInfo<floating_type>::dump(con
    const char * cname = name.c_str();
    f.open(cname);
    f.precision(20);
-   std::cerr << name << std::endl;
+   logging(logERROR) << name;
    f << _m << " x " << _n << std::endl;
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {

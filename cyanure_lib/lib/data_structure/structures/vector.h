@@ -301,8 +301,8 @@ template <typename floating_type> Vector<floating_type>::~Vector() {
 
 /// Print the matrix to std::cout
 template <typename floating_type> inline void Vector<floating_type>::print(const std::string& name) const {
-    std::cerr << name << std::endl;
-    std::cerr << _n << std::endl;
+    logging(logERROR) << name;
+    logging(logERROR) << _n;
     for (INTM j = 0; j < _n; ++j) {
         fprintf(stderr, "%10.5g ", static_cast<double>(_X[j]));
     }
@@ -315,7 +315,7 @@ template <typename floating_type> inline void Vector<floating_type>::dump(const 
     const char* cname = name.c_str();
     f.open(cname);
     f.precision(20);
-    std::cerr << name << std::endl;
+    logging(logERROR) << name;    
     f << _n << std::endl;
     for (INTM j = 0; j < _n; ++j) {
         f << static_cast<double>(_X[j]) << " ";

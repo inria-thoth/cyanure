@@ -468,8 +468,8 @@ template <typename floating_type> inline floating_type Matrix<floating_type>::op
 
 /// Print the matrix to std::cout
 template <typename floating_type> inline void Matrix<floating_type>::print(const std::string& name) const {
-   std::cerr << name << std::endl;
-   std::cerr << _m << " x " << _n << std::endl;
+   logging(logERROR) << name;
+   logging(logERROR) << _m;
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {
          printf("%10.5g ",static_cast<double>(_X[j*_m+i]));
@@ -485,7 +485,7 @@ template <typename floating_type> inline void Matrix<floating_type>::dump(const 
    const char * cname = name.c_str();
    f.open(cname);
    f.precision(20);
-   std::cerr << name << std::endl;
+   logging(logERROR) << name;
    f << _m << " x " << _n << std::endl;
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {
@@ -1168,7 +1168,7 @@ template <typename floating_type> inline void Matrix<floating_type>::eigLargestS
       }
       lambda_1+=theta*norm;
       if (isnan(lambda_1)) {
-         std::cerr << "eigLargestSymApprox failed" << std::endl;
+         logging(logERROR) << "eigLargestSymApprox failed";
          exit(1);
       }
       if (j == 1 && lambda_1 < eps) {

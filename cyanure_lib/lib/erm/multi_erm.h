@@ -154,7 +154,7 @@ private:
 
     inline void verify_input(const InputMatrixType& X) {
         if ((super::model.intercept && X.m() + 1 != W0.m()) || (!super::model.intercept && X.m() != W0.m())){
-            std::cerr << "Dimension of initial point is not consistent." << std::endl;
+            logging(logERROR) << "Dimension of initial point is not consistent.";
             return;
         }
         if (super::param.max_iter < 0)
@@ -189,7 +189,7 @@ private:
             loss = new LossMat<SafeLogisticLoss<InputMatrixType>>(data, y);
             break;
         default:
-            std::cerr << "Not implemented, square loss is chosen by default";
+            logging(logERROR) << "Not implemented, square loss is chosen by default";
             loss = new SquareLossMat<InputMatrixType>(data, y);
         }
         return loss;
@@ -376,7 +376,7 @@ private:
             regul = new None<D, PointerType>(super::model);
             break;
         default:
-            std::cerr << "Not implemented, no regularization is chosen";
+            logging(logERROR) << "Not implemented, no regularization is chosen";
             regul = new None<D, PointerType>(super::model);
         }
         return regul;
