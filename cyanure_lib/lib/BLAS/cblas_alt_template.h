@@ -999,7 +999,7 @@ template <> void inline syevr( char& jobz, char& range, char& uplo, INTT n,
 //         isuppz,query,&lwork,queryi,&liwork,&info);
 //   lwork=static_cast<INTT>(query[0]); 
 //   liwork=static_cast<INTT>(queryi[0]); 
-//   cout << lwork << " " << liwork << endl;
+//   logging(logINFO) << lwork << " " << liwork;
 //   delete[](query);
 //   delete[](queryi);
    INTT lwork=200*n;
