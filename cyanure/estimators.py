@@ -6,6 +6,7 @@ from abc import abstractmethod, ABC
 
 import math
 import warnings
+import platform
 
 import numpy as np
 import scipy.sparse
@@ -225,7 +226,10 @@ class ERM(BaseEstimator, ABC):
                 yf = np.asfortranarray(y.T)
             else:
                 nclasses = int(np.max(y) + 1)
-                yf = np.squeeze(np.intc(np.float64(y)))
+                if platform.system() == "Windows":
+                    yf = np.squeeze(np.intc(np.float64(y)))
+                else:
+                    yf = np.squeeze(np.int32(y))
             w0 = np.zeros(
                 [p, nclasses], dtype=training_data_fortran.dtype, order='F')
 
@@ -606,7 +610,7 @@ class MultiClassifier(Classifier):
                 neg = y == self.le_.transform(self.classes_)[0]
             else:
                 neg = y == self.classes_[0]
-            y = y.copy()
+            y = y.astype(int)
             y[neg] = -1
             y[np.logical_not(neg)] = 1
         else:
