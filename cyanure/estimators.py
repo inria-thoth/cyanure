@@ -78,48 +78,7 @@ class ERM(BaseEstimator, ABC):
         fit_intercept: boolean, default='False'
             learns an unregularized intercept b  (or several intercepts for
             multivariate problems)
-        """
-
-        self.loss = loss
-        if loss == 'squared_hinge':
-            self.loss = 'sqhinge'
-        self.penalty = penalty
-        self.fit_intercept = fit_intercept
-        self.dual = dual
-        self.solver = solver
-        self.tol = tol
-        self.random_state = random_state
-        self.max_iter = max_iter
-        self.lambda_1 = lambda_1
-        self.lambda_2 = lambda_2
-        self.lambda_3 = lambda_3
-        self.limited_memory_qning = limited_memory_qning
-        self.fista_restart = fista_restart
-        self.verbose = verbose
-        self.warm_start = warm_start
-        self.multi_class = multi_class
-        self.duality_gap_interval = duality_gap_interval
-        self.n_threads = n_threads
-
-    def fit(self, X, y, le_parameter=None):
-        """
-        The fitting function (the one that does the job)
-
-        Parameters
-        ----------
-
-        X : numpy array, or scipy sparse CSR matrix
-            input n X p numpy matrix; the samples are on the rows
-
-        y : y, numpy array.
-            - vector of size n with real values for regression
-            - vector of size n with {-1,+1} y for binary classification,
-              which will be automatically converted if y in {0,1} are
-              provided
-            - matrix of size n X k for multivariate regression
-            - vector of size n with entries in {0,1,k-1} for classification
-              with k classes
-
+      
         lambda_1: float, default=0
             first regularization parameter
 
@@ -178,18 +137,56 @@ class ERM(BaseEstimator, ABC):
             binary_problem or multivariate problems
 
          limited_memory_qning: int, default=20
-            memory paramter for the qning method
+            memory parameter for the qning method
 
          fista_restart: int, default=50
             restart strategy for fista
+        """
 
+        self.loss = loss
+        if loss == 'squared_hinge':
+            self.loss = 'sqhinge'
+        self.penalty = penalty
+        self.fit_intercept = fit_intercept
+        self.dual = dual
+        self.solver = solver
+        self.tol = tol
+        self.random_state = random_state
+        self.max_iter = max_iter
+        self.lambda_1 = lambda_1
+        self.lambda_2 = lambda_2
+        self.lambda_3 = lambda_3
+        self.limited_memory_qning = limited_memory_qning
+        self.fista_restart = fista_restart
+        self.verbose = verbose
+        self.warm_start = warm_start
+        self.multi_class = multi_class
+        self.duality_gap_interval = duality_gap_interval
+        self.n_threads = n_threads
+
+    def fit(self, X, y, le_parameter=None):
+        """
+        The fitting function (the one that does the job)
+
+        Parameters
+        ----------
+
+        X : numpy array, or scipy sparse CSR matrix
+            input n X p numpy matrix; the samples are on the rows
+
+        y : y, numpy array.
+            - vector of size n with real values for regression
+            - vector of size n with {-1,+1} y for binary classification,
+              which will be automatically converted if y in {0,1} are
+              provided
+            - matrix of size n X k for multivariate regression
+            - vector of size n with entries in {0,1,k-1} for classification
+              with k classes
 
         Returns
         -------
 
-        test returns a numpy array carrying information about the optimization
-        process (number of iterations, objective function values, duality gap)
-        will be documented in the future if people ask me,
+        Returns the instance
         """
         loss = None
 
@@ -273,7 +270,6 @@ class ERM(BaseEstimator, ABC):
 
         self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1] for class_index in range(self.optimization_info_.shape[0])])
 
-        # TODO Vérifier avec Julien
         for index in range(self.n_iter_.shape[0]):
             if self.n_iter_[index] == self.max_iter:
                 warnings.warn("The max_iter was reached which means the coef_ did not converge", ConvergenceWarning)
@@ -441,11 +437,91 @@ class Regression(ERM):
 
         - 'square' =>  :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
 
-    penalty: string, default='l2'
-        same as for the class BinaryClassifier
+    penalty: string, default='none'
+        Regularization function psi. Possible choices are
+
+        For binary_problem problems
+        - 'none' => psi(w) = 0
+        - 'l2' =>  psi{w) = (lambda_1/2) ||w||_2^2
+        - 'l1' =>  psi{w) = lambda_1 ||w||_1
+        - 'elasticnet' =>  psi{w) = lambda_1 ||w||_1 + (lambda_2/2)||w||_2^2
+        - 'fused-lasso' => psi(w) = lambda_3 sum_{i=2}^p |w[i]-w[i-1]|
+                                    + lambda_1||w||_1 + (lambda_2/2)||w||_2^2
+        - 'l1-ball'     => encodes the constraint ||w||_1 <= lambda_1
+        - 'l2-ball'     => encodes the constraint ||w||_2 <= lambda_1
+
+        For multivariate problems, the previous penalties operate on each
+        individual (e.g., class) predictor.
+        In addition, multitask-group Lasso penalties are provided for
+        multivariate problems (w is then a matrix)
+        - 'l1l2' or 'l1linf', see Latex documentation
 
     fit_intercept: boolean, default='False'
-        learns an unregularized intercept b
+        learns an unregularized intercept b  (or several intercepts for
+        multivariate problems)
+    
+    lambda_1: float, default=0
+        first regularization parameter
+
+    lambda_2: float, default=0
+        second regularization parameter, if needed
+
+    lambda_3: float, default=0
+        third regularization parameter, if needed
+
+    solver: string, default='auto'
+        Optimization solver. Possible choices are
+        - 'ista'
+        - 'fista'
+        - 'catalyst-ista'
+        - 'qning-ista'  (proximal quasi-Newton method)
+        - 'svrg'
+        - 'catalyst-svrg' (accelerated SVRG with Catalyst)
+        - 'qning-svrg'  (quasi-Newton SVRG)
+        - 'acc-svrg'    (SVRG with direct acceleration)
+        - 'miso'
+        - 'catalyst-miso' (accelerated MISO with Catalyst)
+        - 'qning-miso'  (quasi-Newton MISO)
+        - 'auto'
+        see the Latex documentation for more details.
+        If you are unsure, use 'auto'
+
+        tol: float, default='1e-3'
+        Tolerance parameter. For almost all combinations of loss and
+        penalty functions, this parameter is based on a duality gap.
+        Assuming the (non-negative) objective function is "f" and its
+        optimal value is "f^*", the algorithm stops with the guarantee
+
+        f(x_t) - f^*  <=  tol f(x_t)
+
+        max_iter: int, default=500
+        Maximum number of iteration of the algorithm in terms of passes
+        over the data
+
+        duality_gap_interval: int, default=10
+        Frequency of duality-gap computation
+
+        verbose: boolean, default=True
+        Display information or not
+
+        n_threads: int, default=-1
+        maximum number of cores the method may use (-1 = all cores).
+        Note that more cores is not always better.
+
+        seed: int, default=0
+        random seed
+
+        restart: boolean, default=False
+        use a restart strategy (useful for computing regularization path)
+
+        binary_problem: boolean, default=True
+        binary_problem or multivariate problems
+
+        limited_memory_qning: int, default=20
+        memory parameter for the qning method
+
+        fista_restart: int, default=50
+        restart strategy for fista        
 
     """
     _estimator_type = "regressor"
@@ -468,8 +544,22 @@ class Regression(ERM):
 
     def fit(self, X, y):
         """
-        The fitting function is the same as for the class BinaryClassifier,
-        except that we do not necessarily expect binary labels in y.
+        The fitting function (the one that does the job)
+
+        Parameters
+        ----------
+
+        X : numpy array, or scipy sparse CSR matrix
+            input n X p numpy matrix; the samples are on the rows
+
+        y : y, numpy array.
+            - vector of size n with real values for regression
+            - matrix of size n X k for multivariate regression
+
+        Returns
+        -------
+
+        Returns the instance
         """
         X, y, _ = check_input_fit(X, y, self)
 
