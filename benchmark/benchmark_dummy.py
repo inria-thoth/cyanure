@@ -49,7 +49,7 @@ def process(arguments, X, y, multiclass):
 
     if arguments.classif:
         if multiclass:
-            classifier=ars.MultiClassifier(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
+            classifier=ars.Classifier(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
         else:
             classifier=ars.BinaryClassifier(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
     else:

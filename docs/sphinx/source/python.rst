@@ -15,14 +15,14 @@ The Regression Class
 The Classifier Class
 -------------------------
 
-.. autoclass:: MultiClassifier
+.. autoclass:: Classifier
    :members:
    :inherited-members:
    :show-inheritance:
    :member-order: bysource
 
 
-Scikit-learn compatible classes
+Pre-configured classes
 -------------------------------
 
 .. autoclass:: LinearSVC

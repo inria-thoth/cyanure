@@ -417,7 +417,7 @@ class ERM(BaseEstimator, ABC):
         return self
 
 
-class Classifier(ERM):
+class ClassifierAbstraction(ERM):
 
     @abstractmethod
     def predict_proba(self, X):
@@ -589,7 +589,7 @@ class Regression(ERM):
 
 
 
-class MultiClassifier(Classifier):
+class Classifier(ClassifierAbstraction):
     """The multi-class classification class. The goal is to minimize the
     following objective
 
@@ -709,8 +709,14 @@ class MultiClassifier(Classifier):
                 y = y - min_value
             self._binary_problem = False
 
-        return super().fit(
+        super().fit(
             X, y, le_parameter=self.le_)
+
+        self.coef_ = self.coef_.reshape(self.coef_.shape[0], -1)
+        if self.fit_intercept:
+            self.intercept_ = self.intercept_.reshape(1, -1)
+        
+        return self
 
     def predict(self, X):
         """Predicts the class label"""
@@ -780,112 +786,7 @@ class MultiClassifier(Classifier):
         return softmax(decision, copy=False)
 
 
-class SKLearnClassifier(ERM):
-    _estimator_type = "classifier"
-
-    def __init__(self, loss, penalty, fit_intercept=True,
-                 verbose=False, lambda_1=0, lambda_2=0, lambda_3=0,
-                 solver='auto', tol=1e-3, duality_gap_interval=10, max_iter=None, limited_memory_qning=20,
-                 fista_restart=50, warm_start=False, n_threads=-1, random_state=0 ,multi_class="auto", dual=None):
-        super().__init__(
-            loss=loss, penalty=penalty, fit_intercept=fit_intercept,
-            solver=solver, tol=tol, random_state=random_state, verbose=verbose,
-            lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3, multi_class= multi_class,
-            duality_gap_interval=duality_gap_interval, max_iter=max_iter, limited_memory_qning=limited_memory_qning,
-            fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads, dual=dual)
-
-    def fit(self, X, y, le_parameter=None):
-        """Compatible with both binary and multi-classification. Here the parameter C replaces lambda_1,
-        and max_iter replaces max_iter.
-        """
-        X, y, le = check_input_fit(X, y, self)
-        if le_parameter is not None:
-            self.le_ = le_parameter
-        else:
-            self.le_ = le
-
-        if self.le_ is not None:
-            self.classes_ = self.le_.inverse_transform(np.unique(y))
-        else:
-            self.classes_ = np.unique(y)
-        nb_classes = len(self.classes_)
-
-        if nb_classes == 2:
-            self._binary_problem = True
-            if not np.all(self.classes_ == [-1, 1]):
-                if self.le_ is not None:
-                    neg = y == self.le_.transform(self.classes_)[0]
-                else:
-                    neg = y == self.classes_[0]
-                y = y.astype(int)
-                y[neg] = -1
-                y[np.logical_not(neg)] = 1
-        else:
-            min_value = min(y)
-            if min_value != 0:
-                y = y - min_value
-            self._binary_problem = False
-        super().fit(X, y, le_parameter=self.le_)
-
-        self.coef_ = self.coef_.reshape(self.coef_.shape[0], -1)
-        if self.fit_intercept:
-            self.intercept_ = self.intercept_.reshape(1, -1)
-        else:
-            self.intercept_ = 0.
-
-        self.n_features_in_ = self.coef_.shape[0]
-
-        return self
-
-    def decision_function(self, X):
-        check_is_fitted(self)
-
-        X = check_input_inference(X, self)
-
-        scores = safe_sparse_dot(
-            X, self.coef_, dense_output=False) + self.intercept_
-        return scores.ravel() if scores.shape[1] == 1 else scores
-
-    def predict(self, X):
-        check_is_fitted(self)
-
-        X = check_input_inference(X, self)
-
-        scores = self.decision_function(X)
-        if len(scores.shape) == 1:
-            indices = (scores > 0).astype(np.int64)
-        else:
-            indices = scores.argmax(axis=1)
-
-        output = None
-        if self.le_ is None:
-            output = self.classes_[indices]
-        else:
-            output = self.le_.inverse_transform(indices)
-
-        return output
-
-    def predict_proba(self, X):
-        check_is_fitted(self)
-
-        X = check_input_inference(X, self)
-
-        decision = self.decision_function(X)
-        if decision.ndim == 1:
-            # Workaround for binary_problem="multinomial" and binary outcomes
-            # which requires softmax prediction with only a 1D decision.
-            decision_2d = np.c_[-decision, decision]
-        else:
-            decision_2d = decision
-        return softmax(decision_2d, copy=False)
-
-    def score(self, X, y, sample_weight=None):
-        check_is_fitted(self)
-
-        return np.average(y == self.predict(X), weights=sample_weight)
-
-
-class LinearSVC(SKLearnClassifier):
+class LinearSVC(Classifier):
     """
     A compatibility class for scikit-learn user, but only for square hinge loss
     It is perfectly equivalent to the BinaryClassifier class, but the
@@ -925,7 +826,7 @@ class LinearSVC(SKLearnClassifier):
         self.verbose = False
 
 
-class LogisticRegression(SKLearnClassifier):
+class LogisticRegression(Classifier):
     """
     A compatibility class for scikit-learn user, but only for square hinge loss
     It is perfectly equivalent to the BinaryClassifier class, but the
@@ -1048,7 +949,7 @@ class Lasso(Regression):
         return self
 
 
-class L1Logistic(MultiClassifier):
+class L1Logistic(Classifier):
 
     _estimator_type = "classifier"
 
@@ -1082,7 +983,7 @@ class L1Logistic(MultiClassifier):
             # no active set
             super().fit(X, y, le_parameter=self.le_)
         else:
-            aux = MultiClassifier(
+            aux = Classifier(
                 loss='logistic', penalty='l1', fit_intercept=self.fit_intercept)
 
             fit_large_feature_number(self, aux, X, y)
