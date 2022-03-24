@@ -40,7 +40,8 @@ class ERM(BaseEstimator, ABC):
                  random_state=0, max_iter=2000, fista_restart=60,
                  verbose=True, warm_start=False, limited_memory_qning=50, multi_class="auto",
                  lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1):
-        """Initialization function of the ERM class.
+        """
+        Initialization function of the ERM class.
 
         Parameters
         ----------
@@ -78,7 +79,7 @@ class ERM(BaseEstimator, ABC):
         fit_intercept: boolean, default='False'
             learns an unregularized intercept b  (or several intercepts for
             multivariate problems)
-      
+
         lambda_1: float, default=0
             first regularization parameter
 
@@ -196,14 +197,15 @@ class ERM(BaseEstimator, ABC):
         else:
             self.le_ = le
 
-        if (self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic":
+        if (self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss == "logistic":
             if (self.multi_class == "multinomial"):
                 if len(np.unique(y)) != 2:
-                    self._binary_problem=False
+                    self._binary_problem = False
                 else:
                     nclasses = len(np.unique(y))
             loss = "multiclass-logistic"
-            logger.info("Loss has been set to multiclass-logistic because the multiclass parameter is set to multinomial!")
+            logger.info(
+                "Loss has been set to multiclass-logistic because the multiclass parameter is set to multinomial!")
 
         if loss is None:
             loss = self.loss
@@ -238,9 +240,9 @@ class ERM(BaseEstimator, ABC):
                 w0[0:-1, ] = np.squeeze(self.coef_)
             else:
                 w0 = np.squeeze(self.coef_)
-                    
+
         if self.warm_start and (self.solver == 'auto' or self.solver == 'miso' or
-                             self.solver == 'catalyst-miso' or self.solver == 'qning-miso'):
+                                self.solver == 'catalyst-miso' or self.solver == 'qning-miso'):
             n = X.shape[0]
             # TODO Ecrire test pour dual surtout défensif
             reset_dual = np.any(self.dual is None)
@@ -249,7 +251,8 @@ class ERM(BaseEstimator, ABC):
             if not reset_dual and not self._binary_problem:
                 reset_dual = np.any(self.dual.shape != [n, nclasses])
             if reset_dual and self._binary_problem:
-                self.dual = np.zeros(n, dtype=training_data_fortran.dtype, order='F')
+                self.dual = np.zeros(
+                    n, dtype=training_data_fortran.dtype, order='F')
             if reset_dual and not self._binary_problem:
                 self.dual = np.zeros(
                     [n, nclasses], dtype=training_data_fortran.dtype, order='F')
@@ -257,7 +260,8 @@ class ERM(BaseEstimator, ABC):
         w = np.copy(w0)
         self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, w0, w, dual_variable=self.dual, loss=loss,
-            penalty=self.penalty, solver=self.solver, lambda_1=float(self.lambda_1),
+            penalty=self.penalty, solver=self.solver, lambda_1=float(
+                self.lambda_1),
             lambda_2=float(self.lambda_2), lambda_3=float(self.lambda_3),
             intercept=bool(self.fit_intercept), tol=float(self.tol), duality_gap_interval=int(self.duality_gap_interval),
             max_iter=int(self.max_iter), limited_memory_qning=int(self.limited_memory_qning),
@@ -265,14 +269,17 @@ class ERM(BaseEstimator, ABC):
             univariate=bool(self._binary_problem), n_threads=int(self.n_threads), seed=int(self.random_state)
         )
 
-        if ((self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss=="logistic") and self.optimization_info_.shape[0] == 1:
-            self.optimization_info_ = np.repeat(self.optimization_info_, nclasses, axis=0)
+        if ((self.multi_class == "multinomial" or (self.multi_class == "auto" and not self._binary_problem)) and self.loss == "logistic") and self.optimization_info_.shape[0] == 1:
+            self.optimization_info_ = np.repeat(
+                self.optimization_info_, nclasses, axis=0)
 
-        self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1] for class_index in range(self.optimization_info_.shape[0])])
+        self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1]
+                                for class_index in range(self.optimization_info_.shape[0])])
 
         for index in range(self.n_iter_.shape[0]):
             if self.n_iter_[index] == self.max_iter:
-                warnings.warn("The max_iter was reached which means the coef_ did not converge", ConvergenceWarning)
+                warnings.warn(
+                    "The max_iter was reached which means the coef_ did not converge", ConvergenceWarning)
 
         if self.fit_intercept:
             self.intercept_ = w[-1, ]
@@ -338,7 +345,7 @@ class ERM(BaseEstimator, ABC):
         return sorted([p.name for p in parameters])
 
     def set_params(self, **params):
-        
+
         from collections import defaultdict
         if not params:
             # Simple optimization to gain speed (inspect is slow)
@@ -364,7 +371,7 @@ class ERM(BaseEstimator, ABC):
         for key, sub_params in nested_params.items():
             valid_params[key].set_params(**sub_params)
         return self
-    
+
     def densify(self):
         """
         Convert coefficient matrix to dense array format.
@@ -459,7 +466,7 @@ class Regression(ERM):
     fit_intercept: boolean, default='False'
         learns an unregularized intercept b  (or several intercepts for
         multivariate problems)
-    
+
     lambda_1: float, default=0
         first regularization parameter
 
@@ -577,8 +584,8 @@ class Regression(ERM):
 
         X = self._validate_data(X, accept_sparse="csr", reset=False)
         pred = safe_sparse_dot(
-                X, self.coef_, dense_output=False) + self.intercept_
-        
+            X, self.coef_, dense_output=False) + self.intercept_
+
         return pred.squeeze()
 
     def score(self, X, y, sample_weight=None):
@@ -586,7 +593,6 @@ class Regression(ERM):
 
         y_pred = self.predict(X)
         return r2_score(y, y_pred, sample_weight=sample_weight)
-
 
 
 class Classifier(ClassifierAbstraction):
@@ -653,7 +659,7 @@ class Classifier(ClassifierAbstraction):
 
     fit_intercept: boolean, default='False'
       learns an unregularized intercept b, which is a k-dimensional vector
-        
+
     """
     _estimator_type = "classifier"
 
@@ -664,7 +670,7 @@ class Classifier(ClassifierAbstraction):
                          random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
                          verbose=verbose, warm_start=warm_start, limited_memory_qning=limited_memory_qning,
                          lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3, duality_gap_interval=duality_gap_interval,
-                         n_threads=n_threads, multi_class= multi_class, dual=dual)
+                         n_threads=n_threads, multi_class=multi_class, dual=dual)
 
     def fit(self, X, y, le_parameter=None):
         """Same as BinaryClassifier, but y should be a vector a n-dimensional
@@ -686,13 +692,13 @@ class Classifier(ClassifierAbstraction):
             self.classes_ = unique
 
         if nb_classes != 2 and (nb_classes != unique.shape[0] or
-                not all(np.unique(y) == np.arange(nb_classes))):
+                                not all(np.unique(y) == np.arange(nb_classes))):
             logger.info("Class y should be of the form")
             logger.info(np.arange(nb_classes))
             logger.info("but they are")
             logger.info(unique)
             logger.info(
-                    "The y have been converted to respect the expected format.")
+                "The y have been converted to respect the expected format.")
 
         if nb_classes == 2:
             self._binary_problem = True
@@ -715,7 +721,7 @@ class Classifier(ClassifierAbstraction):
         self.coef_ = self.coef_.reshape(self.coef_.shape[0], -1)
         if self.fit_intercept:
             self.intercept_ = self.intercept_.reshape(1, -1)
-        
+
         return self
 
     def predict(self, X):
@@ -857,7 +863,7 @@ class LogisticRegression(Classifier):
                          solver=solver, tol=tol, random_state=random_state, verbose=verbose,
                          lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
-                         limited_memory_qning=limited_memory_qning, multi_class= multi_class,
+                         limited_memory_qning=limited_memory_qning, multi_class=multi_class,
                          fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads, dual=dual)
 
 
@@ -958,7 +964,7 @@ class L1Logistic(Classifier):
                 "check_non_transformer_estimators_n_iter": (
                     "We have a different implementation of _n_iter in the multinomial case."
                 ),
-            }}
+                }}
 
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
@@ -968,7 +974,7 @@ class L1Logistic(Classifier):
                          limited_memory_qning=limited_memory_qning,
                          fista_restart=fista_restart, verbose=verbose,
                          warm_start=warm_start, n_threads=n_threads, random_state=random_state,
-                         fit_intercept=fit_intercept, multi_class= multi_class, dual=dual)
+                         fit_intercept=fit_intercept, multi_class=multi_class, dual=dual)
 
         if multi_class == "multinomial":
             self.loss = "multiclass-logistic"
