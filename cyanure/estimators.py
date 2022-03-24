@@ -439,10 +439,17 @@ class Regression(ERM):
 
     Parameters
     ----------
-    loss: string, default='square'
-        Only the square loss is implemented at this point
-
-        - 'square' =>  :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
+    loss : string, default='square'
+        Loss function to be used. Possible choices are
+        - 'square' =>  L(y,z) = 0.5 ( y-z)^2
+        - 'logistic' => L(y,z) = log(1 + e^{-y z} )
+        - 'sqhinge' or 'squared_hinge' => L(y,z) = 0.5 max( 0, 1- y z)^2
+        - 'safe-logistic' => L(y,z) = e^{ yz - 1 } - y z  if yz <= 1
+                                and 0 otherwise
+        - 'multiclass-logistic' => multinomial logistic (see Latex
+                                    documentation).
+        Note that for binary classification, we assume the y to be of
+        the form {-1,+1}
 
     penalty: string, default='none'
         Regularization function psi. Possible choices are
@@ -493,7 +500,7 @@ class Regression(ERM):
         see the Latex documentation for more details.
         If you are unsure, use 'auto'
 
-        tol: float, default='1e-3'
+    tol: float, default='1e-3'
         Tolerance parameter. For almost all combinations of loss and
         penalty functions, this parameter is based on a duality gap.
         Assuming the (non-negative) objective function is "f" and its
@@ -501,34 +508,34 @@ class Regression(ERM):
 
         f(x_t) - f^*  <=  tol f(x_t)
 
-        max_iter: int, default=500
+    max_iter: int, default=500
         Maximum number of iteration of the algorithm in terms of passes
         over the data
 
-        duality_gap_interval: int, default=10
+    duality_gap_interval: int, default=10
         Frequency of duality-gap computation
 
-        verbose: boolean, default=True
+    verbose: boolean, default=True
         Display information or not
 
-        n_threads: int, default=-1
+    n_threads: int, default=-1
         maximum number of cores the method may use (-1 = all cores).
         Note that more cores is not always better.
 
-        seed: int, default=0
+    seed: int, default=0
         random seed
 
-        restart: boolean, default=False
+    restart: boolean, default=False
         use a restart strategy (useful for computing regularization path)
 
-        binary_problem: boolean, default=True
+    binary_problem: boolean, default=True
         binary_problem or multivariate problems
 
-        limited_memory_qning: int, default=20
+    limited_memory_qning: int, default=20
         memory parameter for the qning method
 
-        fista_restart: int, default=50
-        restart strategy for fista        
+    fista_restart: int, default=50
+        restart strategy for fista      
 
     """
     _estimator_type = "regressor"
