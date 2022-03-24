@@ -106,7 +106,7 @@ class ERM(BaseEstimator, ABC):
             see the Latex documentation for more details.
             If you are unsure, use 'auto'
 
-         tol: float, default='1e-3'
+        tol: float, default='1e-3'
             Tolerance parameter. For almost all combinations of loss and
             penalty functions, this parameter is based on a duality gap.
             Assuming the (non-negative) objective function is "f" and its
@@ -114,33 +114,33 @@ class ERM(BaseEstimator, ABC):
 
             f(x_t) - f^*  <=  tol f(x_t)
 
-         max_iter: int, default=500
+        max_iter: int, default=500
             Maximum number of iteration of the algorithm in terms of passes
             over the data
 
-         duality_gap_interval: int, default=10
+        duality_gap_interval: int, default=10
             Frequency of duality-gap computation
 
-         verbose: boolean, default=True
+        verbose: boolean, default=True
             Display information or not
 
-         n_threads: int, default=-1
+        n_threads: int, default=-1
             maximum number of cores the method may use (-1 = all cores).
             Note that more cores is not always better.
 
-         seed: int, default=0
+        seed: int, default=0
             random seed
 
-         restart: boolean, default=False
+        restart: boolean, default=False
             use a restart strategy (useful for computing regularization path)
 
-         binary_problem: boolean, default=True
+        binary_problem: boolean, default=True
             binary_problem or multivariate problems
 
-         limited_memory_qning: int, default=20
+        limited_memory_qning: int, default=20
             memory parameter for the qning method
 
-         fista_restart: int, default=50
+        fista_restart: int, default=50
             restart strategy for fista
         """
 
