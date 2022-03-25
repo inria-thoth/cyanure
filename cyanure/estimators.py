@@ -26,7 +26,8 @@ logger = setup_custom_logger("INFO")
 
 
 class ERM(BaseEstimator, ABC):
-    """The generic class for empirical risk minimization problems.
+    """
+    The generic class for empirical risk minimization problems.
     For univariates problems, minimizes
 
         min_{w,b} (1/n) sum_{i=1}^n L( y_i, <w, x_i> + b)   + psi(w)
@@ -46,14 +47,19 @@ class ERM(BaseEstimator, ABC):
         Parameters
         ----------
         loss : string, default='square'
-            Loss function to be used. Possible choices are
-            - 'square' =>  L(y,z) = 0.5 ( y-z)^2
-            - 'logistic' => L(y,z) = log(1 + e^{-y z} )
-            - 'sqhinge' or 'squared_hinge' => L(y,z) = 0.5 max( 0, 1- y z)^2
-            - 'safe-logistic' => L(y,z) = e^{ yz - 1 } - y z  if yz <= 1
-                                 and 0 otherwise
-            - 'multiclass-logistic' => multinomial logistic (see Latex
-                                       documentation).
+            Loss function to be used. Possible choices are:
+
+            - 'square' 
+              =>  L(y,z) = \\frac{1}{2}( y-z)^2
+            - 'logistic' 
+              => L(y,z) = log(1 + e^{-y z} )
+            - 'sqhinge' or 'squared_hinge' 
+              => L(y,z) = 0.5 max( 0, 1- y z)^2
+            - 'safe-logistic' 
+              => L(y,z) = e^{ yz - 1 } - y z if yz <= 1 and 0 otherwise
+            - 'multiclass-logistic' 
+              => multinomial logistic (see Latex documentation).
+
             Note that for binary classification, we assume the y to be of
             the form {-1,+1}
 
@@ -66,7 +72,7 @@ class ERM(BaseEstimator, ABC):
             - 'l1' =>  psi{w) = lambda_1 ||w||_1
             - 'elasticnet' =>  psi{w) = lambda_1 ||w||_1 + (lambda_2/2)||w||_2^2
             - 'fused-lasso' => psi(w) = lambda_3 sum_{i=2}^p |w[i]-w[i-1]|
-                                      + lambda_1||w||_1 + (lambda_2/2)||w||_2^2
+              + lambda_1||w||_1 + (lambda_2/2)||w||_2^2
             - 'l1-ball'     => encodes the constraint ||w||_1 <= lambda_1
             - 'l2-ball'     => encodes the constraint ||w||_2 <= lambda_1
 
@@ -440,34 +446,35 @@ class Regression(ERM):
     Parameters
     ----------
     loss : string, default='square'
-        Loss function to be used. Possible choices are
-        - 'square' =>  L(y,z) = 0.5 ( y-z)^2
-        - 'logistic' => L(y,z) = log(1 + e^{-y z} )
-        - 'sqhinge' or 'squared_hinge' => L(y,z) = 0.5 max( 0, 1- y z)^2
-        - 'safe-logistic' => L(y,z) = e^{ yz - 1 } - y z  if yz <= 1
-                                and 0 otherwise
-        - 'multiclass-logistic' => multinomial logistic (see Latex
-                                    documentation).
+        Loss function to be used. Possible choices are:
+
+        * 'square' =>  :math:`L(y,z) = \\frac{1}{2}( y-z)^2`
+        * 'logistic' => :math:`L(y,z) = log(1 + e^{-y z} )`
+        * 'sqhinge' or 'squared_hinge' => :math:`L(y,z) = \\frac{1}{2} max( 0, 1- y z)^2`
+        * 'safe-logistic' => :math:`L(y,z) = e^{ yz - 1 } - y z` if :math:`yz <= 1` and :math:`0` otherwise
+        * 'multiclass-logistic'  => multinomial logistic (see Latex documentation).
+
         Note that for binary classification, we assume the y to be of
         the form {-1,+1}
 
     penalty: string, default='none'
         Regularization function psi. Possible choices are
 
-        For binary_problem problems
-        - 'none' => psi(w) = 0
-        - 'l2' =>  psi{w) = (lambda_1/2) ||w||_2^2
-        - 'l1' =>  psi{w) = lambda_1 ||w||_1
-        - 'elasticnet' =>  psi{w) = lambda_1 ||w||_1 + (lambda_2/2)||w||_2^2
-        - 'fused-lasso' => psi(w) = lambda_3 sum_{i=2}^p |w[i]-w[i-1]|
-                                    + lambda_1||w||_1 + (lambda_2/2)||w||_2^2
-        - 'l1-ball'     => encodes the constraint ||w||_1 <= lambda_1
-        - 'l2-ball'     => encodes the constraint ||w||_2 <= lambda_1
+        For binary_problem problems:
+
+        - 'none' => :math:`psi(w) = 0`
+        - 'l2' =>  :math:`psi(w) = \\frac{\\lambda}{2} ||w||_2^2`
+        - 'l1' =>  :math:`psi(w) = \\lambda ||w||_1`
+        - 'elasticnet' =>  :math:`psi(w) = \\lambda_1 ||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+        - 'fused-lasso' => :math:`psi(w) = \\lambda_3 \\sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_1||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+        - 'l1-ball'     => encodes the constraint :math:`||w||_1 <= \\lambda`
+        - 'l2-ball'     => encodes the constraint :math:`||w||_2 <= \\lambda`
 
         For multivariate problems, the previous penalties operate on each
         individual (e.g., class) predictor.
         In addition, multitask-group Lasso penalties are provided for
         multivariate problems (w is then a matrix)
+        
         - 'l1l2' or 'l1linf', see Latex documentation
 
     fit_intercept: boolean, default='False'
@@ -485,6 +492,7 @@ class Regression(ERM):
 
     solver: string, default='auto'
         Optimization solver. Possible choices are
+
         - 'ista'
         - 'fista'
         - 'catalyst-ista'
@@ -497,6 +505,7 @@ class Regression(ERM):
         - 'catalyst-miso' (accelerated MISO with Catalyst)
         - 'qning-miso'  (quasi-Newton MISO)
         - 'auto'
+
         see the Latex documentation for more details.
         If you are unsure, use 'auto'
 
@@ -506,7 +515,7 @@ class Regression(ERM):
         Assuming the (non-negative) objective function is "f" and its
         optimal value is "f^*", the algorithm stops with the guarantee
 
-        f(x_t) - f^*  <=  tol f(x_t)
+        :math:`f(x_t) - f^*  <=  tol f(x_t)`
 
     max_iter: int, default=500
         Maximum number of iteration of the algorithm in terms of passes

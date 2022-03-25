@@ -19,7 +19,7 @@ jobs:
         pip install .
     - name: Install the building dependencies.
       run: |
-        pip install sphinx ipywidgets beautifulsoup4 sphinx-rtd-theme numpydoc jupyter-sphinx furo
+        pip install sphinx ipywidgets beautifulsoup4 sphinx-rtd-theme numpydoc jupyter-sphinx furo docutils==0.16.0
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cd docs/sphinx/source && sphinx-build -b html . _build
     - name: Upload artifacts
