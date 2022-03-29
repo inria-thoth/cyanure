@@ -37,8 +37,8 @@ extensions = [
         'sphinx.ext.autosummary',
         'sphinx.ext.doctest',
         'sphinx.ext.inheritance_diagram',
-        'numpydoc',
-        'jupyter_sphinx'
+        'numpydoc', 
+        'autodocsumm'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,6 +62,7 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 autosummary_generate = True
+autodoc_default_options = {"autosummary": True}
 numpydoc_show_class_members = False 
 
 source_encoding = 'utf-8'

@@ -9,7 +9,7 @@
 
 
    welcome
-   python
+   pythonAPI/pythonAPI
    tutorials
    benchmarks
    references

@@ -17,22 +17,24 @@ logger = setup_custom_logger("INFO")
 
 
 def preprocess(X, centering=False, normalize=True, columns=False):
-    """Perform in-place centering or normalization, either of columns or rows
+    """
+    Perform in-place centering or normalization, either of columns or rows
     of the input matrix X
 
     Parameters
     ----------
-    X : numpy array, or scipy sparse CSR matrix
-        input matrix
+    
+    X (numpy array or scipy sparse CSR matrix): 
+        Input matrix
 
-    centering : boolean, default=False
-        perform a centering operation
+    centering (boolean) : default=False
+        Perform a centering operation
 
-    normalize : boolean, default=True
+    normalize (boolean): default=True
         l2-normalization
 
-    columns : boolean, default=False
-        operates on rows (False) or columns (True).
+    columns (boolean): default=False
+        Operates on rows (False) or columns (True).
     """
 
     if scipy.sparse.issparse(X):
@@ -44,8 +46,41 @@ def preprocess(X, centering=False, normalize=True, columns=False):
         training_data_fortran = np.asfortranarray(X.T)
     return cyanure_lib.preprocess_(training_data_fortran, centering, normalize, not columns)
 
-
 def check_labels(y, estimator):
+    """
+    Verify the format of labels depending on the type of the estimator.
+    Can convert labels in some cases.
+
+    Parameters
+    ----------
+    
+        y (numpy array or scipy sparse CSR matrix): 
+            Numpy array containing labels
+
+        estimator (ERM): 
+            The estimator which will be fitted
+
+    Raises
+    ------
+
+    ValueError: 
+        Format of the labels does not respect the format supported by Cyanure classifiers.
+
+    ValueError: 
+        Labels have an non finite value
+
+    ValueError: 
+        Problem has only one class
+
+    Returns
+    -------
+
+    y (numpy array or scipy sparse CSR matrix): 
+        Converted labels if required by the estimator.
+
+    le (sklearn.LabelEncoder): 
+        Convert text labels if needed
+    """
     le = None
 
     if estimator._estimator_type == "classifier":
@@ -75,12 +110,64 @@ def check_labels(y, estimator):
     return y, le
 
 def get_element(array):
+    """
+    Get an element from an array of any depth
+
+    Args:
+        array (Type of the element): Array we want to get an element
+
+    Returns:
+        Type of the element: One of the element of the array
+    """
     element = array[0]
     for i in range(len(array.shape) - 1):
-        element = element[0]
+        element = element[i]
     return element
 
 def check_input_type(X, y, estimator):
+    """
+    Verify the format of labels and features depending on the type of the estimator.
+    Can convert labels in some cases.
+
+    Parameters
+    ----------
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Numpy array containing features
+
+        y (numpy array or scipy sparse CSR matrix): 
+            Numpy array containing labels
+
+        estimator (ERM): 
+            The estimator which will be fitted
+
+    Raises
+    ------
+
+        ValueError: 
+            Data are complex
+
+        ValueError: 
+            Data contains non finite value
+
+        TypeError: 
+            Sparsed features are not CSR
+
+        TypeError: 
+            Sparsed labels are not CSR
+
+    Returns
+    -------
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Converted features if required by the estimator.
+
+        y (numpy array or scipy sparse CSR matrix): 
+            Converted labels if required by the estimator.
+
+        le (sklearn.LabelEncoder): 
+            Convert text labels if needed
+    """
     le = None
 
     if np.iscomplexobj(X) or np.iscomplexobj(y):
@@ -121,6 +208,27 @@ def check_input_type(X, y, estimator):
 
 
 def check_positive_parameter(parameter, message):
+    """
+    Check that a parameter if a number and positive
+
+    Parameters
+    ----------
+
+        parameter (Any):
+            Parameter to verify
+
+        message (string): 
+            Message of the exception
+
+    Raises
+    ------
+
+        ValueError: 
+            Parameter is not a number
+
+        ValueError: 
+            Parameter is not positive
+    """
     if not isinstance(parameter, numbers.Number):
         raise ValueError(message)
 
@@ -129,6 +237,15 @@ def check_positive_parameter(parameter, message):
 
 
 def check_parameters(estimator):
+    """
+    Verify that the different parameters of an estimator respect the constraints.
+
+    Parameters
+    ----------
+
+        estimator (ERM):
+            Estimator to veriffy
+    """
 
     check_positive_parameter(
         estimator.tol, "Tolerance for stopping criteria must be positive")
@@ -143,6 +260,54 @@ def check_parameters(estimator):
 
 
 def check_input_fit(X, y, estimator):
+    """
+    Check and convert (if necessary) the different input arrays required for training according to the estimator type.
+
+    Parameters
+    ----------
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Numpy array containing features
+
+        y (numpy array or scipy sparse CSR matrix): 
+            Numpy array containing labels
+        
+        estimator (ERM): 
+            The estimator which will be fitted
+
+    Raises
+    ------
+
+        ValueError:
+            There is only one feature.
+        
+        ValueError:
+            There is no sample.
+
+        ValueError: 
+            An observation has no label.
+        
+        ValueError: 
+            Feature array has no feature
+
+        ValueError: 
+            Features and labels does not have the same number of observations.
+
+        ValueError: 
+            There is only one sample.
+
+    Returns
+    -------
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Converted features if required by the estimator.
+
+        y (numpy array or scipy sparse CSR matrix): 
+            Converted labels if required by the estimator.
+
+        le (sklearn.LabelEncoder): 
+            Convert text labels if needed
+    """
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(y):
         X = np.array(X)
         y = np.array(y)
@@ -178,6 +343,38 @@ def check_input_fit(X, y, estimator):
 
 
 def check_input_inference(X, estimator):
+    """
+    Check the format of the array which will be used for inference.
+    Input array can be converted
+
+    Parameters
+    ----------
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Array which will be used for inference
+
+        estimator (ERM): 
+            Estimator which will be used
+
+    Raises
+    ------
+
+        ValueError: 
+            One of the value is not finite
+
+        ValueError: 
+            Shape of features is not correct
+
+        ValueError: 
+            Shape of features does not correspond to estimators shape
+
+    Returns
+    -------
+    
+        X (numpy array or scipy sparse CSR matrix):        
+            Potentially converted array (if converted as numpy.float64)
+
+    """
     if not scipy.sparse.issparse(X):
         X = np.array(X)
         if X.dtype != "float32" or X.dtype != "float64":

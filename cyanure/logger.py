@@ -8,9 +8,8 @@ def setup_custom_logger(level):
     """
     Init the logger for the application
 
-    :param name: Name of the logger
     :param level: Level of the expected log
-    :return: Logger
+    :return: Logger instance
     """
     global logger
 

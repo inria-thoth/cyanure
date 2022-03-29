@@ -46,57 +46,81 @@ class ERM(BaseEstimator, ABC):
 
         Parameters
         ----------
-        loss : string, default='square'
-            Loss function to be used. Possible choices are:
+        loss: string, default='square'
+            Loss function to be used. Possible choices are
 
-            - 'square' 
-              =>  L(y,z) = \\frac{1}{2}( y-z)^2
-            - 'logistic' 
-              => L(y,z) = log(1 + e^{-y z} )
-            - 'sqhinge' or 'squared_hinge' 
-              => L(y,z) = 0.5 max( 0, 1- y z)^2
-            - 'safe-logistic' 
-              => L(y,z) = e^{ yz - 1 } - y z if yz <= 1 and 0 otherwise
-            - 'multiclass-logistic' 
-              => multinomial logistic (see Latex documentation).
+                - 'square'
+                    :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
+                - 'logistic'
+                    :math:`L(y,z) = \\log(1 + e^{-y z} )`
+                - 'sqhinge' or 'squared_hinge'
+                    :math:`L(y,z) = \\frac{1}{2} \\max( 0, 1- y z)^2`
+                - 'safe-logistic'
+                    :math:`L(y,z) = e^{ yz - 1 } - y z ~\\text{if}~ yz \\leq 1~~\\text{and}~~0` otherwise
+                - 'multiclass-logistic'
+                    which is also called multinomial or softmax logistic:
+                    .. math::`L(y, W^\\top x + b) = \\sum_{j=1}^k
+                    \\log\\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right)`
 
-            Note that for binary classification, we assume the y to be of
-            the form {-1,+1}
-
-        penalty: string, default='none'
+        penalty (string): default='none'
             Regularization function psi. Possible choices are
 
-            For binary_problem problems
-            - 'none' => psi(w) = 0
-            - 'l2' =>  psi{w) = (lambda_1/2) ||w||_2^2
-            - 'l1' =>  psi{w) = lambda_1 ||w||_1
-            - 'elasticnet' =>  psi{w) = lambda_1 ||w||_1 + (lambda_2/2)||w||_2^2
-            - 'fused-lasso' => psi(w) = lambda_3 sum_{i=2}^p |w[i]-w[i-1]|
-              + lambda_1||w||_1 + (lambda_2/2)||w||_2^2
-            - 'l1-ball'     => encodes the constraint ||w||_1 <= lambda_1
-            - 'l2-ball'     => encodes the constraint ||w||_2 <= lambda_1
+            For binary_problem problems:
+
+            - 'none'
+                :math:`psi(w) = 0`
+            - 'l2'
+                :math:`psi(w) = \\frac{\\lambda_1}{2} ||w||_2^2`
+            - 'l1'
+                :math:`psi(w) = \\lambda_1 ||w||_1`
+            - 'elasticnet'
+                :math:`psi(w) = \\lambda_1 ||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+            - 'fused-lasso'
+                :math:`psi(w) = \\lambda_3 \\sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_1||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+            - 'l1-ball'
+                encodes the constraint :math:`||w||_1 <= \\lambda`
+            - 'l2-ball'
+                encodes the constraint :math:`||w||_2 <= \\lambda`
 
             For multivariate problems, the previous penalties operate on each
             individual (e.g., class) predictor.
+
+            .. math::
+                \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+
             In addition, multitask-group Lasso penalties are provided for
             multivariate problems (w is then a matrix)
-            - 'l1l2' or 'l1linf', see Latex documentation
 
-        fit_intercept: boolean, default='False'
-            learns an unregularized intercept b  (or several intercepts for
+            - 'l1l2', which is the multi-task group Lasso regularization
+                .. math::
+                    \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_2~~~~
+                    \\text{where}~W^j~\\text{is the j-th row of}~W.
+
+            - 'l1linf'
+                .. math::
+                    \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_\\infty.
+
+            - 'l1l2+l1', which is the multi-task group Lasso regularization + l1
+                .. math::
+                    \\psi(W) = \\sum_{j=1}^p \\lambda \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
+                    \\text{where}~W^j~\\text{is the j-th row of}~W.
+
+        fit_intercept (boolean): default='False'
+            Learns an unregularized intercept b  (or several intercepts for
             multivariate problems)
 
-        lambda_1: float, default=0
-            first regularization parameter
+        lambda_1 (float): default=0
+            First regularization parameter
 
-        lambda_2: float, default=0
-            second regularization parameter, if needed
+        lambda_2 (float): default=0
+            Second regularization parameter, if needed
 
-        lambda_3: float, default=0
-            third regularization parameter, if needed
+        lambda_3 (float): default=0
+            Third regularization parameter, if needed
 
-        solver: string, default='auto'
+        solver (string): default='auto'
             Optimization solver. Possible choices are
+
             - 'ista'
             - 'fista'
             - 'catalyst-ista'
@@ -109,45 +133,47 @@ class ERM(BaseEstimator, ABC):
             - 'catalyst-miso' (accelerated MISO with Catalyst)
             - 'qning-miso'  (quasi-Newton MISO)
             - 'auto'
+
             see the Latex documentation for more details.
             If you are unsure, use 'auto'
 
-        tol: float, default='1e-3'
+        tol (float): default='1e-3'
             Tolerance parameter. For almost all combinations of loss and
             penalty functions, this parameter is based on a duality gap.
             Assuming the (non-negative) objective function is "f" and its
             optimal value is "f^*", the algorithm stops with the guarantee
 
-            f(x_t) - f^*  <=  tol f(x_t)
+            :math:`f(x_t) - f^*  <=  tol f(x_t)`
 
-        max_iter: int, default=500
+        max_iter (int): default=500
             Maximum number of iteration of the algorithm in terms of passes
             over the data
 
-        duality_gap_interval: int, default=10
+        duality_gap_interval (int): default=10
             Frequency of duality-gap computation
 
-        verbose: boolean, default=True
+        verbose (boolean): default=True
             Display information or not
 
-        n_threads: int, default=-1
-            maximum number of cores the method may use (-1 = all cores).
+        n_threads (int): default=-1
+            Maximum number of cores the method may use (-1 = all cores).
             Note that more cores is not always better.
 
-        seed: int, default=0
-            random seed
+        random_state (int): default=0
+            Random seed
 
-        restart: boolean, default=False
-            use a restart strategy (useful for computing regularization path)
+        warm_start (boolean): default=False
+            Use a restart strategy
 
-        binary_problem: boolean, default=True
-            binary_problem or multivariate problems
+        binary_problem (boolean): default=True
+            univariate or multivariate problems
 
-        limited_memory_qning: int, default=20
-            memory parameter for the qning method
+        limited_memory_qning (int): default=20
+            Memory parameter for the qning method
 
-        fista_restart: int, default=50
-            restart strategy for fista
+        fista_restart (int): default=50
+            Restart strategy for fista (useful for computing regularization path)
+
         """
 
         self.loss = loss
@@ -178,22 +204,23 @@ class ERM(BaseEstimator, ABC):
         Parameters
         ----------
 
-        X : numpy array, or scipy sparse CSR matrix
+        X (numpy array or scipy sparse CSR matrix): 
             input n X p numpy matrix; the samples are on the rows
 
-        y : y, numpy array.
+        y (numpy array): 
             - vector of size n with real values for regression
             - vector of size n with {-1,+1} y for binary classification,
-              which will be automatically converted if y in {0,1} are
-              provided
+            which will be automatically converted if y in {0,1} are
+            provided
             - matrix of size n X k for multivariate regression
             - vector of size n with entries in {0,1,k-1} for classification
-              with k classes
+            with k classes
 
         Returns
         -------
 
-        Returns the instance
+            self (ERM):
+                Returns the instance
         """
         loss = None
 
@@ -300,23 +327,35 @@ class ERM(BaseEstimator, ABC):
     @abstractmethod
     def predict(self, X):
         """
-        predict the y given an input matrix X (same format as fit)
+        Predict the y given an input matrix X (same format as fit)
         """
 
     def get_weights(self):
         """
-        get the model parameters (either w or the tuple (w,b))
+        Get the model parameters (either w or the tuple (w,b))
+
+        Returns:
+            w or (w,b) (numpy.array or tuple of numpy.array): 
+                Model parameters
         """
         return (self.coef_, self.intercept_) if self.fit_intercept else self.coef_
 
-    def eval(self, X, y):
-        """
-        get the value of the objective function and computes a relative
-        duality gap, see function fit for the format of parameters.
-        """
-        return self.fit(X, y)
-
     def get_params(self, deep=True):
+        """
+        Get parameters for the estimator
+
+        Parameters
+        ----------
+
+            deep (bool, optional): 
+                If True returns also subobjects that are estimators. Defaults to True.
+
+        Returns
+        -------
+
+            params (dict): 
+                Parameters names and values
+        """
         out = dict()
         for key in self._get_param_names():
             try:
@@ -343,7 +382,7 @@ class ERM(BaseEstimator, ABC):
         init_signature = inspect.signature(init)
         # Consider the constructor parameters excluding 'self'
         parameters = [p for p in init_signature.parameters.values()
-                      if p.name != 'self' and p.kind != p.VAR_KEYWORD]
+                        if p.name != 'self' and p.kind != p.VAR_KEYWORD]
         for p in parameters:
             if p.kind == p.VAR_POSITIONAL:
                 raise RuntimeError()
@@ -351,6 +390,27 @@ class ERM(BaseEstimator, ABC):
         return sorted([p.name for p in parameters])
 
     def set_params(self, **params):
+        """
+        Allow to change the value of parameters
+
+        Parameters
+        ----------
+
+            params (dict):
+                Estimator parameters to set
+
+        Raises
+        ------
+
+            ValueError: 
+                The parameter does not exist
+
+        Returns
+        -------
+
+            self (ERM): 
+                Estimator instance
+        """
 
         from collections import defaultdict
         if not params:
@@ -364,9 +424,9 @@ class ERM(BaseEstimator, ABC):
             key, delim, sub_key = key.partition('__')
             if key not in valid_params:
                 raise ValueError('Invalid parameter %s for estimator %s. '
-                                 'Check the list of available parameters '
-                                 'with `estimator.get_params().keys()`.' %
-                                 (key, self))
+                                    'Check the list of available parameters '
+                                    'with `estimator.get_params().keys()`.' %
+                                    (key, self))
 
             if delim:
                 nested_params[key][sub_key] = value
@@ -388,8 +448,8 @@ class ERM(BaseEstimator, ABC):
 
         Returns
         -------
-        self
-            Fitted estimator.
+        self (ERM):
+            Fitted estimator converted to dense estimator
 
         """
         msg = "Estimator, %(name)s, must be fitted before densifying."
@@ -399,98 +459,123 @@ class ERM(BaseEstimator, ABC):
         return self
 
     def sparsify(self):
-        """
-        Convert coefficient matrix to sparse format.
-        Converts the ``coef_`` member to a scipy.sparse matrix, which for
-        L1-regularized models can be much more memory- and storage-efficient
-        than the usual numpy.ndarray representation.
-        The ``intercept_`` member is not converted.
+            """
+            Convert coefficient matrix to sparse format.
+            Converts the ``coef_`` member to a scipy.sparse matrix, which for
+            L1-regularized models can be much more memory- and storage-efficient
+            than the usual numpy.ndarray representation.
+            The ``intercept_`` member is not converted.
 
-        Returns
-        -------
-        self
-            Fitted estimator.
+            Returns
+            -------
+            self (ERM):
+                Fitted estimator converted to parse estimator.
 
-        Notes
-        -----
-        For non-sparse models, i.e. when there are not many zeros in ``coef_``,
-        this may actually *increase* memory usage, so use this method with
-        care. A rule of thumb is that the number of zero elements, which can
-        be computed with ``(coef_ == 0).sum()``, must be more than 50% for this
-        to provide significant benefits.
-        After calling this method, further fitting with the partial_fit
-        method (if any) will not work until you call densify.
+            Notes
+            -----
+            For non-sparse models, i.e. when there are not many zeros in ``coef_``,
+            this may actually *increase* memory usage, so use this method with
+            care. A rule of thumb is that the number of zero elements, which can
+            be computed with ``(coef_ == 0).sum()``, must be more than 50% for this
+            to provide significant benefits.
+            After calling this method, further fitting with the partial_fit
+            method (if any) will not work until you call densify.
 
-        """
-        msg = "Estimator, %(name)s, must be fitted before sparsifying."
-        check_is_fitted(self, msg=msg)
-        self.coef_ = scipy.sparse.csr_matrix(self.coef_)
-        if self.coef_.shape[0] == 1:
-            self.coef_ = self.coef_.T
-        return self
-
+            """
+            msg = "Estimator, %(name)s, must be fitted before sparsifying."
+            check_is_fitted(self, msg=msg)
+            self.coef_ = scipy.sparse.csr_matrix(self.coef_)
+            if self.coef_.shape[0] == 1:
+                self.coef_ = self.coef_.T
+            return self
 
 class ClassifierAbstraction(ERM):
 
-    @abstractmethod
-    def predict_proba(self, X):
-        pass
-
+        @abstractmethod
+        def predict_proba(self, X):
+            pass
 
 class Regression(ERM):
     """
-    The regression class. The objective is the same as for the BinaryClassifier
-    class, but we use a regression loss only (see below), and the targets will
-    be real values.
+    The regression class, which derives from ERM. The goal is to
+    minimize the following objective
+
+        .. math::
+            \\min_{w,b} \\frac{1}{n} \\sum_{i=1}^n
+            L\\left( y_i, w^\\top x_i + b\\right) + \\psi(w),
+
+        where :math:`L` is a regression loss, :math:`\\psi` is a
+        regularization function (or constraint), :math:`w` is a p-dimensional
+        vector representing model parameters, and b is an optional
+        unregularized intercept., and the targets will be real values.
 
     Parameters
     ----------
-    loss : string, default='square'
+
+    loss (string): default='square'
         Loss function to be used. Possible choices are:
+        Only the square loss is implemented at this point. Given two
+        k-dimensional vectors y,z:
 
         * 'square' =>  :math:`L(y,z) = \\frac{1}{2}( y-z)^2`
-        * 'logistic' => :math:`L(y,z) = log(1 + e^{-y z} )`
-        * 'sqhinge' or 'squared_hinge' => :math:`L(y,z) = \\frac{1}{2} max( 0, 1- y z)^2`
-        * 'safe-logistic' => :math:`L(y,z) = e^{ yz - 1 } - y z` if :math:`yz <= 1` and :math:`0` otherwise
-        * 'multiclass-logistic'  => multinomial logistic (see Latex documentation).
 
-        Note that for binary classification, we assume the y to be of
-        the form {-1,+1}
-
-    penalty: string, default='none'
+    penalty (string): default='none'
         Regularization function psi. Possible choices are
 
         For binary_problem problems:
 
-        - 'none' => :math:`psi(w) = 0`
-        - 'l2' =>  :math:`psi(w) = \\frac{\\lambda}{2} ||w||_2^2`
-        - 'l1' =>  :math:`psi(w) = \\lambda ||w||_1`
-        - 'elasticnet' =>  :math:`psi(w) = \\lambda_1 ||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
-        - 'fused-lasso' => :math:`psi(w) = \\lambda_3 \\sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_1||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
-        - 'l1-ball'     => encodes the constraint :math:`||w||_1 <= \\lambda`
-        - 'l2-ball'     => encodes the constraint :math:`||w||_2 <= \\lambda`
+        - 'none' 
+            :math:`psi(w) = 0`
+        - 'l2' 
+            :math:`psi(w) = \\frac{\\lambda_1}{2} ||w||_2^2`
+        - 'l1'
+            :math:`psi(w) = \\lambda_1 ||w||_1`
+        - 'elasticnet' 
+            :math:`psi(w) = \\lambda_1 ||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+        - 'fused-lasso'
+            :math:`psi(w) = \\lambda_3 \\sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_1||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+        - 'l1-ball'
+            encodes the constraint :math:`||w||_1 <= \\lambda`
+        - 'l2-ball'
+            encodes the constraint :math:`||w||_2 <= \\lambda`
 
         For multivariate problems, the previous penalties operate on each
         individual (e.g., class) predictor.
+
+        .. math::
+            \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+
         In addition, multitask-group Lasso penalties are provided for
         multivariate problems (w is then a matrix)
-        
-        - 'l1l2' or 'l1linf', see Latex documentation
 
-    fit_intercept: boolean, default='False'
-        learns an unregularized intercept b  (or several intercepts for
+        - 'l1l2', which is the multi-task group Lasso regularization
+            .. math::
+                \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_2~~~~
+                \\text{where}~W^j~\\text{is the j-th row of}~W.
+
+        - 'l1linf'
+            .. math::
+                \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_\\infty.
+
+        - 'l1l2+l1', which is the multi-task group Lasso regularization + l1
+            .. math::
+                \\psi(W) = \\sum_{j=1}^p \\lambda \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
+                \\text{where}~W^j~\\text{is the j-th row of}~W.
+
+    fit_intercept (boolean): default='False'
+        Learns an unregularized intercept b  (or several intercepts for
         multivariate problems)
 
-    lambda_1: float, default=0
-        first regularization parameter
+    lambda_1 (float): default=0
+        First regularization parameter
 
-    lambda_2: float, default=0
-        second regularization parameter, if needed
+    lambda_2 (float): default=0
+        Second regularization parameter, if needed
 
-    lambda_3: float, default=0
-        third regularization parameter, if needed
+    lambda_3 (float): default=0
+        Third regularization parameter, if needed
 
-    solver: string, default='auto'
+    solver (string): default='auto'
         Optimization solver. Possible choices are
 
         - 'ista'
@@ -509,7 +594,7 @@ class Regression(ERM):
         see the Latex documentation for more details.
         If you are unsure, use 'auto'
 
-    tol: float, default='1e-3'
+    tol (float): default='1e-3'
         Tolerance parameter. For almost all combinations of loss and
         penalty functions, this parameter is based on a duality gap.
         Assuming the (non-negative) objective function is "f" and its
@@ -517,34 +602,34 @@ class Regression(ERM):
 
         :math:`f(x_t) - f^*  <=  tol f(x_t)`
 
-    max_iter: int, default=500
+    max_iter (int): default=500
         Maximum number of iteration of the algorithm in terms of passes
         over the data
 
-    duality_gap_interval: int, default=10
+    duality_gap_interval (int): default=10
         Frequency of duality-gap computation
 
-    verbose: boolean, default=True
+    verbose (boolean): default=True
         Display information or not
 
-    n_threads: int, default=-1
-        maximum number of cores the method may use (-1 = all cores).
+    n_threads (int): default=-1
+        Maximum number of cores the method may use (-1 = all cores).
         Note that more cores is not always better.
 
-    seed: int, default=0
-        random seed
+    random_state (int): default=0
+        Random seed
 
-    restart: boolean, default=False
-        use a restart strategy (useful for computing regularization path)
+    warm_start (boolean): default=False
+        Use a restart strategy 
 
-    binary_problem: boolean, default=True
-        binary_problem or multivariate problems
+    binary_problem (boolean): default=True
+        univariate or multivariate problems
 
-    limited_memory_qning: int, default=20
-        memory parameter for the qning method
+    limited_memory_qning (int): default=20
+        Memory parameter for the qning method
 
-    fista_restart: int, default=50
-        restart strategy for fista      
+    fista_restart (int): default=50
+        Restart strategy for fista (useful for computing regularization path)     
 
     """
     _estimator_type = "regressor"
@@ -572,17 +657,18 @@ class Regression(ERM):
         Parameters
         ----------
 
-        X : numpy array, or scipy sparse CSR matrix
+        X (numpy array or scipy sparse CSR matrix): 
             input n X p numpy matrix; the samples are on the rows
 
-        y : y, numpy array.
+        y (numpy array): 
             - vector of size n with real values for regression
             - matrix of size n X k for multivariate regression
 
         Returns
         -------
 
-        Returns the instance
+        self (ERM):
+            Returns the instance of the class
         """
         X, y, _ = check_input_fit(X, y, self)
 
@@ -594,6 +680,21 @@ class Regression(ERM):
         return super().fit(X, y)
 
     def predict(self, X):
+        """         	
+        Predict the labels given an input matrix X (same format as fit)
+
+        Parameters
+        ----------
+
+            X (numpy array or scipy sparse CSR matrix): 
+                Input matrix for the prediction
+
+        Returns
+        -------
+
+            pred (numpy.array): 
+                Prediction for the X matrix
+        """
         check_is_fitted(self)
 
         X = check_input_inference(X, self)
@@ -605,6 +706,33 @@ class Regression(ERM):
         return pred.squeeze()
 
     def score(self, X, y, sample_weight=None):
+        """
+        Return the coefficient of determination of the prediction.
+        The coefficient of determination :math:`R^2` is defined as
+        :math:`(1 - \\frac{u}{v})`, where :math:`u` is the residual
+        sum of squares ``((y_true - y_pred)** 2).sum()`` and :math:`v`
+        is the total sum of squares ``((y_true - y_true.mean()) ** 2).sum()``.
+        The best possible score is 1.0 and it can be negative (because the
+        model can be arbitrarily worse). A constant model that always predicts
+        the expected value of `y`, disregarding the input features, would get
+        a :math:`R^2` score of 0.0.
+
+        Parameters
+        ----------
+
+            X (numpy array or scipy sparse CSR matrix): 
+                Test samples.
+            y (numpy.array): 
+                True labels for X.
+            sample_weight (numpy.array, optional): 
+                Sample weights. Defaults to None.
+
+        Returns
+        -------
+
+            score (float): 
+                :math:`R^2` of ``self.predict(X)`` wrt. `y`.
+        """
         from sklearn.metrics import r2_score
 
         y_pred = self.predict(X)
@@ -612,7 +740,8 @@ class Regression(ERM):
 
 
 class Classifier(ClassifierAbstraction):
-    """The multi-class classification class. The goal is to minimize the
+    """
+    The classification class. The goal is to minimize the
     following objective
 
     .. math::
@@ -632,49 +761,130 @@ class Classifier(ClassifierAbstraction):
     loss: string, default='square'
         Loss function to be used. Possible choices are
 
-        - any loss function compatible with the class BinaryClassifier e.g.
-            ('square', 'logistic', 'sqhinge', 'safe-logistic'). In such a case,
-            the loss function encodes a one vs. all strategy based on the
-            chosen binary-classification loss.
+            - 'square' 
+                :math:`L(y,z) = \\frac{1}{2} ( y-z)^2`
+            - 'logistic' 
+                :math:`L(y,z) = \\log(1 + e^{-y z} )`
+            - 'sqhinge' or 'squared_hinge' 
+                :math:`L(y,z) = \\frac{1}{2} \\max( 0, 1- y z)^2`
+            - 'safe-logistic'
+                :math:`L(y,z) = e^{ yz - 1 } - y z ~\\text{if}~ yz \\leq 1~~\\text{and}~~0` otherwise
+            - 'multiclass-logistic'
+                which is also called multinomial or softmax logistic:
+                .. math::`L(y, W^\\top x + b) = \\sum_{j=1}^k
+                \\log\\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right)`
 
-        - 'multiclass-logistic', which is also called multinomial or
-            softmax logistic:
-
-        .. math::
-          L(y, W^\\top x + b) = \\sum_{j=1}^k
-          \\log\\left(e^{w_j^\\top + b_j} - e^{w_y^\\top + b_y} \\right)
-
-    penalty: string, default='l2'
+    penalty (string): default='none'
         Regularization function psi. Possible choices are
 
-        - any penalty function compatible with the class BinaryClassifier such
-          as ('none', 'l2', 'l1', 'elasticnet', 'fused-lasso', 'l1-ball',
-          'l2-ball'). In such a case,. the penalty is applied on each predictor
-          :math:`w_j` individually:
+        For binary_problem problems:
+
+        - 'none' 
+            :math:`psi(w) = 0`
+        - 'l2' 
+            :math:`psi(w) = \\frac{\\lambda_1}{2} ||w||_2^2`
+        - 'l1'
+            :math:`psi(w) = \\lambda_1 ||w||_1`
+        - 'elasticnet' 
+            :math:`psi(w) = \\lambda_1 ||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+        - 'fused-lasso'
+            :math:`psi(w) = \\lambda_3 \\sum_{i=2}^p |w[i]-w[i-1]| + \\lambda_1||w||_1 + \\frac{\\lambda_2}{2}||w||_2^2`
+        - 'l1-ball'
+            encodes the constraint :math:`||w||_1 <= \\lambda`
+        - 'l2-ball'
+            encodes the constraint :math:`||w||_2 <= \\lambda`
+
+        For multivariate problems, the previous penalties operate on each
+        individual (e.g., class) predictor.
 
         .. math::
-           \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+            \\psi(W) = \\sum_{j=1}^k \\psi(w_j).
+
+        In addition, multitask-group Lasso penalties are provided for
+        multivariate problems (w is then a matrix)
 
         - 'l1l2', which is the multi-task group Lasso regularization
-
-        .. math::
-           \\psi(W) = \\lambda_1 \\sum_{j=1}^p \\|W^j\\|_2~~~~
-           \\text{where}~W^j~\\text{is the j-th row of}~W.
+            .. math::
+                \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_2~~~~
+                \\text{where}~W^j~\\text{is the j-th row of}~W.
 
         - 'l1linf'
-
-        .. math::
-            \\psi(W) = \\lambda_1 \\sum_{j=1}^p \\|W^j\\|_\\infty.
+            .. math::
+                \\psi(W) = \\lambda \\sum_{j=1}^p \\|W^j\\|_\\infty.
 
         - 'l1l2+l1', which is the multi-task group Lasso regularization + l1
+            .. math::
+                \\psi(W) = \\sum_{j=1}^p \\lambda \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
+                \\text{where}~W^j~\\text{is the j-th row of}~W.
 
-        .. math::
-            \\psi(W) = \\sum_{j=1}^p \\lambda_1 \\|W^j\\|_2 + \\lambda_2 \|W^j\|_1 ~~~~
-            \\text{where}~W^j~\\text{is the j-th row of}~W.
+    fit_intercept (boolean): default='False'
+        Learns an unregularized intercept b  (or several intercepts for
+        multivariate problems)
 
+    lambda_1 (float): default=0
+        First regularization parameter
 
-    fit_intercept: boolean, default='False'
-      learns an unregularized intercept b, which is a k-dimensional vector
+    lambda_2 (float): default=0
+        Second regularization parameter, if needed
+
+    lambda_3 (float): default=0
+        Third regularization parameter, if needed
+
+    solver (string): default='auto'
+        Optimization solver. Possible choices are
+
+        - 'ista'
+        - 'fista'
+        - 'catalyst-ista'
+        - 'qning-ista'  (proximal quasi-Newton method)
+        - 'svrg'
+        - 'catalyst-svrg' (accelerated SVRG with Catalyst)
+        - 'qning-svrg'  (quasi-Newton SVRG)
+        - 'acc-svrg'    (SVRG with direct acceleration)
+        - 'miso'
+        - 'catalyst-miso' (accelerated MISO with Catalyst)
+        - 'qning-miso'  (quasi-Newton MISO)
+        - 'auto'
+
+        see the Latex documentation for more details.
+        If you are unsure, use 'auto'
+
+    tol (float): default='1e-3'
+        Tolerance parameter. For almost all combinations of loss and
+        penalty functions, this parameter is based on a duality gap.
+        Assuming the (non-negative) objective function is "f" and its
+        optimal value is "f^*", the algorithm stops with the guarantee
+
+        :math:`f(x_t) - f^*  <=  tol f(x_t)`
+
+    max_iter (int): default=500
+        Maximum number of iteration of the algorithm in terms of passes
+        over the data
+
+    duality_gap_interval (int): default=10
+        Frequency of duality-gap computation
+
+    verbose (boolean): default=True
+        Display information or not
+
+    n_threads (int): default=-1
+        Maximum number of cores the method may use (-1 = all cores).
+        Note that more cores is not always better.
+
+    random_state (int): default=0
+        Random seed
+
+    warm_start (boolean): default=False
+        Use a restart strategy 
+
+    binary_problem (boolean): default=True
+        univariate or multivariate problems
+
+    limited_memory_qning (int): default=20
+        Memory parameter for the qning method
+
+    fista_restart (int): default=50
+        Restart strategy for fista (useful for computing regularization path)     
 
     """
     _estimator_type = "classifier"
@@ -689,8 +899,21 @@ class Classifier(ClassifierAbstraction):
                          n_threads=n_threads, multi_class=multi_class, dual=dual)
 
     def fit(self, X, y, le_parameter=None):
-        """Same as BinaryClassifier, but y should be a vector a n-dimensional
-        vector of integers
+        """
+        The fitting function (the one that does the job)
+
+        Parameters
+        ----------
+
+        X (numpy array, or scipy sparse CSR matrix):
+            input n x p numpy matrix; the samples are on the rows
+
+        y (numpy.array): 
+            Input labels.
+
+            - vector of size n with {-1, +1} labels for binary classification,
+              which will be automatically converted if labels in {0,1} are
+              provided and {0,1,..., n} for multiclass classification.
         """
         X, y, le = check_input_fit(X, y, self)
         if le_parameter is not None:
@@ -741,7 +964,21 @@ class Classifier(ClassifierAbstraction):
         return self
 
     def predict(self, X):
-        """Predicts the class label"""
+        """         	
+        Predict the labels given an input matrix X (same format as fit)
+
+        Parameters
+        ----------
+
+            X (numpy array or scipy sparse CSR matrix): 
+                Input matrix for the prediction
+
+        Returns
+        -------
+
+            pred (numpy.array): 
+                Prediction for the X matrix
+        """
         check_is_fitted(self)
 
         X = check_input_inference(X, self)
@@ -768,7 +1005,25 @@ class Classifier(ClassifierAbstraction):
         return output
 
     def score(self, X, y):
-        """Gives a classification score on new test data"""
+        """
+        Gives an accuracy score on test data
+
+        Parameters
+        ----------
+
+            X (numpy array or scipy sparse CSR matrix): 
+                Test samples.
+            y (numpy.array): 
+                True labels for X.
+            sample_weight (numpy.array, optional): 
+                Sample weights. Defaults to None.
+
+        Returns
+        -------
+
+            score : float
+                Mean accuracy of ``self.predict(X)`` wrt. `y`.
+        """
         check_is_fitted(self)
 
         X = check_input_inference(X, self)
@@ -777,6 +1032,21 @@ class Classifier(ClassifierAbstraction):
         return np.sum(np.squeeze(y) == pred) / pred.shape[0]
 
     def decision_function(self, X):
+        """
+        Predict confidence scores for samples.
+
+        Parameters
+        ----------
+
+            X (numpy array or scipy sparse CSR matrix): 
+                The data for which we want scores
+
+        Returns
+        -------
+
+            scores (numpy.array): 
+                Confidence scores per (n_samples, n_classes) combination. In the binary case, confidence score for self.classes_[1] where >0 means this class would be predicted.
+        """
         check_is_fitted(self)
 
         X = check_input_inference(X, self)
@@ -796,6 +1066,20 @@ class Classifier(ClassifierAbstraction):
         return output
 
     def predict_proba(self, X):
+        """
+        Estimate the probability for each class
+
+        Parameters
+
+            X (numpy array or scipy sparse CSR matrix): 
+                Data matrix for which we want probabilities
+
+        Returns
+        -------
+
+            proba (numpy.array): 
+                Return the probability of the samples for each class.
+        """
         check_is_fitted(self)
 
         X = check_input_inference(X, self)
@@ -810,23 +1094,7 @@ class Classifier(ClassifierAbstraction):
 
 class LinearSVC(Classifier):
     """
-    A compatibility class for scikit-learn user, but only for square hinge loss
-    It is perfectly equivalent to the BinaryClassifier class, but the
-    regularization parameter (here "C") is provided during the class
-    initialization. Note that :math:`C= \\frac{1}{2n \\lambda_1}`
-
-    Parameters
-    ----------
-
-    loss: should be 'sqhinge' or 'squared_hinge'
-
-    penalty: same as BinaryClassifier
-
-    fit_intercept: same as BinaryClassifier
-
-    C: regularization parameter
-
-    max_iter: maximum number of iterations for the optimization solver
+    A pre-configured class for square hinge loss
     """
 
     def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True,
@@ -843,30 +1111,11 @@ class LinearSVC(Classifier):
             duality_gap_interval=duality_gap_interval, max_iter=max_iter,
             limited_memory_qning=limited_memory_qning,
             fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads, dual=dual)
-        self.lambda_1 = lambda_1
-        self.max_iter = max_iter
-        self.verbose = False
 
 
 class LogisticRegression(Classifier):
     """
-    A compatibility class for scikit-learn user, but only for square hinge loss
-    It is perfectly equivalent to the BinaryClassifier class, but the
-    regularization parameter (here "C") is provided during the class
-    initialization. Note that :math:`C= \\frac{1}{n \\lambda_1}`
-
-    Parameters
-    ----------
-
-    loss: should be 'sqhinge' or 'squared_hinge'
-
-    penalty: same as BinaryClassifier
-
-    fit_intercept: same as BinaryClassifier
-
-    C: regularization parameter
-
-    max_iter: maximum number of iterations for the optimization solver
+    A pre-configured class for logistic regression loss
     """
 
     _estimator_type = "classifier"
@@ -883,17 +1132,44 @@ class LogisticRegression(Classifier):
                          fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads, dual=dual)
 
 
-def compute_r(estimator_name, aux, X, y, active_set, n_active):
+def compute_r(estimator_name, aux, X, y, active_set):
+    """
+    Computes R coefficient depending on the estimator
+
+    Parameters
+    ----------
+
+        estimator_name (string): 
+            Name of the estimator class
+
+        aux (ERM): 
+            Auxiliary estimator
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Features matrix
+
+        y (numpy.array): 
+            Labels matrix
+
+        active_set (numpy.array): 
+            Active set
+
+    Returns
+    -------
+
+        R (float): 
+            _description_
+    """
     R = None
 
     pred = aux.predict(X[:, active_set])
     if estimator_name == "Lasso":
-        if n_active == 0:
+        if len(active_set) == 0:
             R = y
         else:
             R = y.ravel() - pred.ravel()
     elif estimator_name == "L1Logistic":
-        if n_active == 0:
+        if len(active_set) == 0:
             R = -0.5 * y.ravel()
         else:
             R = -y.ravel() / (1.0 + np.exp(y.ravel() * pred.ravel()))
@@ -902,6 +1178,22 @@ def compute_r(estimator_name, aux, X, y, active_set, n_active):
 
 
 def fit_large_feature_number(estimator, aux, X, y):
+    """
+    Fitting function when the number of feature is superior to 1000
+
+    Args:
+        estimator (ERM):
+            Fitted estimator
+
+        aux (ERM): 
+            Auxiliary estimator
+
+        X (numpy array or scipy sparse CSR matrix): 
+            Features matrix
+
+        y (numpy.array): 
+            Labels matrix
+    """
     n, p = X.shape
 
     scaling = 4.0
@@ -915,7 +1207,7 @@ def fit_large_feature_number(estimator, aux, X, y):
         estimator.intercept_ = 0
 
     for ii in range(num_as):
-        R = compute_r(estimator.__name__, aux, X, y, active_set, n_active)
+        R = compute_r(estimator.__name__, aux, X, y, active_set)
 
         corr = np.abs(X.transpose().dot(R).ravel()) / n
         if n_active > 0:
@@ -945,6 +1237,12 @@ def fit_large_feature_number(estimator, aux, X, y):
 
 
 class Lasso(Regression):
+    """
+    A pre-configured class for Lasso regression
+
+    Using active set when the number of features is superior to 1000
+    """
+
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20, fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, dual=None):
@@ -972,6 +1270,11 @@ class Lasso(Regression):
 
 
 class L1Logistic(Classifier):
+    """
+    A pre-configured class for L1 logistic classification
+
+    Using active set when the number of features is superior to 1000
+    """
 
     _estimator_type = "classifier"
 
