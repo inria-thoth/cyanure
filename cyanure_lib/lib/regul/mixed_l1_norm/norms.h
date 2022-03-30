@@ -27,17 +27,16 @@ public:
     };
     static inline void print()
     {
-        logging(logINFO) << "L2";
+        logging(logINFO) << getName();
     };
     inline T eval_dual(const Vector<T> &x) const
     {
         return x.nrm2() / _lambda;
     };
-    static inline std::string getName() {return _name;};
+    static inline std::string getName() {return "L2";};
 
 private:
     const T _lambda;
-    inline static const std::string _name = "L2";
 };
 
 template <typename T>
@@ -59,17 +58,16 @@ public:
     };
     static inline void print()
     {
-        logging(logINFO) << "LInf";
+        logging(logINFO) << getName();
     }
     inline T eval_dual(const Vector<T> &x) const
     {
         return x.asum() / _lambda;
     };
-    static inline std::string getName() {return _name;};
+    static inline std::string getName() {return "LInf";};
 
 private:
     const T _lambda;
-    inline static const std::string _name = "LInf";
 };
 
 template <typename T>
@@ -99,7 +97,7 @@ public:
     };
     static inline void print()
     {
-        logging(logINFO) << "L2+L1";
+        logging(logINFO) << getName();
     };
     inline T eval_dual(const Vector<T> &x) const
     {
@@ -127,12 +125,11 @@ public:
         }
         return 0;
     };
-    static inline std::string getName() {return _name;};
+    static inline std::string getName() {return "L2+L1";};
 
 private:
     const T _lambda;
     const T _lambda2;
-    inline static const std::string _name = "L2+L1";
 };
 
 #endif

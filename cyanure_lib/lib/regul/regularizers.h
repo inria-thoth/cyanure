@@ -54,7 +54,7 @@ public:
     };
     void print() const
     {
-        logging(logINFO) << _name;
+        logging(logINFO) << getName();
     }
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda; };
     virtual T lambda_1() const { return _lambda; };
@@ -69,10 +69,10 @@ public:
             output[p - 1] = input[p - 1];
     };
     virtual bool is_lazy() const { return true; };
+    static inline std::string getName() { return "L2 regularization"; };
 
 private:
     const T _lambda;
-    inline static const std::string _name = "L2 regularization";
 };
 
 template <typename D, typename I>
@@ -109,7 +109,7 @@ public:
     };
     void print() const
     {
-        logging(logINFO) << "L1 regularization";
+        logging(logINFO) << getName();
     }
     virtual T lambda_1() const { return _lambda; };
     inline void lazy_prox(const D &input, D &output, const Vector<I> &indices, const T eta) const
@@ -125,10 +125,10 @@ public:
             output[p - 1] = input[p - 1];
     };
     virtual bool is_lazy() const { return true; };
+    static inline std::string getName() { return "L1 regularization"; };
 
 private:
     const T _lambda;
-    inline static const std::string _name = "L1 regularization";
 };
 
 template <typename D, typename I>
@@ -181,7 +181,7 @@ public:
     };
     void print() const
     {
-        logging(logINFO) << "Elastic Net regularization";
+        logging(logINFO) << getName();
     }
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda2; };
     virtual T lambda_1() const { return _lambda; };
@@ -199,11 +199,11 @@ public:
             output[p - 1] = input[p - 1];
     };
     virtual bool is_lazy() const { return true; };
+    static inline std::string getName() { return "Elastic Net regularization"; };
 
 private:
     const T _lambda;
     const T _lambda2;
-    inline static const std::string _name = "Elastic Net regularization";
 };
 
 template <typename D, typename I>
@@ -239,13 +239,13 @@ public:
     };
     void print() const
     {
-        logging(logINFO) << "L1 ball regularization";
+        logging(logINFO) << getName();
     }
     virtual T lambda_1() const { return _lambda; };
+    static inline std::string getName() { return "L1 ball regularization"; };
 
 private:
     const T _lambda;
-    inline static const std::string _name = "L1 ball regularization";
 };
 
 template <typename D, typename I>
@@ -285,13 +285,13 @@ public:
     };
     void print() const
     {
-        logging(logINFO) << "L1 ball regularization";
+        logging(logINFO) << getName();
     }
     virtual T lambda_1() const { return _lambda; };
+    static inline std::string getName() { return "L2 ball regularization"; };
 
 private:
     const T _lambda;
-    inline static const std::string _name = "L2 ball regularization";
 };
 
 template <typename D, typename I>
@@ -320,17 +320,17 @@ public:
     inline T fenchel(D &grad1, D &grad2) const { return 0; };
     void print() const
     {
-        logging(logINFO) << "Fused Lasso regularization";
+        logging(logINFO) << getName();
     }
     bool provides_fenchel() const { return false; };
     virtual T strong_convexity() const { return this->_intercept ? 0 : _lambda3; };
     virtual T lambda_1() const { return _lambda; };
+    static inline std::string getName() { return "Fused Lasso regularization"; };
 
 private:
     const T _lambda;
     const T _lambda2;
     const T _lambda3;
-    inline static const std::string _name = "Fused Lasso regularization";
 };
 
 #endif

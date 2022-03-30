@@ -116,7 +116,6 @@ public:
     virtual bool intercept() const { return _intercept; };
     virtual T strong_convexity() const { return 0; };
     virtual T lambda_1() const { return 0; };
-    virtual std::string getName() { return _name; };
 
 protected:
     const bool _intercept;
@@ -125,7 +124,6 @@ private:
     explicit Regularizer<D, I>(const Regularizer<D, I>& reg);
     Regularizer<D, I>& operator=(const Regularizer<D, I>& reg);
     const regul_t _id;
-    inline static const std::string _name = "Regulizer";
 };
 
 #endif
