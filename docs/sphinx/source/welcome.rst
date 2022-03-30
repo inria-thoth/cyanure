@@ -18,8 +18,8 @@ a documentation is provided in pdf in the following arXiv document
 Main features
 -------------
 Cyanure is build upon several goals and principles:
-   * **Cyanure is memory efficient**. If Cyanure accepts your dataset, it will
-     never make a copy of it. Matrices can be provided in double or single
+   * **Cyanure is memory efficient**. In case of dense matrix, it will
+     never make a copy of it except if you are not using floating type. Matrices can be provided in double or single
      precision. Sparse matrices (scipy/CSR format for Python, CSC for C++) can
      be provided with integers coded in 32 or 64-bits. When fitting an
      intercept, there is no need to add a column of 1's and there is no matrix
@@ -43,38 +43,22 @@ Note that if you have chosen the solver 'auto', you are likely to use [QNING]_ o
 Installation
 ============
 
-You can install Cyanure from its source on `its github repository <https://github.com/jmairal/cyanure>`_.
-But we recommend to install it with Anaconda from the conda-forge channel, you can also find Cyanure on PyPI. 
+The recommanded installation procedure is to use either conda or pip.
 
-* If you want to use Github on Linux, simply clone the repository, and then
+The package available on conda and pip are shipped with OpenBLAS and OpenMP except for Windows which does not use OpenMP.
+For conda the package is available on conda forge.
 
-   If you are using Anaconda and have the package mkl installed, simply type::   
+You can either install with:
 
-      python setup.py install
+ `conda install -c conda-forge cyanure`
 
-   If instead your numpy relies on openblas, you should use::
+ or 
 
-      python setup_cyanure_openblas.py install
+ `pip install cyanure`
 
-* If you prefer to use PyPI on Linux, 
-  
-   Simply replace the two previous commands by::
+You can also install Cyanure from the sources. However, the setup file is not mature enough to work with a variety of BLAS configuration (especially on Windows).
 
-      pip install cyanure-mkl 
-
-   or by the following command::
-
-      pip install cyanure-openblas
-
-* If you work on Mac, you need a C++ compiler, provided for instance with XCode, which is unlikely to support openmp. If your compiler supports it, follow the Linux instructions. Otherwise, use the "no_openmp" variants.
-
-   if you download the sources on github,::
-
-      python setup_cyanure_mkl_no_openmp.py install    or     python setup_cyanure_openblas_no_openmp.py install
-
-   or if you use PyPI::
-       
-      pip install cyanure-mkl-no-openmp    or       pip install cyanure-openblas-no-openmp   
+On top of that, you can not use default compiler to compile on MacOS with OpenMP.
 
 .. image:: logo-inria-scientifique-couleur.jpg 
    :width: 35%
