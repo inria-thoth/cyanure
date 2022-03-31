@@ -123,7 +123,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         outm.copy(optim_info);
         return out;
     }
-    catch (NotImplementedException e)
+    catch (NotImplementedException const &e)
     {
         PyObject* tuple = PyTuple_New(2);
         PyTuple_SetItem(tuple, 0, PyBytes_FromString(e.what()));
@@ -131,12 +131,12 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         PyErr_SetObject(PyExc_NotImplementedError, tuple);
         return NULL;
     }
-    catch (ValueError e)
+    catch (ValueError const &e)
     {
         PyErr_SetObject(PyExc_ValueError, PyBytes_FromString(e.what()));
         return NULL;
     }
-    catch (ConversionError e)
+    catch (ConversionError const &e)
     {
         PyErr_SetObject(PyExc_RuntimeError, PyBytes_FromString(e.what()));
         return NULL;
@@ -283,7 +283,7 @@ static PyObject* preprocess_(PyObject* self, PyObject* args, PyObject* keywds)
             return NULL;
         }
     }
-    catch (ConversionError e)
+    catch (ConversionError const &e)
     {
         PyErr_SetObject(PyExc_RuntimeError, PyBytes_FromString(e.what()));
         return NULL;
