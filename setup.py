@@ -13,12 +13,6 @@ class sdistzip(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
         self.formats = ['zip', 'gztar']
-
-if platform.system() == "Darwin":
-    os.environ["CC"] = "/usr/local/opt/llvm/bin/clang"
-    os.environ["CXX"] = "/usr/local/opt/llvm/bin/clang++"
-    os.environ["LDFLAGS"] = "-L/usr/local/opt/openblas/lib"
-    os.environ["CPPFLAGS"] = "-I/usr/local/opt/openblas/include"
     
 def getBlas():
     file_ = open("npConfg_file.txt", "w")
@@ -114,24 +108,6 @@ else:
             INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
 
-print("DEBUG INSTALL: " + np_blas)
-"""
-## setup openblass no openmp
-
-libs_open_blass_no_openmp = ['openblas']
-include_dirs_open_blass_no_openmp = [numpy.get_include()]
-extra_compile_args_open_blass_no_openmp =[
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC', '-std=c++11']
-
-#### setup mkl no openmp
-libs_mkl_no_openmp = ['mkl_rt']
-include_dirs_mkl_no_openmp = [numpy.get_include()]
-extra_compile_args_mkl_no_openmp =[
-                '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
-                '-std=c++11']
-n argumentss
-
-"""
 
 if platform.system() != "Windows":
     EXTRA_LINK_ARGS = ['-fopenmp']
