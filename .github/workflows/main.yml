@@ -34,6 +34,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_sdist:
+    if: github.ref == 'refs/heads/master'
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
@@ -155,6 +156,7 @@ jobs:
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pytest test/
 
   upload_pypi:
+    if: github.ref == 'refs/heads/master'
     needs: [build_wheels, build_sdist, test_imports, run_tests]
     runs-on: ubuntu-latest
     steps:
