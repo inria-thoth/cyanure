@@ -54,6 +54,12 @@ if platform.system() == "Windows":
             '/permissive-', '/W1']
         libs = ["libopenblas"]
 
+    elif 'cblas' in np_blas:
+        extra_compile_args = [
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+            '/permissive-', '/W1']
+        libs = ['lapack', 'blas']
+
     elif 'blas' in np_blas:
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
@@ -89,6 +95,8 @@ else:
         
         if 'openblas' in np_blas or np_blas == "":
             libs = ['openblas']
+        elif 'cblas' in np_blas:
+            libs = ['lapack', 'blas']
         else:
             libs = [np_blas]
 

@@ -434,6 +434,20 @@ extern "C" {
    float slamch_( const char* cmach );
 }
 
+//It seems that some implementation of BLAS does not have saxpby and daxpby.
+inline void cblas_saxpby (long long int* N, float* alpha, float* X,
+                         long long int* incX, float* beta, float* Y,
+                         long long int* incY) {
+  sscal_(N, beta, Y, incY);
+  saxpy_(N, alpha, X, incX, Y, incY);
+}
+inline void cblas_daxpby(long long int* N, double* alpha, double* X,
+                         long long int* incX, double* beta, double* Y,
+                         long long int* incY) {
+  dscal_(N, beta, Y, incY);
+  daxpy_(N, alpha, X, incX, Y, incY);
+}
+
 // Implementations of the INTTerfaces, BLAS Level 1
 /// Implementation of the INTTerface for cblas_dnrm2
 template <> inline double cblas_nrm2<double>( INTT n,  double* X, 
@@ -509,12 +523,12 @@ template <> inline void cblas_axpby<float>( INTT n,  float a,  float* X,
 #else
 template <> inline void cblas_axpby<double>( INTT n,  double a,  double* X, 
        INTT incX, double b, double* Y,  INTT incY) {
-   daxpby_(&n,&a,X,&incX,&b,Y,&incY);
+   cblas_daxpby(&n,&a,X,&incX,&b,Y,&incY);
 };
 /// Implementation of the INTTerface for cblas_saxpy
 template <> inline void cblas_axpby<float>( INTT n,  float a,  float* X,
        INTT incX, float b, float* Y,  INTT incY) {
-   saxpby_(&n,&a,X,&incX,&b,Y,&incY);
+   cblas_saxpby(&n,&a,X,&incX,&b,Y,&incY);
 };
 #endif
 
