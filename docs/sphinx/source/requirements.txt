@@ -1,0 +1,4 @@
+furo==2021.11.16
+numpydoc==1.2
+jupyter-sphinx==0.3.2
+sphinx-rtd-theme==1.0.0

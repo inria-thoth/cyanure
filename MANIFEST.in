@@ -1,1 +1,4 @@
-graft lib
+graft cyanure_lib
+graft cyanure
+graft test
+include openmp_helpers.py

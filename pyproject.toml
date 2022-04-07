@@ -1,13 +1,12 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools",
     "wheel",
-    "numpy"
+    "numpy==1.18.0"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-before-build = 'pip install numpy'
 skip = ["cp310-*", "pp*"]
 
 [tool.cibuildwheel.linux]
@@ -19,8 +18,15 @@ test-command =  ["cd  {package}",]
 before-all = [
   "brew install openblas",
   "brew install libomp",
+  "brew install llvm",
 ]
 test-command =  ["cd  {package}",]
+
+[tool.cibuildwheel.macos.environment]
+CC = "/usr/local/opt/llvm/bin/clang"
+CXX = "/usr/local/opt/llvm/bin/clang++"
+LDFLAGS = "-L/usr/local/opt/openblas/lib"
+CPPFLAGS = "-I/usr/local/opt/openblas/include"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
