@@ -12,8 +12,8 @@ jobs:
         with:
           python-version: 3.9
       - name: Install the package your testing.
-      run: |
-        pip install .
+        run: |
+          pip install .
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
