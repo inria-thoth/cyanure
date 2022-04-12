@@ -48,23 +48,11 @@ if platform.system() == "Windows":
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
-    if np_blas == "" or "openblas" in np_blas:
-        extra_compile_args = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
-        libs = ["libopenblas"]
-
-    elif 'cblas' in np_blas:
+    else: 
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
             '/permissive-', '/W1']
         libs = ['lapack', 'blas']
-
-    elif 'blas' in np_blas:
-        extra_compile_args = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
-        libs = np_blas
     
     LIBS = libs
     INCLUDE_DIRS = [numpy.get_include()]
@@ -92,14 +80,9 @@ else:
 
     ##### setup openblas
     else:
+    
+        libs = ['lapack', 'blas']
         
-        if 'openblas' in np_blas or np_blas == "":
-            libs = ['openblas']
-        elif 'cblas' in np_blas:
-            libs = ['lapack', 'blas']
-        else:
-            libs = [np_blas]
-
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11', '-fopenmp']      
