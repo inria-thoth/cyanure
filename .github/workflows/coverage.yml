@@ -19,7 +19,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           pip install pytest-cov
-       - name: Remove conflicting folder
+      - name: Remove conflicting folder
         run: |
           rm -rf cyanure_lib
       - name: Get coverage
