@@ -36,7 +36,10 @@ jobs:
           if ((test)); then echo "Failed because of python coverage";exit 1; fi
       - name: Move coverage file folder
         run: |
+          mv cyanure_lib_tmp cyanure_lib
           mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcno cyanure_lib/
           mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcda cyanure_lib/
+          cd cyanure_lib
+          gcovr -r ../ .
 
 
