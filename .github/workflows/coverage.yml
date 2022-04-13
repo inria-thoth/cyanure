@@ -14,7 +14,7 @@ jobs:
       - name: Install the package your testing.
         run: |
           export COVERAGE=1
-          pip install .
+          pip install --no-build-isolation .
       - name: Install dependencies
         run: |
           ls build/temp.linux-x86_64-cpython-39/cyanure_lib/
