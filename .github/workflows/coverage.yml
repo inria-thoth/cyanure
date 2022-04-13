@@ -17,6 +17,7 @@ jobs:
           pip install .
       - name: Install dependencies
         run: |
+          ls build/temp.linux-x86_64-cpython-39/cyanure_lib/
           sudo apt-get update
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
