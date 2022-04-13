@@ -39,6 +39,6 @@ jobs:
           mv cyanure_lib_tmp cyanure_lib
           mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcno ./
           mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcda ./
-          gcovr -r ../ .
+          gcovr -r ./ .
 
 
