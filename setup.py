@@ -60,10 +60,10 @@ if platform.system() == "Windows":
 
     if struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib']
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib', 'D:/a/cyanure/cyanure/lapack']
     else:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib']
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib', 'D:/a/cyanure/cyanure/lapack']
 
 else:
     ##### setup mkl_rt
