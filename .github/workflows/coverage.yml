@@ -28,7 +28,6 @@ jobs:
         run: |
           export COVERAGE=1
           pip install --no-build-isolation .
-          ls build/
       - name: Move conflicting folder
         run: |
           mv cyanure_lib cyanure_lib_tmp
@@ -42,8 +41,8 @@ jobs:
       - name: Move coverage file folder
         run: |
           mv cyanure_lib_tmp cyanure_lib
-          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcno ./
-          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcda ./
+          mv build/temp.linux-x86_64-3.9/cyanure_lib/cyanure_wrap_module.gcno ./
+          mv build/temp.linux-x86_64-3.9/cyanure_lib/cyanure_wrap_module.gcda ./
           gcovr -r ./ .
 
 
