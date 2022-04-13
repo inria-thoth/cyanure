@@ -29,6 +29,6 @@ jobs:
         run: |
           pytest --cov-config=.coveragec --cov=cyanure --cov-report xml:coverage.xml
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
-          if [ $PYTHON_COVERAGE < 0.9]; then exit 1; fi
+          if (( $PYTHON_COVERAGE < 0.9 )); then exit 1; fi
 
 
