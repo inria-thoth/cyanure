@@ -13,6 +13,7 @@ jobs:
           python-version: 3.9
       - name: Install the package your testing.
         run: |
+          export COVERAGE=1
           pip install .
       - name: Install dependencies
         run: |
@@ -23,7 +24,7 @@ jobs:
           pip install pytest-cov
       - name: Remove conflicting folder
         run: |
-          rm -rf cyanure_lib
+          mv cyanure_lib cyanure_lib_tmp
       - name: Get coverage
         # fail_if_regression_in_coverage  
         run: |
