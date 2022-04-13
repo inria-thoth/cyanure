@@ -11,19 +11,22 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          python -m pip install --upgrade pip
+          pip install numpy
+          pip install scipy
+          pip install scikit-learn
+          pip install pandas
+          pip install pytest
+          pip install pytest-cov
+          pip install gcovr
       - name: Install the package your testing.
         run: |
           export COVERAGE=1
           pip install --no-build-isolation .
-      - name: Install dependencies
-        run: |
-          ls build/temp.linux-x86_64-cpython-39/cyanure_lib/
-          sudo apt-get update
-          sudo apt-get install libxml2-utils
-          python -m pip install --upgrade pip
-          pip install pytest
-          pip install pytest-cov
-          pip install gcovr
       - name: Move conflicting folder
         run: |
           mv cyanure_lib cyanure_lib_tmp
