@@ -49,10 +49,17 @@ if platform.system() == "Windows":
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
     else: 
-        extra_compile_args = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
-            '/permissive-', '/W1']
-        libs = ['lapack', 'blas']
+        if np_blas == "" or "openblas" in np_blas:
+            extra_compile_args = [
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '/permissive-', '/W1']
+            libs = ["libopenblas"]
+
+        elif 'blas' in np_blas:
+            extra_compile_args = [
+                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '/permissive-', '/W1']
+            libs = ['lapack', 'blas']
     
     LIBS = libs
     INCLUDE_DIRS = [numpy.get_include()]
@@ -60,10 +67,10 @@ if platform.system() == "Windows":
 
     if struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib', 'D:/a/cyanure/cyanure/lapack']
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib']
     else:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib', 'D:/a/cyanure/cyanure/lapack']
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib']
 
 else:
     ##### setup mkl_rt
