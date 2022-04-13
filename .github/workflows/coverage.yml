@@ -43,6 +43,9 @@ jobs:
           mv cyanure_lib_tmp cyanure_lib
           mv build/temp.linux-x86_64-3.9/cyanure_lib/cyanure_wrap_module.gcno ./
           mv build/temp.linux-x86_64-3.9/cyanure_lib/cyanure_wrap_module.gcda ./
-          gcovr -r ./ .
+          gcovr -r ./ . --cobertura coverage_cxx.xml
+          CXX_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage_cxx.xml)
+          test_cxx=$(echo "$CXX_COVERAGE < 0.8" | bc)
+          if ((test_cxx)); then echo "Failed because of cxx coverage";exit 1; fi
 
 
