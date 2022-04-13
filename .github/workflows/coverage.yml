@@ -24,4 +24,9 @@ jobs:
           rm -rf cyanure_lib
       - name: Get coverage
         run: |
-          pytest --cov-config=.coveragec --cov=cyanure
+          pytest --cov-config=.coveragec --cov=cyanure --cov-report xml:coverage.xml
+          PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
+        # fail_if_regression_in_coverage
+          if [ $PYTHON_COVERAGE < 0.9]; exit 1; fi
+
+
