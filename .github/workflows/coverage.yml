@@ -13,7 +13,6 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          ls build/
           sudo apt-get update
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
@@ -29,6 +28,7 @@ jobs:
         run: |
           export COVERAGE=1
           pip install --no-build-isolation .
+          ls build/
       - name: Move conflicting folder
         run: |
           mv cyanure_lib cyanure_lib_tmp
