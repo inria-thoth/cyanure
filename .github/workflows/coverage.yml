@@ -3,7 +3,7 @@ name: Calculate code coverage
 on: [push]
 
 jobs:
-  lint_code:
+  pytest_coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

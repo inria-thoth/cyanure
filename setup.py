@@ -70,20 +70,21 @@ else:
     if 'mkl' in np_blas:
         extra_compile_args_mkl = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
-            '-fopenmp', '-std=c++11', '-fprofile-arcs', '-ftest-coverage']
+            '-fopenmp', '-std=c++11']
 
-        LIBS = ['mkl_rt', 'iomp5', 'gcov']
+        LIBS = ['mkl_rt', 'iomp5']
+
         INCLUDE_DIRS = [numpy.get_include()]
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
     ##### setup openblas
     else:
     
-        libs = ['lapack', 'blas', 'gcov']
+        libs = ['lapack', 'blas']
         
         extra_compile_args = [
-            '-O0', '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp', '-fprofile-arcs', '-ftest-coverage']      
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11', '-fopenmp']      
 
         INCLUDE_DIRS = [numpy.get_include()]
 
@@ -97,12 +98,18 @@ else:
             INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
 
+    if "COVERAGE" in os.environ:
+        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
+        LIBS = LIBS + ['gcov'] 
+
 
 if platform.system() != "Windows":
-    EXTRA_LINK_ARGS = ['-fopenmp', '-fprofile-arcs']
+    EXTRA_LINK_ARGS = ['-fopenmp']
+    if "COVERAGE" in os.environ:
+        EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
     EXTRA_LINK_ARGS = []
-    
+   
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
