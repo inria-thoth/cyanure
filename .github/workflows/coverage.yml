@@ -29,7 +29,7 @@ jobs:
         run: |
           pytest --cov-config=.coveragec --cov=cyanure --cov-report xml:coverage.xml
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
-          test=$(echo "$PYTHON_COVERAGE < 0.9" | bc)
+          test=$(echo "$PYTHON_COVERAGE < 0.8" | bc)
           if ((test)); then echo "Failed because of python coverage";exit 1; fi
 
 
