@@ -23,10 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           pip install pytest-cov
-      - name: Remove conflicting folder
+          pip install gcovr
+      - name: Move conflicting folder
         run: |
-          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcno cyanure_lib/
-          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcda cyanure_lib/
           mv cyanure_lib cyanure_lib_tmp
       - name: Get coverage
         # fail_if_regression_in_coverage  
@@ -35,5 +34,9 @@ jobs:
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
           test=$(echo "$PYTHON_COVERAGE < 0.8" | bc)
           if ((test)); then echo "Failed because of python coverage";exit 1; fi
+      - name: Move coverage file folder
+        run: |
+          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcno cyanure_lib/
+          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcda cyanure_lib/
 
 
