@@ -17,7 +17,6 @@ jobs:
           pip install .
       - name: Install dependencies
         run: |
-          ls build/
           sudo apt-get update
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
@@ -25,8 +24,8 @@ jobs:
           pip install pytest-cov
       - name: Remove conflicting folder
         run: |
-          mv build/temp.linux-x86_64-3.9/cyanure_lib/cyanure_wrap_module.gcno cyanure_lib/
-          mv build/temp.linux-x86_64-3.9/cyanure_lib/cyanure_wrap_module.gcda cyanure_lib/
+          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcno cyanure_lib/
+          mv build/temp.linux-x86_64-cpython-39/cyanure_lib/cyanure_wrap_module.gcda cyanure_lib/
           mv cyanure_lib cyanure_lib_tmp
       - name: Get coverage
         # fail_if_regression_in_coverage  
