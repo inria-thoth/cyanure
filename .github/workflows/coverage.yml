@@ -23,6 +23,7 @@ jobs:
           pip install pytest
           pip install pytest-cov
           pip install gcovr
+          pip install wheel
       - name: Install the package your testing.
         run: |
           export COVERAGE=1
