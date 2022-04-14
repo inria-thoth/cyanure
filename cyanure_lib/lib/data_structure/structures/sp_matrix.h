@@ -82,12 +82,8 @@ public:
     inline floating_type abs_mean() const;
 
     /// Algebraic operations
-    /// aat <- A*A'
-    inline void AAt(Matrix<floating_type>& aat) const;
     /// aat <- A(:,indices)*A(:,indices)'
     inline void AAt(Matrix<floating_type>& aat, const Vector<I>& indices) const;
-    /// aat <- sum_i w_i A(:,i)*A(:,i)'
-    inline void wAAt(const Vector<floating_type>& w, Matrix<floating_type>& aat) const;
     /// XAt <- X*A'
     inline void XAt(const Matrix<floating_type>& X, Matrix<floating_type>& XAt) const;
     /// XAt <- X(:,indices)*A(:,indices)'
@@ -670,39 +666,6 @@ inline void SpMatrix<floating_type, I>::sum_cols(Vector<floating_type>& sum) con
     }
 };
 
-/// aat <- A*A'
-template <typename floating_type, typename I> inline void SpMatrix<floating_type, I>::AAt(Matrix<floating_type>& aat) const {
-    I i, j, k;
-    I K = _m;
-    I M = _n;
-
-    /* compute alpha alpha^floating_type */
-    aat.resize(K, K);
-    int NUM_THREADS = init_omp(MAX_THREADS);
-    floating_type* aatT = new floating_type[NUM_THREADS * K * K];
-    for (j = 0; j < NUM_THREADS * K * K; ++j) aatT[j] = floating_type();
-
-#pragma omp parallel for private(i,j,k)
-    for (i = 0; i < M; ++i) {
-#ifdef _OPENMP
-        int numT = omp_get_thread_num();
-#else
-        int numT = 0;
-#endif
-        floating_type* write_area = aatT + numT * K * K;
-        for (j = _pB[i]; j < _pE[i]; ++j) {
-            for (k = _pB[i]; k <= j; ++k) {
-                write_area[_r[j] * K + _r[k]] += _v[j] * _v[k];
-            }
-        }
-    }
-
-    cblas_copy<floating_type>(K * K, aatT, 1, aat._X, 1);
-    for (i = 1; i < NUM_THREADS; ++i)
-        cblas_axpy<floating_type>(K * K, 1.0, aatT + K * K * i, 1, aat._X, 1);
-    aat.fillSymmetric();
-    delete[](aatT);
-}
 
 template <typename floating_type, typename I>
 inline void SpMatrix<floating_type, I>::XtX(Matrix<floating_type>& XtX) const {
@@ -754,40 +717,6 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
     delete[](aatT);
 }
 
-/// aat <- sum_i w_i A(:,i)*A(:,i)'
-template <typename floating_type, typename I> inline void SpMatrix<floating_type, I>::wAAt(const Vector<floating_type>& w,
-    Matrix<floating_type>& aat) const {
-    I i, j, k;
-    I K = _m;
-    I M = _n;
-
-    /* compute alpha alpha^floating_type */
-    aat.resize(K, K);
-    int NUM_THREADS = init_omp(MAX_THREADS);
-    floating_type* aatT = new floating_type[NUM_THREADS * K * K];
-    for (j = 0; j < NUM_THREADS * K * K; ++j) aatT[j] = floating_type();
-
-#pragma omp parallel for private(i,j,k)
-    for (i = 0; i < M; ++i) {
-#ifdef _OPENMP
-        int numT = omp_get_thread_num();
-#else
-        int numT = 0;
-#endif
-        floating_type* write_area = aatT + numT * K * K;
-        for (j = _pB[i]; j < _pE[i]; ++j) {
-            for (k = _pB[i]; k <= j; ++k) {
-                write_area[_r[j] * K + _r[k]] += w._X[i] * _v[j] * _v[k];
-            }
-        }
-    }
-
-    cblas_copy<floating_type>(K * K, aatT, 1, aat._X, 1);
-    for (i = 1; i < NUM_THREADS; ++i)
-        cblas_axpy<floating_type>(K * K, 1.0, aatT + K * K * i, 1, aat._X, 1);
-    aat.fillSymmetric();
-    delete[](aatT);
-}
 
 /// XAt <- X*A'
 template <typename floating_type, typename I> inline void SpMatrix<floating_type, I>::XAt(const Matrix<floating_type>& X,
