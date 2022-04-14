@@ -45,26 +45,24 @@ RUNTIME_LIRABRY_DIRS = []
 
 if platform.system() == "Windows":
     if 'mkl' in np_blas:
-        libs = ['mkl_rt', 'iomp5']
-        extra_compile_args = [
+        LIBS = ['mkl_rt', 'iomp5']
+        EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
     else:
         if np_blas == "" or "openblas" in np_blas:
-            extra_compile_args = [
+            EXTRA_COMPILE_ARGS = [
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
-            libs = ["libopenblas"]
+            LIBS = ["libopenblas"]
 
         elif 'blas' in np_blas:
-            extra_compile_args = [
+            EXTRA_COMPILE_ARGS = [
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
-            libs = ['lapack', 'blas']
+            LIBS = ['lapack', 'blas']
 
-    LIBS = libs
     INCLUDE_DIRS = [numpy.get_include()]
-    EXTRA_COMPILE_ARGS = extra_compile_args
 
     if struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS

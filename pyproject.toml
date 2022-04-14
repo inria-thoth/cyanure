@@ -31,6 +31,7 @@ CPPFLAGS = "-I/usr/local/opt/openblas/include"
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
 before-all = [
+  "echo %PATH%",
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x86.zip -OutFile D:/a/cyanure/cyanure/openblas_86.zip",
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_86.zip -DestinationPath D:/a/cyanure/cyanure/openblas_86",
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas_64.zip",
@@ -41,4 +42,4 @@ repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\
 test-command =  ["cd /d {package}",]
 
 [tool.cibuildwheel.windows.environment]
-Path = "$PATH;D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib"
+PATH = "$PATH;D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib"
