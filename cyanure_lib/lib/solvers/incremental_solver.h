@@ -119,7 +119,9 @@ protected:
         return _Ki[ind - 1];
     };
     
-    virtual int minibatch() const { return _minibatch; };
+    virtual int minibatch() const { 
+        return _minibatch; 
+    };
     
     FeatureType init_kappa_acceleration(const D& x0)
     {
@@ -140,7 +142,9 @@ protected:
 private:
     void heuristic_L(const D& x)
     {
-        if (_verbose) {logging(logINFO) << "Heuristic: Initial L=" << _L;}
+        if (_verbose) {
+            logging(logINFO) << "Heuristic: Initial L=" << _L;
+        }
         const FeatureType Lmax = _L;
         _L /= _minibatch;
         int iter = 0;
@@ -161,7 +165,9 @@ private:
                 _L = MIN(MAX(2.0 * _L, (ftmp - s1) / s2), Lmax);
             ++iter;
         }
-        if (_verbose) {logging(logINFO) << ", Final L=" << _L;}
+        if (_verbose) {
+            logging(logINFO) << ", Final L=" << _L;
+        }
     }
 };
 

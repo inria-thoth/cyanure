@@ -10,12 +10,18 @@
 enum loss_t { SQUARE, LOGISTIC, HINGE, SQHINGE, SAFE_LOGISTIC, MULTI_LOGISTIC, PPA, INCORRECT_LOSS };
 
 static loss_t loss_from_string(char* loss) {
-   if (strcmp(loss,"square")==0) return SQUARE;
-   if (strcmp(loss,"logistic")==0) return LOGISTIC;
-   if (strcmp(loss,"sqhinge")==0) return SQHINGE;
-   if (strcmp(loss,"hinge")==0) return HINGE;
-   if (strcmp(loss,"safe-logistic")==0) return SAFE_LOGISTIC;
-   if (strcmp(loss,"multiclass-logistic")==0) return MULTI_LOGISTIC;
+   if (strcmp(loss,"square")==0) 
+    return SQUARE;
+   if (strcmp(loss,"logistic")==0) 
+    return LOGISTIC;
+   if (strcmp(loss,"sqhinge")==0) 
+    return SQHINGE;
+   if (strcmp(loss,"hinge")==0) 
+    return HINGE;
+   if (strcmp(loss,"safe-logistic")==0) 
+    return SAFE_LOGISTIC;
+   if (strcmp(loss,"multiclass-logistic")==0) 
+    return MULTI_LOGISTIC;
    return INCORRECT_LOSS;
 }
 

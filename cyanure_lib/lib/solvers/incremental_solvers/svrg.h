@@ -97,7 +97,9 @@ public:
         }
         else
         {
-            if (allow_acc) {logging(logWARNING) << "Problem is well conditioned, switching to regular solver";}
+            if (allow_acc) {
+                logging(logWARNING) << "Problem is well conditioned, switching to regular solver";
+            }
             SVRG_Solver<loss_type>::solver_init(x0);
         }
     };
@@ -146,7 +148,9 @@ protected:
     void print() const
     {
         logging(logINFO) << "Accelerated SVRG Solver";
-        if (!_accelerated_solver) {logging(logWARNING) << "Problem is well conditioned, switching to regular solver";}
+        if (!_accelerated_solver) {
+            logging(logWARNING) << "Problem is well conditioned, switching to regular solver";
+        }
         IncrementalSolver<loss_type>::print();
     };
 

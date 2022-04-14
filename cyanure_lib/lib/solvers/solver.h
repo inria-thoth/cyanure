@@ -153,7 +153,9 @@ public:
             solver_aux(x);
         }
         _time.stop();
-        if (_verbose) {_time.printElapsed();}
+        if (_verbose) {
+            _time.printElapsed();
+        }
         if (_best_primal != INFINITY)
             x.copy(_bestx);
     }
@@ -235,7 +237,9 @@ private:
                     logging(logWARNING) << "Your problem is prone to numerical instability. It would be safer to use double.";
                 }
             }
-            if (_verbose) {logging(logINFO) << "Best relative duality gap: " << duality_gap;}
+            if (_verbose) {
+                logging(logINFO) << "Best relative duality gap: " << duality_gap;
+            }
             optim[2] = _best_dual;
             optim[3] = duality_gap;
             if(duality_gap < _tol){

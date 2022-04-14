@@ -49,9 +49,13 @@ protected:
                 break;
             }
             _L *= FeatureType(1.5);
-            if (_verbose) {logging(logINFO) << "new value for L: " << _L;}
+            if (_verbose) {
+                logging(logINFO) << "new value for L: " << _L;
+            }
             ++iter;
-            if (iter == _max_iter_backtracking) {logging(logINFO) << "Warning: maximum number of backtracking iterations has been reached";}
+            if (iter == _max_iter_backtracking) {
+                logging(logINFO) << "Warning: maximum number of backtracking iterations has been reached";
+            }
         }
     };
     

@@ -22,7 +22,10 @@
 
 template <typename T> class Element {
 public:
-    Element(T el) { element = el; next = NULL; };
+    Element(T el) { 
+        element = el; 
+        next = NULL; 
+    };
     ~Element() {  };
     T element;
     Element<T>* next;
@@ -47,7 +50,12 @@ private:
 template <typename T> class List {
 public:
 
-    List() { _first = NULL; _last = NULL; _size = 0; _iterator = new ListIterator<T>(); };
+    List() { 
+        _first = NULL; 
+        _last = NULL; 
+        _size = 0; 
+        _iterator = new ListIterator<T>(); 
+    };
     ~List() {
         this->clear();
         delete(_iterator);
@@ -82,7 +90,8 @@ public:
         Element<T>* fr = _first;
         _first = new Element<T>(elem);
         _first->next = fr;
-        if (!_last) _last = _first;
+        if (!_last) 
+            _last = _first;
         ++_size;
     }
     void inline clear() {
@@ -116,7 +125,10 @@ public:
         }
     };
     int inline size() const { return _size; };
-    inline ListIterator<T>& begin() const { _iterator->set(_first); return *_iterator; };
+    inline ListIterator<T>& begin() const { 
+        _iterator->set(_first); 
+        return *_iterator; 
+    };
     inline void* end() const { return NULL; };
     inline void fusion(const List<T>& list) {
         for (ListIterator<T> it = list.begin(); it != list.end(); ++it) {

@@ -428,7 +428,8 @@ template <typename floating_type>
 inline INTM Vector<floating_type>::nnz() const {
     INTM sum = 0;
     for (INTM i = 0; i < _n; ++i)
-        if (_X[i] != floating_type()) ++sum;
+        if (_X[i] != floating_type()) 
+            ++sum;
     return sum;
 };
 /// generate logarithmically spaced values
@@ -489,7 +490,8 @@ template <typename floating_type> inline void Vector<floating_type>::setZeros() 
 
 /// resize the vector
 template <typename floating_type> inline void Vector<floating_type>::resize(const INTM n, const bool set_zeros) {
-    if (_n == n) return;
+    if (_n == n) 
+        return;
     clear();
 #pragma omp critical
     {
@@ -537,7 +539,8 @@ template <typename floating_type> inline void Vector<floating_type>::setAleat() 
 
 /// clear the vector
 template <typename floating_type> inline void Vector<floating_type>::clear() {
-    if (!_externAlloc) delete[](_X);
+    if (!_externAlloc) 
+        delete[](_X);
     _n = 0;
     _X = NULL;
     _externAlloc = true;
@@ -629,14 +632,16 @@ template <typename floating_type> inline void Vector<floating_type>::thrshold(co
 /// performs soft-thresholding of the vector
 template <typename floating_type> inline void Vector<floating_type>::thrsPos() {
     for (INTM i = 0; i < _n; ++i) {
-        if (_X[i] < 0) _X[i] = 0;
+        if (_X[i] < 0) 
+            _X[i] = 0;
     }
 };
 
 template <>
 inline bool Vector<bool>::alltrue() const {
     for (INTM i = 0; i < _n; ++i) {
-        if (!_X[i]) return false;
+        if (!_X[i]) 
+            return false;
     }
     return true;
 };
@@ -644,7 +649,8 @@ inline bool Vector<bool>::alltrue() const {
 template <>
 inline bool Vector<bool>::allfalse() const {
     for (INTM i = 0; i < _n; ++i) {
-        if (_X[i]) return false;
+        if (_X[i]) 
+            return false;
     }
     return true;
 };
@@ -820,13 +826,15 @@ template <typename floating_type> inline void Vector<floating_type>::mult(const 
 /// normalize the vector
 template <typename floating_type> inline void Vector<floating_type>::normalize() {
     floating_type norm = nrm2();
-    if (norm > EPSILON) scal(1.0 / norm);
+    if (norm > EPSILON) 
+        scal(1.0 / norm);
 };
 
 /// normalize the vector
 template <typename floating_type> inline void Vector<floating_type>::normalize2(const floating_type thrs) {
     floating_type norm = nrm2();
-    if (norm > thrs) scal(thrs / norm);
+    if (norm > thrs) 
+        scal(thrs / norm);
 };
 
 /// whiten
@@ -1053,7 +1061,8 @@ template <typename floating_type> inline floating_type Vector<floating_type>::as
 template <typename floating_type> inline floating_type Vector<floating_type>::lzero() const {
     INTM count = 0;
     for (INTM i = 0; i < _n; ++i)
-        if (_X[i] != 0) ++count;
+        if (_X[i] != 0) 
+            ++count;
     return count;
 };
 
@@ -1098,7 +1107,8 @@ template <typename floating_type> inline void Vector<floating_type>::l1project(V
     }
     floating_type norm1 = out.sum();
     if (norm1 <= thrs) {
-        if (!simplex) out.copy(*this);
+        if (!simplex) 
+            out.copy(*this);
         return;
     }
     floating_type* prU = out._X;
@@ -1357,7 +1367,8 @@ inline void Vector<floating_type>::l1l2project(Vector<floating_type>& out, const
     }
     floating_type norm = out.sum() + gamma * out.nrm2sq();
     if (norm <= thrs) {
-        if (!pos) out.copy(*this);
+        if (!pos) 
+            out.copy(*this);
         return;
     }
 
@@ -1481,7 +1492,8 @@ inline void Vector<floating_type>::fusedProjectHomotopy(Vector<floating_type>& a
     for (INTM i = 1; i < K; ++i) {
         /// exit if constraINTMs are satisfied
         /// min_u ||b-u||_2^2  +  lambda_1||u||_1 +lambda_2 Fused(u) + 0.5lambda3||u||_2^2 
-        if (penalty && currentLambda <= lambda_2) break;
+        if (penalty && currentLambda <= lambda_2) 
+            break;
         if (!penalty) {
             /// min_u ||b-u||_2^2  /  lambda_1||u||_1 +lambda_2 Fused(u) + 0.5lambda3||u||_2^2 <= 1.0
             scores.copy(alpha);
@@ -1495,7 +1507,8 @@ inline void Vector<floating_type>::fusedProjectHomotopy(Vector<floating_type>& a
         if (newAtom) {
             INTM j;
             for (j = 1; j < i; ++j)
-                if (pr_ind[j] > currentInd) break;
+                if (pr_ind[j] > currentInd) 
+                    break;
             for (INTM k = i; k > j; --k) {
                 pr_ind[k] = pr_ind[k - 1];
                 pr_c[k] = pr_c[k - 1];
@@ -1559,8 +1572,10 @@ inline void Vector<floating_type>::fusedProjectHomotopy(Vector<floating_type>& a
         for (INTM j = 1; j < K; ++j) {
             floating_type sc1 = (currentLambda - pr_DtR[j]) / (floating_type(1.0) - pr_DDu[j]);
             floating_type sc2 = (currentLambda + pr_DtR[j]) / (floating_type(1.0) + pr_DDu[j]);
-            if (sc1 <= 1e-10) sc1 = INFINITY;
-            if (sc2 <= 1e-10) sc2 = INFINITY;
+            if (sc1 <= 1e-10) 
+                sc1 = INFINITY;
+            if (sc2 <= 1e-10) 
+                sc2 = INFINITY;
             pr_scores[j] = MIN(sc1, sc2);
         }
         for (INTM j = 0; j <= i; ++j) {
@@ -1569,7 +1584,8 @@ inline void Vector<floating_type>::fusedProjectHomotopy(Vector<floating_type>& a
         currentInd = scores.fmin();
         max_step3 = pr_scores[currentInd];
         floating_type step = MIN(max_step1, MIN(max_step3, max_step2));
-        if (step == 0 || step == INFINITY) break;
+        if (step == 0 || step == INFINITY) 
+            break;
 
         /// Update gamma, alpha, DtR, currentLambda
         for (INTM j = 0; j <= i; ++j) {

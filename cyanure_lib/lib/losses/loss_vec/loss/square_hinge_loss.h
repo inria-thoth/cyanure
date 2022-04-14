@@ -66,11 +66,13 @@ class SquaredHingeLoss final : public LinearLossVec<M> {
             if (sumpos > -sumneg) {
                const T scal = -sumneg/sumpos;
                for (int ii=0; ii<n; ++ii)
-                  if (grad1[ii] > 0) grad1[ii] *= scal;
+                  if (grad1[ii] > 0) 
+                    grad1[ii] *= scal;
             } else {
                const T scal = -sumpos/sumneg;
                for (int ii=0; ii<n; ++ii)
-                  if (grad1[ii] < 0) grad1[ii] *= scal;
+                  if (grad1[ii] < 0) 
+                    grad1[ii] *= scal;
             }
          }
       }

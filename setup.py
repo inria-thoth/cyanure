@@ -1,5 +1,3 @@
-from setuptools import setup, Extension, find_packages
-import numpy
 import platform
 import struct
 
@@ -9,11 +7,14 @@ import os
 # Override sdist to always produce .zip archive
 from distutils.command.sdist import sdist as _sdist
 
+from setuptools import setup, Extension, find_packages
+import numpy
+
 class sdistzip(_sdist):
     def initialize_options(self):
         _sdist.initialize_options(self)
         self.formats = ['zip', 'gztar']
-    
+
 def getBlas():
     file_ = open("npConfg_file.txt", "w")
     with contextlib.redirect_stdout(file_):
@@ -30,8 +31,8 @@ def getBlas():
     if lib != "":
         blas = lib.split('[')[1].split(',')[0]
         return blas[1:len(blas) - 1]
-    else:
-        return lib
+
+    return lib
 
 
 np_blas = getBlas()
@@ -48,7 +49,7 @@ if platform.system() == "Windows":
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
-    else: 
+    else:
         if np_blas == "" or "openblas" in np_blas:
             extra_compile_args = [
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
@@ -60,7 +61,7 @@ if platform.system() == "Windows":
                 '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
             libs = ['lapack', 'blas']
-    
+
     LIBS = libs
     INCLUDE_DIRS = [numpy.get_include()]
     EXTRA_COMPILE_ARGS = extra_compile_args
@@ -86,15 +87,15 @@ else:
 
     ##### setup openblas
     else:
-    
+
         if "openblas" in np_blas:
             libs = ['openblas']
         else:
             libs = ['lapack', 'blas']
-        
+
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp']      
+            '-std=c++11', '-fopenmp']
 
         INCLUDE_DIRS = [numpy.get_include()]
 
@@ -110,7 +111,7 @@ else:
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
-        LIBS = LIBS + ['gcov'] 
+        LIBS = LIBS + ['gcov']
 
 
 if platform.system() != "Windows":
@@ -119,7 +120,7 @@ if platform.system() != "Windows":
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
     EXTRA_LINK_ARGS = []
-   
+
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',

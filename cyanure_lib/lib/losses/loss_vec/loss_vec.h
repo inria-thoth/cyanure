@@ -18,7 +18,8 @@ class LinearLossVec : public Loss< M, VECM, VECM > {
       inline void double_add_grad(const Vector<T>& input1, const Vector<T>& input2, const INTM i, Vector<T>& output, const T eta1 = T(1.0), const T eta2 = -T(1.0), const T dummy = T(1.0)) const {
          T res1=scal_grad(input1,i);
          T res2=scal_grad(input2,i);
-         if (res1 || res2) _data.add_dual_pred(i,output,eta1*res1+eta2*res2);
+         if (res1 || res2) 
+            _data.add_dual_pred(i,output,eta1*res1+eta2*res2);
       };
       virtual void add_feature(Vector<T>& output, const INTM i, const T& s) const {
          _data.add_dual_pred(i,output,s);

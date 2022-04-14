@@ -64,23 +64,28 @@ template <typename T> static inline T ran1() {
    T temp;
 
    if (seed <= 0 || !iy) {
-      if (-seed < 1) seed=1;
+      if (-seed < 1) 
+        seed=1;
       else seed = -seed;
       for (j=NTAB+7;j>=0;j--) {
          k=seed/IQ;
          seed=IA*(seed-k*IQ)-IR*k;
-         if (seed < 0) seed += IM;
-         if (j < NTAB) iv[j] = seed;
+         if (seed < 0) 
+            seed += IM;
+         if (j < NTAB) 
+            iv[j] = seed;
       }
       iy=iv[0];
    }
    k=seed/IQ;
    seed=IA*(seed-k*IQ)-IR*k;
-   if (seed < 0) seed += IM;
+   if (seed < 0) 
+    seed += IM;
    j=iy/NDIV;
    iy=iv[j];
    iv[j] = seed;
-   if ((temp=AM*iy) > RNMX) return RNMX;
+   if ((temp=AM*iy) > RNMX) 
+    return RNMX;
    else return temp;
 };
 

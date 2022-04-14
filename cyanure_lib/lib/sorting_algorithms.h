@@ -18,7 +18,8 @@ static void quick_sort(I* irOut, T* prOut,const I beg, const I end, const bool i
 template <typename T, typename I>
 static void sort(I* irOut, T* prOut,I beg, I end) {
    I i;
-   if (end <= beg) return;
+   if (end <= beg) 
+    return;
    I pivot=beg;
    for (i = beg+1; i<=end; ++i) {
       if (irOut[i] < irOut[pivot]) {
@@ -48,7 +49,8 @@ static void sort(I* irOut, T* prOut,I beg, I end) {
 
 template <typename T, typename I>
 static void quick_sort(I* irOut, T* prOut,const I beg, const I end, const bool incr) {
-   if (end <= beg) return;
+   if (end <= beg) 
+    return;
    I pivot=beg;
    if (incr) {
       const T val_pivot=prOut[pivot];
@@ -83,7 +85,8 @@ static void quick_sort(I* irOut, T* prOut,const I beg, const I end, const bool i
 
 template <typename T, typename I>
 static void quick_sort(T* prOut,const I beg, const I end, const bool incr) {
-   if (end <= beg) return;
+   if (end <= beg) 
+    return;
    I pivot=beg;
    if (incr) {
       const T val_pivot=prOut[pivot];

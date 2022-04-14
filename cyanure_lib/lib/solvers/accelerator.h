@@ -52,7 +52,9 @@ protected:
         }
         else
         {
-            if (_verbose) {logging(logINFO) << "Switching to regular solver, problem is well conditioned";}
+            if (_verbose) {
+                logging(logINFO) << "Switching to regular solver, problem is well conditioned";
+            }
             SolverType::solver_init(x0);
         }
     };
@@ -133,7 +135,9 @@ protected:
         {
             _h0 = FeatureType(1.0) / _kappa;
             _m = 0;
-            if (_verbose) {logging(logINFO) << "Memory parameter: " << _l_memory;}
+            if (_verbose) {
+                logging(logINFO) << "Memory parameter: " << _l_memory;
+            }
             _ys.resize(x0.size(), _l_memory);
             _ss.resize(x0.size(), _l_memory);
             _rhos.resize(_l_memory);
