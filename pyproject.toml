@@ -31,10 +31,6 @@ CPPFLAGS = "-I/usr/local/opt/openblas/include"
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
 before-all = [
-  "$env:Path += ';D:/a/cyanure/cyanure/openblas_64/lib'",
-  "$env:Path += ';D:/a/cyanure/cyanure/openblas_86/lib'",
-  "$env:Path += ';D:/a/cyanure/cyanure/openblas_64/include'",
-  "$env:Path += ';D:/a/cyanure/cyanure/openblas_86/include'",
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x86.zip -OutFile D:/a/cyanure/cyanure/openblas_86.zip",
   "powershell.exe Expand-Archive -Path D:/a/cyanure/cyanure/openblas_86.zip -DestinationPath D:/a/cyanure/cyanure/openblas_86",
   "powershell.exe Invoke-WebRequest https://github.com/xianyi/OpenBLAS/releases/download/v0.3.18/OpenBLAS-0.3.18-x64.zip -OutFile D:/a/cyanure/cyanure/openblas_64.zip",
@@ -43,3 +39,6 @@ before-all = [
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel}"
 test-command =  ["cd /d {package}",]
+
+[tool.cibuildwheel.macos.environment]
+Path += "D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib"
