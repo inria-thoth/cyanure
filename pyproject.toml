@@ -40,6 +40,3 @@ before-all = [
 before-build = "pip install delvewheel"
 repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\\openblas_64\\bin;D:\\a\\cyanure\\cyanure\\openblas_86\\bin\\ -w {dest_dir} {wheel}"
 test-command =  ["cd /d {package}",]
-
-[tool.cibuildwheel.windows.environment]
-PATH = "D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib;$PATH"
