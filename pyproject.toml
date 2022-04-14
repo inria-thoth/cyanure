@@ -41,4 +41,4 @@ repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\
 test-command =  ["cd /d {package}",]
 
 [tool.cibuildwheel.windows.environment]
-Path += "D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib"
+Path = "D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib"
