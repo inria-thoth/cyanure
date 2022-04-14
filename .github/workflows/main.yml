@@ -45,6 +45,11 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Run tests without the lib
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+        windows: $env:PATH = "D:/a/cyanure/cyanure/openblas_86/include;D:/a/cyanure/cyanure/openblas_64/include;D:/a/cyanure/cyanure/openblas_86/lib;D:/a/cyanure/cyanure/openblas_64/lib;" + $env:PATH 
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.2.0a1
 
