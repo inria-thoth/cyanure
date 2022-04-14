@@ -234,8 +234,6 @@ public:
     inline void sort2(Vector<floating_type>& out, Vector<INTM>& key, const bool mode) const;
     /// sort the vector
     inline void sort2(Vector<INTM>& key, const bool mode);
-    /// sort the vector
-    inline void applyBayerPattern(const int offset);
 
 
     /// Conversion
@@ -1692,116 +1690,6 @@ inline void Vector<floating_type>::sort2(Vector<floating_type>& out, Vector<INTM
     out.copy(*this);
     out.sort2(key, mode);
 }
-
-template <typename floating_type>
-inline void Vector<floating_type>::applyBayerPattern(const int offset) {
-    INTM sizePatch = _n / 3;
-    INTM n = static_cast<INTM>(sqrt(static_cast<floating_type>(sizePatch)));
-    if (offset == 0) {
-        // R
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 1 : 2;
-            const INTM off = (i % 2) ? 0 : 1;
-            for (INTM j = off; j < n; j += step) {
-                _X[i * n + j] = 0;
-            }
-        }
-        // G
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = 2;
-            const INTM off = (i % 2) ? 1 : 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[sizePatch + i * n + j] = 0;
-            }
-        }
-        // B
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 2 : 1;
-            const INTM off = 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[2 * sizePatch + i * n + j] = 0;
-            }
-        }
-    }
-    else if (offset == 1) {
-        // R
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 2 : 1;
-            const INTM off = (i % 2) ? 1 : 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[i * n + j] = 0;
-            }
-        }
-        // G
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = 2;
-            const INTM off = (i % 2) ? 0 : 1;
-            for (INTM j = off; j < n; j += step) {
-                _X[sizePatch + i * n + j] = 0;
-            }
-        }
-        // B
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 1 : 2;
-            const INTM off = 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[2 * sizePatch + i * n + j] = 0;
-            }
-        }
-    }
-    else if (offset == 2) {
-        // R
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 1 : 2;
-            const INTM off = 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[i * n + j] = 0;
-            }
-        }
-        // G
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = 2;
-            const INTM off = (i % 2) ? 0 : 1;
-            for (INTM j = off; j < n; j += step) {
-                _X[sizePatch + i * n + j] = 0;
-            }
-        }
-        // B
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 2 : 1;
-            const INTM off = (i % 2) ? 1 : 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[2 * sizePatch + i * n + j] = 0;
-            }
-        }
-    }
-    else if (offset == 3) {
-        // R
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 2 : 1;
-            const INTM off = 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[i * n + j] = 0;
-            }
-        }
-        // G
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = 2;
-            const INTM off = (i % 2) ? 1 : 0;
-            for (INTM j = off; j < n; j += step) {
-                _X[sizePatch + i * n + j] = 0;
-            }
-        }
-        // B
-        for (INTM i = 0; i < n; ++i) {
-            const INTM step = (i % 2) ? 1 : 2;
-            const INTM off = (i % 2) ? 0 : 1;
-            for (INTM j = off; j < n; j += step) {
-                _X[2 * sizePatch + i * n + j] = 0;
-            }
-        }
-    }
-};
 
 
 /// make a sparse copy 
