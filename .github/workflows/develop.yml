@@ -1,13 +1,13 @@
-name: Build and upload to PyPI
+name: Verify that tests pass on all platforms
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   lint_code:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
@@ -43,64 +43,6 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
-
-  build_sdist:
-    needs: [lint_code]
-    name: Build source distribution
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set version
-        run: echo "PACKAGE_VERSION=$(cut -d'"' -f 2 __version__.py )"
-
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-python@v2
-        name: Install Python
-        with:
-          python-version: '3.8'
-          
-      - name: Install numpy 
-        run: pip install numpy
-
-      - name: Build sdist
-        run: python setup.py sdist
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: dist/*.tar.gz
-
-      - name: version
-        run: echo "::set-output name=version::${{ env.PACKAGE_VERSION }}"
-        id: version
-      - name: release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: upload zip archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/cyanure-${{ env.PACKAGE_VERSION }}.zip
-          asset_name: cyanure-${{ env.PACKAGE_VERSION }}.zip
-          asset_content_type: application/gzip
-      - name: upload targz archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
-          asset_name: cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
-          asset_content_type: application/gzip
 
   test_imports:
     needs: [build_wheels]
@@ -145,7 +87,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
       
-    - name: Try to import cyanure
+    - name: Install cyanure
       run: python -m pip install --find-links dist cyanure
     
     - name: Checkout
@@ -162,19 +104,3 @@ jobs:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
         linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pytest test/
-
-  upload_pypi:
-    if: github.ref == 'refs/heads/master'
-    needs: [build_wheels, build_sdist, test_imports, run_tests]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: artifact
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@v1.4.2
-        with:
-          user: __token__
-          password: ${{secrets.PYPI_TEST}}
-          repository_url: https://test.pypi.org/legacy/

@@ -9,6 +9,7 @@ from distutils.command.sdist import sdist as _sdist
 
 from setuptools import setup, Extension, find_packages
 import numpy
+from __version__ import __version__
 
 class sdistzip(_sdist):
     def initialize_options(self):
@@ -132,7 +133,7 @@ cyanure_wrap = Extension(
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
 setup(name='cyanure',
-      version='0.22.4',
+      version=__version__,
       author="Julien Mairal",
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',
