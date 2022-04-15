@@ -68,6 +68,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
+      
+      - name: Test
+        run: echo $PACKAGE_VERSION
 
       - name: version
         run: echo "::set-output name=version::${{ env.PACKAGE_VERSION }}"
