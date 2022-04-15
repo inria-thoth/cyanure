@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set version
-        run: echo "PACKAGE_VERSION=$(cat VERSION)"
+        run: PACKAGE_VERSION=$(cat VERSION) 
 
       - uses: actions/checkout@v2
 
