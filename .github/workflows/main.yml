@@ -1,0 +1,183 @@
+name: Build and upload to PyPI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint_code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Lint with flake8
+        run: |
+          flake8 cyanure --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 cyanure --count --max-complexity=10 --max-line-length=110 --statistics
+
+  build_wheels:
+    needs: [lint_code]
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+          
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.2.0a1
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    needs: [lint_code]
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set version
+        run: echo "PACKAGE_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+          
+      - name: Install numpy 
+        run: pip install numpy
+
+      - name: Build sdist
+        run: python setup.py sdist
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+          
+      - name: version
+        run: echo "::set-output name=version::${{ env.PACKAGE_VERSION }}"
+        id: version
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: upload zip archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/cyanure-${{ env.PACKAGE_VERSION }}.zip
+          asset_name: cyanure-${{ env.PACKAGE_VERSION }}.zip
+          asset_content_type: application/gzip
+      - name: upload targz archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
+          asset_name: cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
+          asset_content_type: application/gzip
+
+  test_imports:
+    needs: [build_wheels]
+    name: Smoke test for c++ depenencies on raw ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.7', '3.8', '3.9', '3.10']
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: artifact
+        path: dist
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Try to import cyanure
+      run: python -m pip install --find-links dist cyanure &&  python -c "import cyanure;"
+
+  run_tests:
+    needs: [build_wheels]
+    name: Run the tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ['3.7', '3.8', '3.9', '3.10']
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: artifact
+        path: dist
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+      
+    - name: Try to import cyanure
+      run: python -m pip install --find-links dist cyanure
+    
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+          
+    - name: Switch to Current Branch
+      run: git checkout ${{ env.BRANCH }}
+
+    - name: Run tests without the lib
+      uses: knicknic/os-specific-run@v1.0.3
+      with:
+        macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
+        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
+        windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pytest test/
+
+  upload_pypi:
+    if: github.ref == 'refs/heads/master'
+    needs: [build_wheels, build_sdist, test_imports, run_tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{secrets.PYPI_TEST}}
+          repository_url: https://test.pypi.org/legacy/

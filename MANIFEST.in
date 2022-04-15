@@ -1,0 +1,3 @@
+graft cyanure_lib
+graft cyanure
+include VERSION
