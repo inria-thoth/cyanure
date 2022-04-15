@@ -1,6 +1,8 @@
 name: Build and upload to PyPI
 
 on: [push]
+  branches:
+    - master
 
 jobs:
   lint_code:
