@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>References &mdash; Cyanure 0.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Benchmarks" href="benchmarks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Cyanure
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Welcome to Cyanure’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonAPI/pythonAPI.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarks.html">Benchmarks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#accelerators">Accelerators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variance-reduced-stochastic-optimization-algorithms">Variance-reduced stochastic optimization algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#batch-algorithms">Batch algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-frameworks">Other frameworks</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cyanure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>References</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/references.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline"></a></h1>
+<p>We provide here various references regarding the solvers implemented in Cyanure.</p>
+<div class="section" id="accelerators">
+<h2>Accelerators<a class="headerlink" href="#accelerators" title="Permalink to this headline"></a></h2>
+<p>Cyanure uses two types of accelerators. The QNing approach builds upon Quasi-Newton principles and was introduced in</p>
+<dl class="citation">
+<dt class="label" id="qning"><span class="brackets">QNING</span></dt>
+<dd><ol class="upperalpha simple" start="8">
+<li><p>Lin, J. Mairal and Z. Harchaoui. <a class="reference external" href="https://arxiv.org/pdf/1610.00960v4">An Inexact Variable Metric Proximal Point Algorithm for Generic Quasi-Newton Acceleration</a>. SIAM Journal on Optimization. 29(2), pages 1408–1443, 2019.</p></li>
+</ol>
+</dd>
+</dl>
+<p>Catalyst uses Nesterov’s acceleration, and was introduced in</p>
+<dl class="citation">
+<dt class="label" id="catalyst"><span class="brackets">CATALYST</span></dt>
+<dd><ol class="upperalpha simple" start="8">
+<li><p>Lin, J. Mairal and Z. Harchaoui. <a class="reference external" href="https://arxiv.org/abs/1712.05654">Catalyst Acceleration for First-order Convex Optimization: from Theory to Practice</a>. Journal of Machine Learning Research (JMLR). 18(212), pages 1–54, 2018.</p></li>
+</ol>
+</dd>
+</dl>
+</div>
+<div class="section" id="variance-reduced-stochastic-optimization-algorithms">
+<h2>Variance-reduced stochastic optimization algorithms<a class="headerlink" href="#variance-reduced-stochastic-optimization-algorithms" title="Permalink to this headline"></a></h2>
+<p>The miso algorithm was introduced in</p>
+<dl class="citation">
+<dt class="label" id="miso"><span class="brackets">MISO</span></dt>
+<dd><ol class="upperalpha simple" start="10">
+<li><p>Mairal. <a class="reference external" href="http://thoth.inrialpes.fr/people/mairal/resources/pdf/95763.pdf">Incremental Majorization-Minimization Optimization with Application to Large-Scale Machine Learning</a>. SIAM Journal on Optimization. volume 25, number 2, pages 829–855, 2015.</p></li>
+</ol>
+</dd>
+</dl>
+<p>It may be seen as a primal variant of the stochastic dual coordinate ascent method <a class="reference internal" href="#sdca" id="id1"><span>[SDCA]</span></a></p>
+<dl class="citation">
+<dt class="label" id="sdca"><span class="brackets"><a class="fn-backref" href="#id1">SDCA</a></span></dt>
+<dd><ol class="upperalpha simple" start="19">
+<li><p>Shalev-Shwartz, and T. Zhang . Stochastic dual coordinate ascent methods for regularized loss minimization. Journal of Machine Learning Research (JMLR), 14, 567-599. 2013.</p></li>
+</ol>
+</dd>
+</dl>
+<p>The svrg algorithm was introduced in</p>
+<dl class="citation">
+<dt class="label" id="svrg"><span class="brackets">SVRG</span></dt>
+<dd><ol class="upperalpha simple" start="18">
+<li><p>Johnson and T. Zhang. Accelerating stochastic gradient descent using predictive variance reduction. In Advances in Neural Information Processing Systems (NIPS). 2013.</p></li>
+</ol>
+</dd>
+</dl>
+<p>but the variant Cyanure uses (and its accelerated variant acc-svrg) were introduced in</p>
+<dl class="citation">
+<dt class="label" id="acc-svrg"><span class="brackets">ACC_SVRG</span></dt>
+<dd><ol class="upperalpha simple">
+<li><p>Kulunchakov and J. Mairal. <a class="reference external" href="https://arxiv.org/pdf/1901.08788.pdf">Estimate Sequences for Stochastic Composite Optimization: Variance Reduction, Acceleration, and Robustness to Noise</a>. preprint arXiv:1901.08788. 2019</p></li>
+</ol>
+</dd>
+</dl>
+<p>Sadly, Cyanure does not implement yet saga, which should nevertheless be mentioned here</p>
+<dl class="citation">
+<dt class="label" id="saga"><span class="brackets">SAGA</span></dt>
+<dd><ol class="upperalpha simple">
+<li><p>Defazio, F. Bach and S. Lacoste-Julien. SAGA: A fast incremental gradient method with support for non-strongly convex composite objectives. In Advances in Neural Information Processing Systems (NIPS). 2014.</p></li>
+</ol>
+</dd>
+</dl>
+</div>
+<div class="section" id="batch-algorithms">
+<h2>Batch algorithms<a class="headerlink" href="#batch-algorithms" title="Permalink to this headline"></a></h2>
+<p>Cyanure also implements ISTA and FISTA with line-search, as described in</p>
+<dl class="citation">
+<dt class="label" id="fista"><span class="brackets">FISTA</span></dt>
+<dd><ol class="upperalpha simple">
+<li><p>Beck and M. Teboulle. A fast iterative shrinkage-thresholding algorithm for linear inverse problems. SIAM journal on imaging sciences, 2(1), 183-202. 2009.</p></li>
+</ol>
+</dd>
+</dl>
+<p>It is perhaps worth noting that qing-ista seems to perform always better than fista in all our experiments (see benchmark section).</p>
+</div>
+<div class="section" id="other-frameworks">
+<h2>Other frameworks<a class="headerlink" href="#other-frameworks" title="Permalink to this headline"></a></h2>
+<p>Even though Cyanure does not depend on it, our goal is to make it easy to use within Scikit-learn</p>
+<dl class="citation">
+<dt class="label" id="sklearn"><span class="brackets">SKLEARN</span></dt>
+<dd><ol class="upperalpha simple" start="6">
+<li><p>Pedregosa, G. Varoquaux, A. Gramfort and others. <a class="reference external" href="https://www.jmlr.org/papers/volume12/pedregosa11a/pedregosa11a.pdf">Scikit-learn: Machine learning in Python</a>. Journal of machine learning research, 12(Oct), 2825-2830. 2011.</p></li>
+</ol>
+</dd>
+</dl>
+<p>Other solvers in our comparisons include also</p>
+<dl class="citation">
+<dt class="label" id="liblinear"><span class="brackets">LIBLINEAR</span></dt>
+<dd><p>Fan, R. E., Chang, K. W., Hsieh, C. J., Wang, X. R., &amp; Lin, C. J. (2008). LIBLINEAR: A library for large linear classification. Journal of machine learning research, 9(Aug), 1871-1874.</p>
+</dd>
+<dt class="label" id="lbfgs"><span class="brackets">LBFGS</span></dt>
+<dd><p>Nocedal, J. (1980). “Updating Quasi-Newton Matrices with Limited Storage”. Mathematics of Computation. 35 (151): 773–782</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="benchmarks.html" class="btn btn-neutral float-left" title="Benchmarks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Julien Mairal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Benchmarks &mdash; Cyanure 0.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="References" href="references.html" />
+    <link rel="prev" title="Tutorials" href="tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Cyanure
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="welcome.html">Welcome to Cyanure’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="welcome.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pythonAPI/pythonAPI.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Benchmarks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#datasets">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#results">Results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#optimal-lambda-covtype-epsilon-webspam-ckn-mnist-svhn-the-hard-ones">optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: covtype, epsilon, webspam, ckn_mnist, svhn – the hard ones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optimal-lambda-alpha-rcv1-real-sim-ocr-kddb-criteo-the-easy-ones">optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: alpha, rcv1, real-sim, ocr, kddb, criteo – the easy ones</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cyanure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Benchmarks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/benchmarks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="benchmarks">
+<h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline"></a></h1>
+<p>We consider the problem of <span class="math notranslate nohighlight">\(\ell_2\)</span>-logistic regression for binary
+classification, or multinomial logistic regression if multiple classes are
+present.</p>
+<div class="section" id="datasets">
+<h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline"></a></h2>
+<p>We will present the results obtained by the solvers of Cyanure on 11
+datasets, presented in the Table below. The 9 first datasets can be found on the
+<a class="reference external" href="https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/">LIBSVM dataset web-page</a>.
+The last two datasets were generated by encoding the <a class="reference external" href="http://yann.lecun.com/exdb/mnist/">MNIST</a> and <a class="reference external" href="http://ufldl.stanford.edu/housenumbers/">SVHN</a> datasets with a two-layer <a class="reference external" href="https://hal.inria.fr/hal-01387399/document">convolutional kernel network (CKN), NIPS’16</a>.
+All datasets samples are normalized with <span class="math notranslate nohighlight">\(\ell_2\)</span>-norm and centered for dense datasets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Many of the datasets I used are available <a class="reference external" href="http://pascal.inrialpes.fr/data2/mairal/data/">here</a>.  Thanks to Chih-Jen for allowing me to post them here in .npz format. Note that the Criteo datasets comes from the <a class="reference external" href="http://labs.criteo.com/2014/02/kaggle-display-advertising-challenge-dataset/">Kaggle display advertising challenge</a></p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 17%" />
+<col style="width: 14%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Dataset</p></th>
+<th class="head"><p>Sparse</p></th>
+<th class="head"><p>Num classes</p></th>
+<th class="head"><p>n</p></th>
+<th class="head"><p>p</p></th>
+<th class="head"><p>Size (in Gb)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>covtype</p></td>
+<td><p>No</p></td>
+<td><p>1</p></td>
+<td><p>581012</p></td>
+<td><p>54</p></td>
+<td><p>0.25</p></td>
+</tr>
+<tr class="row-odd"><td><p>alpha</p></td>
+<td><p>No</p></td>
+<td><p>1</p></td>
+<td><p>500000</p></td>
+<td><p>500</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p>real-sim</p></td>
+<td><p>No</p></td>
+<td><p>1</p></td>
+<td><p>72309</p></td>
+<td><p>20958</p></td>
+<td><p>0.044</p></td>
+</tr>
+<tr class="row-odd"><td><p>epsilon</p></td>
+<td><p>No</p></td>
+<td><p>1</p></td>
+<td><p>250000</p></td>
+<td><p>2000</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td><p>ocr</p></td>
+<td><p>No</p></td>
+<td><p>1</p></td>
+<td><p>2500000</p></td>
+<td><p>1155</p></td>
+<td><p>23.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>rcv1</p></td>
+<td><p>Yes</p></td>
+<td><p>1</p></td>
+<td><p>781265</p></td>
+<td><p>47152</p></td>
+<td><p>0.95</p></td>
+</tr>
+<tr class="row-even"><td><p>webspam</p></td>
+<td><p>Yes</p></td>
+<td><p>1</p></td>
+<td><p>250000</p></td>
+<td><p>16609143</p></td>
+<td><p>14.95</p></td>
+</tr>
+<tr class="row-odd"><td><p>kddb</p></td>
+<td><p>Yes</p></td>
+<td><p>1</p></td>
+<td><p>19264097</p></td>
+<td><p>28875157</p></td>
+<td><p>6.9</p></td>
+</tr>
+<tr class="row-even"><td><p>criteo</p></td>
+<td><p>Yes</p></td>
+<td><p>1</p></td>
+<td><p>45840617</p></td>
+<td><p>999999</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-odd"><td><p>ckn_mnist</p></td>
+<td><p>No</p></td>
+<td><p>10</p></td>
+<td><p>60000</p></td>
+<td><p>2304</p></td>
+<td><p>0.55</p></td>
+</tr>
+<tr class="row-even"><td><p>ckn_svhn</p></td>
+<td><p>No</p></td>
+<td><p>10</p></td>
+<td><p>604388</p></td>
+<td><p>18432</p></td>
+<td><p>89</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h2>
+<p>To select a reasonable regularization parameter <span class="math notranslate nohighlight">\(\lambda\)</span> for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid <span class="math notranslate nohighlight">\(2^{-i}/n\)</span> with <span class="math notranslate nohighlight">\(i=1,\ldots,16\)</span> when evaluating trained model on the validation set. Then, we keep the optimal parameter <span class="math notranslate nohighlight">\(\lambda\)</span>, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU &#64; 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Cyanure are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, <a class="reference internal" href="references.html#fista" id="id1"><span>[FISTA]</span></a>, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
+Experiments were conducted on Linux using the Anaconda Python 3.7 distribution.</p>
+<p>In the evaluation, we include solvers that can be called from scikit-learn, such as <a class="reference internal" href="references.html#liblinear" id="id2"><span>[LIBLINEAR]</span></a>, <a class="reference internal" href="references.html#lbfgs" id="id3"><span>[LBFGS]</span></a>, newton-cg, or the <a class="reference internal" href="references.html#saga" id="id4"><span>[SAGA]</span></a> implementation of scikit-learn. We run each solver with different tolerance parameter tol=0.1,0.01,0.001,0.0001 in order to obtain several points illustrating their accuracy-speed trade-off. Each method is run for at most 500 epochs.</p>
+</div>
+<div class="section" id="results">
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline"></a></h2>
+<p>The results are presented below. There are 11 datasets, and we are going to
+group them into categories leading to similar conclusions. We start with those
+requiring a small regularization parameter (e.g., <span class="math notranslate nohighlight">\(\lambda=1/(100n)\)</span>),
+which lead to more difficult optimization problems since there is less strong
+convexity.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>I am well aware of the limitations of this study (single runs, lack of error bars) and I will try to
+improve it when time permits. Yet, the conclusions seem robust enough given the number of methods and
+datasets we used in this study.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Experiments conducted with Liblinear are obtained by using the variant shipped with scikit-learn 0.21.3,
+using the tolerance parameter tol=0.1.
+Experiments with a more recent version of liblinear will be reported soon.</p>
+</div>
+<div class="section" id="optimal-lambda-covtype-epsilon-webspam-ckn-mnist-svhn-the-hard-ones">
+<h3>optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: covtype, epsilon, webspam, ckn_mnist, svhn – the hard ones<a class="headerlink" href="#optimal-lambda-covtype-epsilon-webspam-ckn-mnist-svhn-the-hard-ones" title="Permalink to this headline"></a></h3>
+<p>For these datasets, regularization is important, but not crucial to achieve
+a good predictive accuracy and thus the optimal <span class="math notranslate nohighlight">\(\lambda\)</span> is small. For
+instance, for ckn_mnist, the accuracy on test data is typically above 99%, and
+the dimension p for covtype is so small that regularization is useless.
+This leads to an interesting setting with clear conclusions.</p>
+<dl class="simple">
+<dt>Conclusions</dt><dd><ul class="simple">
+<li><p><strong>qning and catalyst accelerations are very useful</strong>. Note that catalyst works well in practice both for <a class="reference internal" href="references.html#svrg" id="id5"><span>[SVRG]</span></a> and miso (regular miso, not shown on the plots, is an order of magnitude slower than its accelerated variants).</p></li>
+<li><p><strong>qning-miso and catalyst-miso are the best solvers here</strong>, better than svrg variants. The main reason is the fact that for t iterations, svrg computes 3t gradients, vs. only t for the miso algorithms. miso also better handle sparse matrices (no need to code lazy update strategies, which can be painful to implement).</p></li>
+<li><p><strong>Cyanure does better than sklearn-saga, lbfgs, and liblinear</strong>, sometimes with several orders of magnitudes. Note that sklearn-saga does as bad as our regular srvg solver for these dataset, which confirms that the key to obtain faster results is acceleration.
+Note that Liblinear-dual is very competitive on large sparse datasets (see next part of the benchmark).</p></li>
+<li><p><strong>Direct acceleration (acc-svrg) works a bit better than catalyst-svrg</strong>: in fact <a class="reference internal" href="references.html#acc-svrg" id="id6"><span>[ACC_SVRG]</span></a> is close to qning-svrg here.</p></li>
+</ul>
+</dd>
+</dl>
+<img alt="_images/covtype_logistic_l2.png" src="_images/covtype_logistic_l2.png" />
+<img alt="_images/epsilon_logistic_l2.png" src="_images/epsilon_logistic_l2.png" />
+<img alt="_images/webspam_logistic_l2.png" src="_images/webspam_logistic_l2.png" />
+<img alt="_images/ckn_mnist_logistic_l2.png" src="_images/ckn_mnist_logistic_l2.png" />
+<img alt="_images/svhn_logistic_l2.png" src="_images/svhn_logistic_l2.png" />
+</div>
+<div class="section" id="optimal-lambda-alpha-rcv1-real-sim-ocr-kddb-criteo-the-easy-ones">
+<h3>optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: alpha, rcv1, real-sim, ocr, kddb, criteo – the easy ones<a class="headerlink" href="#optimal-lambda-alpha-rcv1-real-sim-ocr-kddb-criteo-the-easy-ones" title="Permalink to this headline"></a></h3>
+<p>For these datasets, the optimal regularization parameter is close to <span class="math notranslate nohighlight">\(\frac{1}{n}\)</span>,
+which is a regime where acceleration does not bring benefits in theory.
+The results below are consistent with theory and we can draw the following conclusions:</p>
+<ul class="simple">
+<li><p><strong>accelerations is useless here, as predicted by theory</strong>, which is why the ‘auto’ solver only uses acceleration when needed.</p></li>
+<li><p><strong>qning-miso and catalyst-miso are still among the best solvers</strong> here, but the difference with svrg is smaller. sklearn-saga is sometimes competitive, sometimes not.</p></li>
+<li><p><strong>Liblinear-dual is competitive on large sparse
+datasets</strong>.</p></li>
+</ul>
+<img alt="_images/alpha_logistic_l2.png" src="_images/alpha_logistic_l2.png" />
+<img alt="_images/real-sim_logistic_l2.png" src="_images/real-sim_logistic_l2.png" />
+<img alt="_images/ocr_logistic_l2.png" src="_images/ocr_logistic_l2.png" />
+<img alt="_images/rcv1_logistic_l2.png" src="_images/rcv1_logistic_l2.png" />
+<img alt="_images/kddb_logistic_l2.png" src="_images/kddb_logistic_l2.png" />
+<img alt="_images/criteo_logistic_l2.png" src="_images/criteo_logistic_l2.png" />
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="references.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Julien Mairal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

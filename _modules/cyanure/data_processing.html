@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cyanure.data_processing &mdash; Cyanure 0.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Cyanure
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome.html">Welcome to Cyanure’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome.html#license">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pythonAPI/pythonAPI.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarks.html">Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Cyanure</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>cyanure.data_processing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cyanure.data_processing</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contain the functions concerning the processing of data.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.sparse</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.exceptions</span> <span class="kn">import</span> <span class="n">DataConversionWarning</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelEncoder</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.multiclass</span> <span class="kn">import</span> <span class="n">type_of_target</span>
+
+<span class="kn">import</span> <span class="nn">cyanure_lib</span>
+
+<span class="kn">from</span> <span class="nn">cyanure.logger</span> <span class="kn">import</span> <span class="n">setup_custom_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">setup_custom_logger</span><span class="p">(</span><span class="s2">&quot;INFO&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="preprocess"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.preprocess">[docs]</a><span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Preprocess features training data.</span>
+
+<span class="sd">    Perform in-place centering or normalization, either of columns or rows</span>
+<span class="sd">    of the input matrix X.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Input matrix</span>
+
+<span class="sd">        centering (boolean) : default=False</span>
+<span class="sd">            Perform a centering operation</span>
+
+<span class="sd">        normalize (boolean): default=True</span>
+<span class="sd">            l2-normalization</span>
+
+<span class="sd">        columns (boolean): default=False</span>
+<span class="sd">            Operates on rows (False) or columns (True).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">training_data_fortran</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+            <span class="n">training_data_fortran</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">training_data_fortran</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+            <span class="n">training_data_fortran</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">training_data_fortran</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">training_data_fortran</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cyanure_lib</span><span class="o">.</span><span class="n">preprocess_</span><span class="p">(</span><span class="n">training_data_fortran</span><span class="p">,</span> <span class="n">centering</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="ow">not</span> <span class="n">columns</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_labels"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_labels">[docs]</a><span class="k">def</span> <span class="nf">check_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify the format of labels depending on the type of the estimator.</span>
+
+<span class="sd">    Can convert labels in some cases.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        labels (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Numpy array containing labels</span>
+
+<span class="sd">        estimator (ERM):</span>
+<span class="sd">            The estimator which will be fitted</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            Format of the labels does not respect the format supported by Cyanure classifiers.</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Labels have an non finite value</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Problem has only one class</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        labels (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Converted labels if required by the estimator.</span>
+
+<span class="sd">        label_encoder (sklearn.LabelEncoder):</span>
+<span class="sd">            Convert text labels if needed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">label_encoder</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">estimator</span><span class="o">.</span><span class="n">_estimator_type</span> <span class="o">==</span> <span class="s2">&quot;classifier&quot;</span><span class="p">:</span>
+        <span class="n">y_type</span> <span class="o">=</span> <span class="n">type_of_target</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">y_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;binary&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;multiclass&quot;</span>
+        <span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown label type: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">y_type</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">):</span>
+            <span class="n">label_encoder</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+            <span class="n">label_encoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">label_encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The labels have been converted in float64&quot;</span><span class="p">)</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="kc">False</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Input contains NaN, infinity or a value too large for dtype(&#39;float64&#39;).&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There is only one class in the labels.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_element</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get an element from an array of any depth.</span>
+
+<span class="sd">    Args</span>
+<span class="sd">    ----</span>
+<span class="sd">        array (Type of the element):</span>
+<span class="sd">            Array we want to get an element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        Type of the element:</span>
+<span class="sd">            One of the element of the array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">element</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">element</span>
+
+
+<div class="viewcode-block" id="check_input_type"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_input_type">[docs]</a><span class="k">def</span> <span class="nf">check_input_type</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify the format of labels and features depending on the type of the estimator.</span>
+
+<span class="sd">    Can convert labels in some cases.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Numpy array containing features</span>
+
+<span class="sd">        labels (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Numpy array containing labels</span>
+
+<span class="sd">        estimator (ERM):</span>
+<span class="sd">            The estimator which will be fitted</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            Data are complex</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Data contains non finite value</span>
+
+<span class="sd">        TypeError:</span>
+<span class="sd">            Sparsed features are not CSR</span>
+
+<span class="sd">        TypeError:</span>
+<span class="sd">            Sparsed labels are not CSR</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Converted features if required by the estimator.</span>
+
+<span class="sd">        labels (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Converted labels if required by the estimator.</span>
+
+<span class="sd">        label_encoder (sklearn.LabelEncoder):</span>
+<span class="sd">            Convert text labels if needed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">label_encoder</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Complex data not supported&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+        <span class="n">x_element</span> <span class="o">=</span> <span class="n">get_element</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x_element</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The features have been converted in float64&quot;</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span> <span class="o">=</span> <span class="n">check_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="kc">False</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Input contains NaN, infinity or a value too large for dtype(&#39;float64&#39;).&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">and</span> <span class="n">X</span><span class="o">.</span><span class="n">getformat</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;csr&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The library only supports CSR sparse data.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">getformat</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;csr&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The library only supports CSR sparse data.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+                <span class="n">labels</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+                <span class="n">labels</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span></div>
+
+
+<div class="viewcode-block" id="check_positive_parameter"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_positive_parameter">[docs]</a><span class="k">def</span> <span class="nf">check_positive_parameter</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check that a parameter if a number and positive.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        parameter (Any):</span>
+<span class="sd">            Parameter to verify</span>
+
+<span class="sd">        message (string):</span>
+<span class="sd">            Message of the exception</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            Parameter is not a number</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Parameter is not positive</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">)</span> <span class="ow">and</span> <span class="n">parameter</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_parameters"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_parameters">[docs]</a><span class="k">def</span> <span class="nf">check_parameters</span><span class="p">(</span><span class="n">estimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify that the different parameters of an estimator respect the constraints.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        estimator (ERM):</span>
+<span class="sd">            Estimator to veriffy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">check_positive_parameter</span><span class="p">(</span>
+        <span class="n">estimator</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="s2">&quot;Tolerance for stopping criteria must be positive&quot;</span><span class="p">)</span>
+    <span class="n">check_positive_parameter</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span>
+                             <span class="s2">&quot;Maximum number of iteration must be positive&quot;</span><span class="p">)</span>
+    <span class="n">check_positive_parameter</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">lambda_1</span><span class="p">,</span>
+                             <span class="s2">&quot;Penalty term must be positive&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Verify that it is not the default value</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">estimator</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">!=</span> <span class="mf">0.1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Setting penalty=&#39;none&#39; will ignore the lambda_1&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_input_fit"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_input_fit">[docs]</a><span class="k">def</span> <span class="nf">check_input_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the different input arrays required for training according to the estimator type.</span>
+
+<span class="sd">    Can convert data if necessary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Numpy array containing features</span>
+
+<span class="sd">        labels (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Numpy array containing labels</span>
+
+<span class="sd">        estimator (ERM):</span>
+<span class="sd">            The estimator which will be fitted</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            There is only one feature.</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            There is no sample.</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            An observation has no label.</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Feature array has no feature</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Features and labels does not have the same number of observations.</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            There is only one sample.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Converted features if required by the estimator.</span>
+
+<span class="sd">        labels (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Converted labels if required by the estimator.</span>
+
+<span class="sd">        label_encoder (sklearn.LabelEncoder):</span>
+<span class="sd">            Convert text labels if needed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The training array has only one dimension.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Empty training array&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">labels</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="kc">True</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;y should be a 1d array&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;0 feature(s) (shape=(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;, 0)) while a minimum of &quot;</span>
+              <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; is required.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;X and labels should have the same number of observations&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There should have more than 1 sample&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">estimator</span><span class="o">.</span><span class="n">_get_tags</span><span class="p">()[</span><span class="s2">&quot;multioutput&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+       <span class="ow">not</span> <span class="n">estimator</span><span class="o">.</span><span class="n">_get_tags</span><span class="p">()[</span><span class="s2">&quot;multioutput_only&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;A column-vector y was passed when a 1d array was expected&quot;</span><span class="p">,</span> <span class="n">DataConversionWarning</span><span class="p">)</span>
+
+    <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span> <span class="o">=</span> <span class="n">check_input_type</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">)</span>
+    <span class="n">check_parameters</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span></div>
+
+
+<div class="viewcode-block" id="check_input_inference"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_input_inference">[docs]</a><span class="k">def</span> <span class="nf">check_input_inference</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the format of the array which will be used for inference. Input array can be converted.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Array which will be used for inference</span>
+
+<span class="sd">        estimator (ERM):</span>
+<span class="sd">            Estimator which will be used</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError:</span>
+<span class="sd">            One of the value is not finite</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Shape of features is not correct</span>
+
+<span class="sd">        ValueError:</span>
+<span class="sd">            Shape of features does not correspond to estimators shape</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        X (numpy array or scipy sparse CSR matrix):</span>
+<span class="sd">            Potentially converted array (if converted as numpy.float64)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s2">&quot;float32&quot;</span> <span class="ow">or</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s2">&quot;float64&quot;</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="kc">False</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;NaN of inf values in the training array(s)&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Reshape your data&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">n_features_in_</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X has </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> features per sample; </span><span class="se">\</span>
+<span class="s2">                           expecting </span><span class="si">{</span><span class="n">estimator</span><span class="o">.</span><span class="n">n_features_in_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Julien Mairal.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
