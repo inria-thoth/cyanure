@@ -70,7 +70,7 @@ jobs:
           path: dist/*.tar.gz
       
       - name: Test
-        run: echo $PACKAGE_VERSION
+        run: $PACKAGE_VERSION
 
       - name: version
         run: echo "::set-output name=version::${{ env.PACKAGE_VERSION }}"
