@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set version
-        run: PACKAGE_VERSION=$(cat VERSION) 
+        run: echo "PACKAGE_VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
       - uses: actions/setup-python@v2
         name: Install Python
@@ -70,7 +70,7 @@ jobs:
           path: dist/*.tar.gz
       
       - name: Test
-        run: echo $PACKAGE_VERSION
+        run: echo ${{ env.PACKAGE_VERSION }}
 
       - name: version
         run: echo "::set-output name=version::${{ env.PACKAGE_VERSION }}"
