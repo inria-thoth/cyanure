@@ -31,20 +31,20 @@ Create a new release
 ====================
 
 When you wish to create a new version of the library you should open a merge 
-request on the master branch.
+request to merge on the master branch.
 
 You should update the version of the library by incrementing the number version
 in the __VERSION__ file.
-Major version is dedicated to braking changes.
+Major version is dedicated to breaking changes.
 Minor version to new features.
 Fixes version to bug fixes release.
 
 You should also update the __CHANGELOG__ file to pinpoint the modifications impacting the users.
 
-Once the merge request is merge a Github and PyPi release will be created. The commit will also be tagged.
+Once the merge request is merged a Github and PyPi release will be created. The commit will also be tagged.
 
 Once this part of CI is finished, you should update the conda forge recipe.
-Please refer to the following link. For a "simple" release you need to update the version of the recipe and the hash corresponding to the archive which will be downloaded from github. If the build number is different of 0 you should set i to 0.
+Please refer to the following link. For a "simple" release you need to update the version of the recipe and the hash corresponding to the archive which will be downloaded from github. If the build number is different of 0 you should set it to 0.
 
 https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-recipes
 
@@ -53,7 +53,7 @@ https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-recipes
 Contribution
 ============
 
-If you want to contribute to the library you should verify that actual CI is still passing. The CI will trigger automatically on push and build the package on the different OS and execute tests on all the built wheels.
+If you want to contribute to the library you should verify that actual CI is still passing. The CI will trigger automatically on push. It will build the package on the different OS and execute tests on all the wheels.
 
 If you add features in the library, please write tests. A CI job is dedicated to verify that code coverage does not decrease.
 
