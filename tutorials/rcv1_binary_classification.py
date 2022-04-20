@@ -14,6 +14,6 @@ X = scipy.sparse.csc_matrix(X.all()).T # n x p matrix, csr format
 #normalize the rows of X in-place, without performing any copy
 preprocess(X,normalize=True,columns=False)
 #declare a binary classifier for squared hinge loss + l1 regularization
-classifier=Classifier(loss='sqhinge',penalty='l1',lambda_1=0.000005,max_iter=500,tol=1e-3, duality_gap_interval=10, verbose=True, fit_intercept=False)
+classifier=Classifier(loss='sqhinge',penalty='l1',lambda_1=0.000005,max_iter=500,tol=1e-3, duality_gap_interval=10, verbose=True, fit_intercept=True)
 # uses the auto solver by default, performs at most 500 epochs
 classifier.fit(X,y)
