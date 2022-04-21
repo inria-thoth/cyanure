@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Cyanure’s documentation! &mdash; Cyanure 0.2 documentation</title>
+  <title>Welcome to Cyanure’s documentation! &mdash; Cyanure 1.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -84,7 +84,7 @@ acceleration mechanisms and Quasi-Newton principles.
 Cyanure can handle a large variety of loss functions (logistic, square,
 squared hinge, multinomial logistic) and regularization functions (<span class="math notranslate nohighlight">\(\ell_2\)</span>,
 <span class="math notranslate nohighlight">\(\ell_1\)</span>, elastic-net, fused Lasso, multi-task group Lasso).
-It provides a simple Python API, which is very close to that of scikit-learn,
+It provides a simple Python API, which should be fully compatible with scikit-learn,
 which should be extended to other languages such as R or Matlab in a near future.</p>
 <p>The code is written by <a class="reference external" href="http://julien.mairal.org">Julien Mairal</a> (Inria, Univ. Grenoble-Alpes) and Thomas Ryckeboer (Inria), and
 a documentation is provided in pdf in the following arXiv document</p>
@@ -121,15 +121,15 @@ Note that if you have chosen the solver ‘auto’, you are likely to use <a cla
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
 <p>The recommanded installation procedure is to use either conda or pip.</p>
-<p>The package available on conda and pip are shipped with OpenBLAS and OpenMP except for Windows which does not use OpenMP.
-For conda the package is available on conda forge.</p>
+<p>The package available on pip are shipped with OpenBLAS and OpenMP except for Windows which does not use OpenMP.
+For conda the package is available on conda forge and support every BLAS implementation provided by conda forge.</p>
 <p>You can either install with:</p>
 <blockquote>
 <div><p><cite>conda install -c conda-forge cyanure</cite></p>
 <p>or</p>
 <p><cite>pip install cyanure</cite></p>
 </div></blockquote>
-<p>You can also install Cyanure from the sources. However, the setup file is not mature enough to work with a variety of BLAS configuration (especially on Windows).</p>
+<p>You can also install Cyanure from the sources. However, the setup file is not mature enough to work with a variety of BLAS configuration (especially on Windows). Do not hesitate to open an issue if you encounter difficulties installing the package.</p>
 <p>On top of that, you can not use default compiler to compile on MacOS with OpenMP.</p>
 <a class="reference internal image-reference" href="_images/logo-inria-scientifique-couleur.jpg"><img alt="_images/logo-inria-scientifique-couleur.jpg" src="_images/logo-inria-scientifique-couleur.jpg" style="width: 35%;" /></a>
 <a class="reference internal image-reference" href="_images/erc-logo.gif"><img alt="_images/erc-logo.gif" src="_images/erc-logo.gif" style="width: 15%;" /></a>

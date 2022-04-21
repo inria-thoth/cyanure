@@ -7,7 +7,7 @@ acceleration mechanisms and Quasi-Newton principles.
 Cyanure can handle a large variety of loss functions (logistic, square,
 squared hinge, multinomial logistic) and regularization functions (:math:`\ell_2`,
 :math:`\ell_1`, elastic-net, fused Lasso, multi-task group Lasso).
-It provides a simple Python API, which is very close to that of scikit-learn,
+It provides a simple Python API, which should be fully compatible with scikit-learn,
 which should be extended to other languages such as R or Matlab in a near future.
 
 The code is written by `Julien Mairal <http://julien.mairal.org>`_ (Inria, Univ. Grenoble-Alpes) and Thomas Ryckeboer (Inria), and 
@@ -45,8 +45,8 @@ Installation
 
 The recommanded installation procedure is to use either conda or pip.
 
-The package available on conda and pip are shipped with OpenBLAS and OpenMP except for Windows which does not use OpenMP.
-For conda the package is available on conda forge.
+The package available on pip are shipped with OpenBLAS and OpenMP except for Windows which does not use OpenMP.
+For conda the package is available on conda forge and support every BLAS implementation provided by conda forge.
 
 You can either install with:
 
@@ -56,7 +56,7 @@ You can either install with:
 
  `pip install cyanure`
 
-You can also install Cyanure from the sources. However, the setup file is not mature enough to work with a variety of BLAS configuration (especially on Windows).
+You can also install Cyanure from the sources. However, the setup file is not mature enough to work with a variety of BLAS configuration (especially on Windows). Do not hesitate to open an issue if you encounter difficulties installing the package.
 
 On top of that, you can not use default compiler to compile on MacOS with OpenMP.
 
