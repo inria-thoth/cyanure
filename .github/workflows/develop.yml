@@ -1,6 +1,6 @@
 name: Verify that tests pass on all platforms
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   lint_code:
