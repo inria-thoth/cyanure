@@ -250,7 +250,7 @@ class ERM(BaseEstimator, ABC):
         self.duality_gap_interval = duality_gap_interval
         self.n_threads = n_threads
 
-    def fit(self, X, y, le_parameter=None):
+    def fit(self, X, labels, le_parameter=None):
         """
         Fit the parameters.
 
@@ -274,12 +274,7 @@ class ERM(BaseEstimator, ABC):
                 Returns the instance
         """
         loss = None
-
-        X, labels, le = check_input_fit(X, y, self)
-        if le_parameter is not None:
-            self.le_ = le_parameter
-        else:
-            self.le_ = le
+        self.le_ = le_parameter
 
         if (self.multi_class == "multinomial" or
            (self.multi_class == "auto" and not self._binary_problem)) and self.loss == "logistic":

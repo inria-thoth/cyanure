@@ -4,6 +4,8 @@ import warnings
 import numbers
 import platform
 
+import math
+
 import numpy as np
 import scipy.sparse
 
@@ -101,14 +103,23 @@ def check_labels(labels, estimator):
             logger.info("The labels have been converted in float64")
             labels = labels.astype('float64')
 
-    if False in np.isfinite(labels):
-        raise ValueError(
-            "Input contains NaN, infinity or a value too large for dtype('float64').")
+    check_is_finite(labels)
 
     if len(np.unique(labels)) == 1:
         raise ValueError("There is only one class in the labels.")
 
     return labels, label_encoder
+
+def check_is_finite(array_to_test):
+    if len(array_to_test.shape) == 1:
+        for value in array_to_test:
+            if not math.isfinite(value):
+                raise ValueError(
+                    "Input contains NaN, infinity or a value too large for dtype('float64').")
+    else:
+        for sub_array_to_test in array_to_test:
+            check_is_finite(sub_array_to_test)
+
 
 
 def get_element(array):
@@ -183,15 +194,11 @@ def check_input_type(X, labels, estimator):
         if type(x_element) not in (np.float32, np.float64):
 
             logger.info("The features have been converted in float64")
-            X = np.asfortranarray(X, 'float64')
-        else:
-            X = np.asfortranarray(X)
+            X = X.astype('float64')
 
         labels, label_encoder = check_labels(labels, estimator)
 
-        if False in np.isfinite(X):
-            raise ValueError(
-                "Input contains NaN, infinity or a value too large for dtype('float64').")
+        check_is_finite(X)
 
     else:
         if scipy.sparse.issparse(X) and X.getformat() != "csr":
@@ -307,8 +314,10 @@ def check_input_fit(X, labels, estimator):
             Convert text labels if needed
     """
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(labels):
-        X = np.array(X)
-        labels = np.array(labels)
+        if not isinstance(X,np.ndarray):
+            X = np.array(X)
+        if not isinstance(labels,np.ndarray):
+            labels = np.array(labels)
 
     if X.ndim == 1:
         raise ValueError("The training array has only one dimension.")
@@ -373,10 +382,9 @@ def check_input_inference(X, estimator):
     if not scipy.sparse.issparse(X):
         X = np.array(X)
         if X.dtype != "float32" or X.dtype != "float64":
-            X = np.asfortranarray(X, dtype="float64")
+            X = X.astype("float64")
 
-        if False in np.isfinite(X):
-            raise ValueError("NaN of inf values in the training array(s)")
+        check_is_finite(X)
 
     if X.ndim == 1:
         raise ValueError("Reshape your data")
