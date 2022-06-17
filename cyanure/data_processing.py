@@ -105,9 +105,6 @@ def check_labels(labels, estimator):
 
     check_is_finite(labels)
 
-    if len(np.unique(labels)) == 1:
-        raise ValueError("There is only one class in the labels.")
-
     return labels, label_encoder
 
 def check_is_finite(array_to_test):
