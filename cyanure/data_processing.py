@@ -105,6 +105,9 @@ def check_labels(labels, estimator):
 
     check_is_finite(labels)
 
+    if estimator._estimator_type == "classifier" and len(np.unique(labels)) == 1:
+        raise ValueError("Classifier can't train when only one class is present.")
+
     return labels, label_encoder
 
 
