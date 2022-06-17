@@ -8,11 +8,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 skip = ["cp36*", "pp*", "*musllinux*", "cp310-win32*"]
-manylinux-x86_64-image = "manylinux1"
-manylinux-i686-image = "manylinux1"
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y openblas-devel libgomp"
+before-all = "yum install -y openblas-devel libgomp  || apk add openblas-dev libgomp"
 test-command =  ["cd  {package}",]
 
 [tool.cibuildwheel.macos]
