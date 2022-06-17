@@ -107,6 +107,7 @@ def check_labels(labels, estimator):
 
     return labels, label_encoder
 
+
 def check_is_finite(array_to_test):
     if len(array_to_test.shape) == 1:
         for value in array_to_test:
@@ -116,7 +117,6 @@ def check_is_finite(array_to_test):
     else:
         for sub_array_to_test in array_to_test:
             check_is_finite(sub_array_to_test)
-
 
 
 def get_element(array):
@@ -261,6 +261,15 @@ def check_parameters(estimator):
     if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambda_1 != 0.1:
         warnings.warn("Setting penalty='none' will ignore the lambda_1")
 
+def convert_to_array(X, labels):
+    if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(labels):
+        if not isinstance(X, np.ndarray):
+            X = np.array(X)
+        if not isinstance(labels, np.ndarray):
+            labels = np.array(labels)
+
+    return X, labels
+
 
 def check_input_fit(X, labels, estimator):
     """
@@ -310,12 +319,9 @@ def check_input_fit(X, labels, estimator):
         label_encoder (sklearn.LabelEncoder):
             Convert text labels if needed
     """
-    if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(labels):
-        if not isinstance(X,np.ndarray):
-            X = np.array(X)
-        if not isinstance(labels,np.ndarray):
-            labels = np.array(labels)
 
+    X, labels = convert_to_array(X, labels)
+    
     if X.ndim == 1:
         raise ValueError("The training array has only one dimension.")
 
