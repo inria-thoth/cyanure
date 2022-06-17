@@ -261,6 +261,7 @@ def check_parameters(estimator):
     if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambda_1 != 0.1:
         warnings.warn("Setting penalty='none' will ignore the lambda_1")
 
+
 def convert_to_array(X, labels):
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(labels):
         if not isinstance(X, np.ndarray):
@@ -321,7 +322,7 @@ def check_input_fit(X, labels, estimator):
     """
 
     X, labels = convert_to_array(X, labels)
-    
+
     if X.ndim == 1:
         raise ValueError("The training array has only one dimension.")
 
