@@ -717,8 +717,11 @@ class Regression(ERM):
         X = check_input_inference(X, self)
 
         X = self._validate_data(X, accept_sparse="csr", reset=False)
-        pred = safe_sparse_dot(
-            X, self.coef_, dense_output=False) + self.intercept_
+        if self.fit_intercept:
+            pred = safe_sparse_dot(
+                X, self.coef_, dense_output=False) + self.intercept_
+        else:
+            pred = safe_sparse_dot(X, self.coef_, dense_output=False)
 
         return pred.squeeze()
 
@@ -1179,7 +1182,8 @@ def compute_r(estimator_name, aux, X, labels, active_set):
     """
     R = None
 
-    pred = aux.predict(X[:, active_set])
+    if len(active_set) != 0:
+        pred = aux.predict(X[:, active_set])
     if estimator_name == "Lasso":
         if len(active_set) == 0:
             R = labels
@@ -1225,7 +1229,7 @@ def fit_large_feature_number(estimator, aux, X, labels):
         estimator.intercept_ = 0
 
     for ii in range(num_as):
-        R = compute_r(estimator.__name__, aux, X, labels, active_set)
+        R = compute_r(type(estimator).__name__, aux, X, labels, active_set)
 
         corr = np.abs(X.transpose().dot(R).ravel()) / n
         if n_active > 0:
@@ -1297,7 +1301,7 @@ class Lasso(Regression):
             super().fit(X, labels)
         else:
             aux = Regression(loss='square', penalty='l1',
-                             fit_intercept=self.fit_intercept, random_state=self.random_state)
+                             fit_intercept=self.fit_intercept, random_state=self.random_state, verbose=False)
 
             fit_large_feature_number(self, aux, X, labels)
 
@@ -1359,7 +1363,7 @@ class L1Logistic(Classifier):
             super().fit(X, labels, le_parameter=self.le_)
         else:
             aux = Classifier(
-                loss='logistic', penalty='l1', fit_intercept=self.fit_intercept)
+                loss='logistic', penalty='l1', fit_intercept=self.fit_intercept, verbose=False)
 
             fit_large_feature_number(self, aux, X, labels)
 
