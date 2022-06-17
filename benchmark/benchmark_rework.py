@@ -30,10 +30,20 @@ def get_data(datapath, dataset):
         X = scipy.sparse.csc_matrix(X.all()).T # n x p matrix, csr format 
         X=X.astype('float64')
 
-    if dataset=='real-sim' or dataset=='webspam' or dataset=='kddb' or dataset=='criteo':
+    if dataset=='kddb' or dataset=='criteo':
         dataY=np.load(os.path.join(datapath, dataset + '_y.npz'), allow_pickle=True)
         y=dataY['arr_0']
         X = scipy.sparse.load_npz(os.path.join(datapath, dataset + '_X.npz'))
+        y=np.squeeze(y)
+
+    if dataset=='real-sim' or dataset=='webspam' :
+        data=np.load(os.path.join(datapath, dataset + '.npz'), allow_pickle=True)
+        y=data['arr_1']
+        print(data['arr_0'].view())
+        print(type(data['arr_0']))
+        print(data['arr_0'].dtype)
+        X=scipy.sparse.csr_matrix(data['arr_0'])
+        print(X)
         y=np.squeeze(y)
 
 
@@ -159,7 +169,7 @@ def main(arguments):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", default="covtype")
+    parser.add_argument("--dataset", default="kddb")
     parser.add_argument("--penalty", default="l2")
     parser.add_argument("--solver", default="qning-miso")
     parser.add_argument("--loss", default="logistic")
