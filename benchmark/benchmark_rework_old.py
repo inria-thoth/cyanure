@@ -5,9 +5,9 @@ import subprocess
 import scipy
 import numpy as np
 from mlflow.tracking import MlflowClient
+from sklearn import multiclass
 
-from cyanure.estimators import Classifier, Regression
-from cyanure.data_processing import preprocess
+from cyanure import MultiClassifier, Regression, preprocess, BinaryClassifier
 
 def get_data(datapath, dataset):
 
@@ -101,54 +101,21 @@ def process(arguments, X, y):
     if arguments.penalty=='l2':
         lambda_1=arguments.lambda_1/(X.shape[0])
 
+    if arguments.dataset in ["ckn_mnist", "svhn"]:
+        multiclass = True
+    else:
+        multiclass = False
+
     if arguments.classif:
-        classifier=Classifier(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept,duality_gap_interval=arguments.duality_gap_interval,lambda_1=lambda_1,lambda_2=lambda_1,n_threads=arguments.n_threads,solver=arguments.solver, verbose=False)
+        if multiclass:
+            classifier=MultiClassifier(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
+        else:
+            classifier=BinaryClassifier(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
     else:
-        classifier=Regression(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept,duality_gap_interval=arguments.duality_gap_interval,lambda_1=lambda_1,lambda_2=lambda_1,n_threads=arguments.n_threads,solver=arguments.solver, verbose=False)
+        classifier=Regression(loss=arguments.loss,penalty=arguments.penalty,fit_intercept=arguments.intercept)
 
-    estimator = classifier.fit(X,y)
-    estimator.optimization_info_ = np.squeeze(estimator.optimization_info_)
-    relative_optimality_gap = compute_relative_optimality_gap(estimator)
-    client = MlflowClient() 
-    experiment_id = "0"
-    tags = {"mlflow.runName": get_name(arguments, lambda_1)}
-    run = client.create_run(experiment_id, tags=tags)
-    try:
-        client.log_param(run.info.run_id, "nb_cores", int(subprocess.check_output(['oarprint', 'core']).count(b'\n')))
-    except:
-        pass
-    client.log_param(run.info.run_id, "environement", os.environ.get('CONDA_PREFIX').split('/')[-1])
-    client.log_param(run.info.run_id, "penalty", arguments.penalty)
-    client.log_param(run.info.run_id, "lambda", float('{0:.3E}'.format(lambda_1)))
-    client.log_param(run.info.run_id, "Duality gap interval", int(arguments.duality_gap_interval))
-    client.log_param(run.info.run_id, "nb_threads", int(arguments.n_threads))
-    client.log_param(run.info.run_id, "solver", arguments.solver)
-    client.log_param(run.info.run_id, "Tolerance", float(arguments.tol))
-    client.log_param(run.info.run_id, "Dataset", arguments.dataset)
 
-    # Log the metric. Unlike mlflow.log_metric this method
-    # does not start a run if one does not exist. It will log
-    # the metric for the run id in the backend store.
-    if len(estimator.optimization_info_.shape) > 1 :
-        for i in range(len(estimator.optimization_info_[0])):
-            timestamp = int(estimator.optimization_info_[5][i] * 1000)
-            epoch = int(estimator.optimization_info_[0][i])
-            client.log_metric(run.info.run_id, "Primal objective", estimator.optimization_info_[1][i], timestamp, epoch)
-            client.log_metric(run.info.run_id, "Best dual", estimator.optimization_info_[2][i], timestamp, epoch)
-            client.log_metric(run.info.run_id, "Relative duality gap", estimator.optimization_info_[3][i], timestamp, epoch)
-            client.log_metric(run.info.run_id, "Diff", estimator.optimization_info_[4][i], timestamp, epoch)
-            client.log_metric(run.info.run_id, "Relative optimality gap", relative_optimality_gap[i], timestamp, epoch)
-            print(relative_optimality_gap[i])
-    else:
-        timestamp = int(estimator.optimization_info_[5] * 1000)
-        epoch = int(estimator.optimization_info_[0])
-        client.log_metric(run.info.run_id, "Primal objective", estimator.optimization_info_[1], timestamp, epoch)
-        client.log_metric(run.info.run_id, "Best dual", estimator.optimization_info_[2], timestamp, epoch)
-        client.log_metric(run.info.run_id, "Relative duality gap", estimator.optimization_info_[3], timestamp, epoch)
-        client.log_metric(run.info.run_id, "Diff", estimator.optimization_info_[4], timestamp, epoch)
-        client.log_metric(run.info.run_id, "Relative optimality gap", relative_optimality_gap, timestamp, epoch)
-    client.set_terminated(run.info.run_id)
-
+    estimator = classifier.fit(X,y,it0=arguments.duality_gap_interval,lambd=lambda_1,lambd2=lambda_1,nthreads=arguments.n_threads,tol=arguments.tol,solver=arguments.solver,restart=False,seed=0,max_epochs=500)
 
 
 def main(arguments):
