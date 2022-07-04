@@ -693,7 +693,7 @@ class Regression(ERM):
         if self.safe:
             X, labels, _ = check_input_fit(X, y, self)
         else:
-            labels = y 
+            labels = y
 
         if labels.squeeze().ndim <= 1:
             self._binary_problem = True
