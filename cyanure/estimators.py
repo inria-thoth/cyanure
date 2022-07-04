@@ -921,7 +921,7 @@ class Classifier(ClassifierAbstraction):
                  random_state=0, max_iter=500, fista_restart=50, verbose=True,
                  warm_start=False, multi_class="auto",
                  limited_memory_qning=20, lambda_1=0, lambda_2=0, lambda_3=0,
-                 duality_gap_interval=5, n_threads=-1, dual=None):
+                 duality_gap_interval=5, n_threads=-1, dual=None, safe=True):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept,
                          tol=tol, solver=solver,
                          random_state=random_state, max_iter=max_iter, fista_restart=fista_restart,
@@ -929,7 +929,7 @@ class Classifier(ClassifierAbstraction):
                          limited_memory_qning=limited_memory_qning,
                          lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3,
                          duality_gap_interval=duality_gap_interval,
-                         n_threads=n_threads, multi_class=multi_class, dual=dual)
+                         n_threads=n_threads, multi_class=multi_class, dual=dual, safe=safe)
 
     def fit(self, X, y, le_parameter=None):
         """
@@ -1135,7 +1135,7 @@ class LinearSVC(Classifier):
                  verbose=False, lambda_1=0.1, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10,
                  max_iter=500, limited_memory_qning=20,
-                 fista_restart=50, warm_start=False, n_threads=-1, random_state=0, dual=None):
+                 fista_restart=50, warm_start=False, n_threads=-1, random_state=0, dual=None, safe=True):
         if loss not in ['squared_hinge', 'sqhinge']:
             logger.error("LinearSVC is only compatible with squared hinge loss at "
                          "the moment")
@@ -1145,7 +1145,7 @@ class LinearSVC(Classifier):
             lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3,
             duality_gap_interval=duality_gap_interval, max_iter=max_iter,
             limited_memory_qning=limited_memory_qning,
-            fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads, dual=dual)
+            fista_restart=fista_restart, warm_start=warm_start, n_threads=n_threads, dual=dual, safe=safe)
 
 
 class LogisticRegression(Classifier):
@@ -1158,14 +1158,14 @@ class LogisticRegression(Classifier):
                  solver='auto', tol=1e-3, duality_gap_interval=10,
                  max_iter=500, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1,
-                 random_state=0, multi_class="auto", dual=None):
+                 random_state=0, multi_class="auto", dual=None, safe=True):
         super().__init__(loss=loss, penalty=penalty, fit_intercept=fit_intercept,
                          solver=solver, tol=tol, random_state=random_state, verbose=verbose,
                          lambda_1=lambda_1, lambda_2=lambda_2, lambda_3=lambda_3,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, multi_class=multi_class,
                          fista_restart=fista_restart, warm_start=warm_start,
-                         n_threads=n_threads, dual=dual)
+                         n_threads=n_threads, dual=dual, safe=safe)
 
 
 def compute_r(estimator_name, aux, X, labels, active_set):
@@ -1282,12 +1282,12 @@ class Lasso(Regression):
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, verbose=True,
-                 warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, dual=None):
+                 warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, dual=None, safe=True):
         super().__init__(loss='square', penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart,
                          verbose=verbose, warm_start=warm_start, n_threads=n_threads,
-                         random_state=random_state, fit_intercept=fit_intercept, dual=dual)
+                         random_state=random_state, fit_intercept=fit_intercept, dual=dual, safe=safe)
 
     def fit(self, X, y):
         """
@@ -1344,13 +1344,13 @@ class L1Logistic(Classifier):
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, verbose=True, warm_start=False, n_threads=-1,
-                 random_state=0, fit_intercept=True, multi_class="auto", dual=None):
+                 random_state=0, fit_intercept=True, multi_class="auto", dual=None, safe=True):
         super().__init__(loss='logistic', penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning,
                          fista_restart=fista_restart, verbose=verbose,
                          warm_start=warm_start, n_threads=n_threads, random_state=random_state,
-                         fit_intercept=fit_intercept, multi_class=multi_class, dual=dual)
+                         fit_intercept=fit_intercept, multi_class=multi_class, dual=dual, safe=safe)
 
         if multi_class == "multinomial":
             self.loss = "multiclass-logistic"
