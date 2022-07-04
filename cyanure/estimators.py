@@ -91,7 +91,7 @@ class ERM(BaseEstimator, ABC):
     def __init__(self, loss='square', penalty='l2', fit_intercept=False, dual=None, tol=1e-3,
                  solver="auto", random_state=0, max_iter=2000, fista_restart=60,
                  verbose=True, warm_start=False, limited_memory_qning=50, multi_class="auto",
-                 lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1):
+                 lambda_1=0, lambda_2=0, lambda_3=0, duality_gap_interval=5, n_threads=-1, safe=True):
         r"""
         Instantiate the ERM class.
 
@@ -249,6 +249,7 @@ class ERM(BaseEstimator, ABC):
         self.multi_class = multi_class
         self.duality_gap_interval = duality_gap_interval
         self.n_threads = n_threads
+        self.safe = safe
 
     def fit(self, X, labels, le_parameter=None):
         """
@@ -689,7 +690,10 @@ class Regression(ERM):
             self (ERM):
                 Returns the instance of the class
         """
-        X, labels, _ = check_input_fit(X, y, self)
+        if self.safe:
+            X, labels, _ = check_input_fit(X, y, self)
+        else:
+            labels = y 
 
         if labels.squeeze().ndim <= 1:
             self._binary_problem = True
@@ -714,7 +718,8 @@ class Regression(ERM):
         """
         check_is_fitted(self)
 
-        X = check_input_inference(X, self)
+        if self.safe:
+            X = check_input_inference(X, self)
 
         X = self._validate_data(X, accept_sparse="csr", reset=False)
         if self.fit_intercept:
@@ -942,7 +947,12 @@ class Classifier(ClassifierAbstraction):
               which will be automatically converted if labels in {0,1} are
               provided and {0,1,..., n} for multiclass classification.
         """
-        X, labels, le = check_input_fit(X, y, self)
+        if self.safe:
+            X, labels, le = check_input_fit(X, y, self)
+        else:
+            labels = y
+            le = None
+
         if le_parameter is not None:
             self.le_ = le_parameter
         else:
@@ -1006,7 +1016,8 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        X = check_input_inference(X, self)
+        if self.safe:
+            X = check_input_inference(X, self)
 
         pred = self.decision_function(X)
 
@@ -1049,7 +1060,8 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        X = check_input_inference(X, self)
+        if self.safe:
+            X = check_input_inference(X, self)
 
         pred = np.squeeze(self.predict(X))
         return np.sum(np.squeeze(y) == pred) / pred.shape[0]
@@ -1072,7 +1084,8 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        X = check_input_inference(X, self)
+        if self.safe:
+            X = check_input_inference(X, self)
 
         if self.fit_intercept:
             scores = safe_sparse_dot(
@@ -1104,7 +1117,8 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        X = check_input_inference(X, self)
+        if self.safe:
+            X = check_input_inference(X, self)
 
         decision = self.decision_function(X)
         if decision.ndim == 1:
@@ -1293,7 +1307,10 @@ class Lasso(Regression):
             self (ERM):
                 Returns the instance of the class
         """
-        X, labels, _ = check_input_fit(X, y, self)
+        if self.safe:
+            X, labels, _ = check_input_fit(X, y, self)
+        else:
+            labels = y
 
         _, p = X.shape
         if p <= 1000:
@@ -1354,7 +1371,12 @@ class L1Logistic(Classifier):
               which will be automatically converted if labels in {0,1} are
               provided and {0,1,..., n} for multiclass classification.
         """
-        X, labels, le = check_input_fit(X, y, self)
+
+        if self.safe:
+            X, labels, le = check_input_fit(X, y, self)
+        else:
+            le = None
+            labels = y
         self.le_ = le
 
         _, p = X.shape
