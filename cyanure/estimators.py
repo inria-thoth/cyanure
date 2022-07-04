@@ -661,7 +661,7 @@ class Regression(ERM):
                  lambda_1=0, lambda_2=0, lambda_3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500,
                  limited_memory_qning=20, fista_restart=50, verbose=True,
-                 warm_start=False, n_threads=-1, dual=None):
+                 warm_start=False, n_threads=-1, dual=None, safe=True):
         if loss != 'square':
             raise ValueError("square loss should be used")
         super().__init__(loss=loss, penalty=penalty,
@@ -670,7 +670,7 @@ class Regression(ERM):
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning,
                          fista_restart=fista_restart, verbose=verbose,
-                         warm_start=warm_start, n_threads=n_threads, dual=dual)
+                         warm_start=warm_start, n_threads=n_threads, dual=dual, safe=safe)
 
     def fit(self, X, y, le_parameter=None):
         """
