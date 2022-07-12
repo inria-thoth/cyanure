@@ -1321,7 +1321,7 @@ class Lasso(Regression):
             aux = Regression(loss='square', penalty='l1',
                              fit_intercept=self.fit_intercept, random_state=self.random_state,
                              lambda_1=self.lambda_1, safe=self.safe,
-                             max_itertol=self.tol, duality_gap_interval=self.duality_gap_interval,
+                             tol=self.tol, duality_gap_interval=self.duality_gap_interval,
                              max_iter=self.max_iter, solver=self.solver, verbose=self.verbose)
 
             fit_large_feature_number(self, aux, X, labels)
