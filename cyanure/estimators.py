@@ -1169,7 +1169,7 @@ class LogisticRegression(Classifier):
                          n_threads=n_threads, dual=dual, safe=safe)
 
 
-def compute_r(estimator_name, aux, X, labels, active_set):
+def compute_r(estimator_name, aux, X, labels, active_set, fit_intercept):
     """
     Compute R coefficient corresponding to the estimator.
 
@@ -1209,6 +1209,8 @@ def compute_r(estimator_name, aux, X, labels, active_set):
             R = -0.5 * labels.ravel()
         else:
             R = -labels.ravel() / (1.0 + np.exp(labels.ravel() * pred.ravel()))
+        if fit_intercept:
+            pred += aux.intercept_
 
     return R
 
@@ -1246,11 +1248,7 @@ def fit_large_feature_number(estimator, aux, X, labels):
     estimator_name = type(estimator).__name__
 
     for ii in range(num_as):
-        R = compute_r(estimator_name, aux, X, labels, active_set)
-
-        if estimator_name == "L1Logistic":
-            if estimator.fit_intercept:
-                pred += aux.b
+        R = compute_r(estimator_name, aux, X, labels, active_set, estimator.fit_intercept)
 
         corr = np.abs(X.transpose().dot(R).ravel()) / n
 
