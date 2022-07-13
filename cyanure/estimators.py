@@ -1243,17 +1243,27 @@ def fit_large_feature_number(estimator, aux, X, labels):
     if estimator.fit_intercept:
         estimator.intercept_ = 0
 
+    estimator_name = type(estimator).__name__
+
     for ii in range(num_as):
-        R = compute_r(type(estimator).__name__, aux, X, labels, active_set)
+        R = compute_r(estimator_name, aux, X, labels, active_set)
+
+        if estimator_name == "L1Logistic":
+            if estimator.fit_intercept:
+                pred += aux.b
 
         corr = np.abs(X.transpose().dot(R).ravel()) / n
+
         if n_active > 0:
             corr[active_set] = -10e10
+
         n_new_as = max(
             min(init * math.ceil(scaling ** ii), p) - n_active, 0)
         new_as = corr.argsort()[-n_new_as:]
+
         if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambda_1 * (1 + estimator.tol):
             break
+
         if len(active_set) > 0:
             neww = np.zeros(n_active + n_new_as,
                             dtype=X.dtype)
@@ -1264,10 +1274,14 @@ def fit_large_feature_number(estimator, aux, X, labels):
             active_set = new_as
             aux.coef_ = np.zeros(
                 len(active_set), dtype=X.dtype)
+
         n_active = len(active_set)
+
         if estimator.verbose:
             logger.info("Size of the active set: {%d}", n_active)
+
         aux.fit(X[:, active_set], labels)
+
         estimator.coef_[active_set] = aux.coef_
         if estimator.fit_intercept:
             estimator.intercept_ = aux.intercept_
