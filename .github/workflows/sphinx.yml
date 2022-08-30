@@ -28,14 +28,9 @@ jobs:
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cd docs/sphinx/source && sphinx-build -b html . _build && cd _build && mkdir dash
     - name: Build the sphinx documentation and posts warnings as github comments.
-      run: cd docs/dash/ && make html && rm 127.0.0.1:8050/_favicon.ico?v=2.6.1
+      run: cd docs/dash/ && make html
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cp -r docs/dash/127.0.0.1:8050/. docs/sphinx/source/_build/dash
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: html-docs
-        path: docs/sphinx/source/_build/
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
