@@ -136,8 +136,7 @@ app.layout = html.Div([
                                                'toggleSpikelines',
                                                'resetScale2d']}
                 , style={'marginLeft': 50},)
-            ],
-            className="pure-u-1 pure-u-lg-1-2 pure-u-xl-8-24",
+            ]
             ),
         dcc.Store(id='store', data=fig2),
         html.Div(children=[
