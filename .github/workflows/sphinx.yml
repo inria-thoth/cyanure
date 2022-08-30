@@ -28,7 +28,7 @@ jobs:
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cd docs/sphinx/source && sphinx-build -b html . _build && cd _build && mkdir dash
     - name: Build the sphinx documentation and posts warnings as github comments.
-      run: cd ../../../.. && cd docs/dash/ && make html && cd ../..
+      run: ls && cd ../../../.. && cd docs/dash/ && make html && cd ../..
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cp -r docs/dash/127.0.0.1:8050/. docs/sphinx/source/_build/dash
     - name: Upload artifacts
