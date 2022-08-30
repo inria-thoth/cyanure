@@ -51,7 +51,7 @@ def make_plot(df_runs):
 
     for index, run in enumerate(df_runs['run_id'].unique()):
         df_temporary = df_runs[df_runs["run_id"] == run]
-        fig.add_trace(go.Scatter(x=df_temporary["timestamp"],
+        fig.add_trace(go.Scatter(x=df_temporary["timestamp"] / 1000,
                                  y=df_temporary["relative_optimality_gap"], mode='lines',
                                  line_dash='dash',
                                  line_color=colors[index%n_colors],
@@ -75,7 +75,9 @@ def make_plot(df_runs):
         showlegend=True,
         xaxis_tickfont_size=LABEL_FONT_SIZE - 4,
         yaxis_tickfont_size=LABEL_FONT_SIZE - 4,
-        yaxis_type='log',
+        yaxis_type='linear',
+        yaxis_title="Relative optimality gap",
+        xaxis_title="Time (s)",
         height=FIRST_LINE_HEIGHT,
         margin=dict(t=0, b=0.02),
         # The legend position + font size
@@ -122,7 +124,8 @@ app.layout = html.Div([
                 ],
                 value='linear',
                 labelStyle={'display': 'inline-block',
-                            'paddingRight': '0.5em'}
+                            'paddingRight': '0.5em'},
+                style={'marginLeft': 125},
           ),
 
             dcc.Graph(
@@ -133,7 +136,7 @@ app.layout = html.Div([
                                                'select2d', 'lasso2d',
                                                'toggleSpikelines',
                                                'resetScale2d']}
-                )
+                , style={'marginLeft': 50},)
             ],
             className="pure-u-1 pure-u-lg-1-2 pure-u-xl-8-24",
             ),
@@ -152,7 +155,8 @@ app.layout = html.Div([
 
         html.Br(),
         html.Label('Solver'),
-        dcc.Dropdown(['svrg', 'qning-svrg', 'qning-miso', 'qning-ista', 'miso', 'ista', 'fista', 'catalyst-svrg', 'catalyst-miso', 'catalyst-ista', 'acc-svrg', 'auto', 'all'], 'qning-miso', id='solver')]),
+        dcc.Dropdown(['svrg', 'qning-svrg', 'qning-miso', 'qning-ista', 'miso', 'ista', 'fista', 'catalyst-svrg', 'catalyst-miso', 'catalyst-ista', 'acc-svrg', 'auto', 'all'], 'qning-miso', id='solver')],
+                style={'marginLeft': 125, 'marginTop': 50, 'width': "15%"}),
         ]),
         ],
     )
