@@ -83,9 +83,8 @@ def make_plot(df_runs):
         # The legend position + font size
         # See https://plot.ly/python/legend/#style-legend
         legend=dict(x=.05, y=.8, font_size=LABEL_FONT_SIZE),
-        yaxis=dict( 
-        range=[-6, 3] 
-    ) 
+        yaxis=dict(range=[-6, 3]),
+        width=1500
     )
 
     return fig
