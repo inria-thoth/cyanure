@@ -25,7 +25,11 @@ jobs:
       run: |
         pip install sphinx ipywidgets beautifulsoup4 sphinx-rtd-theme numpydoc furo autodocsumm docutils==0.16.0
     - name: Build the sphinx documentation and posts warnings as github comments.
-      run: cd docs/sphinx/source && sphinx-build -b html . _build
+      run: cd docs/sphinx/source && sphinx-build -b html . _build && cd _build && mkdir dash
+    - name: Build the sphinx documentation and posts warnings as github comments.
+      run: cd ../../../.. && cd docs/dash/ && make html && cd ../..
+    - name: Build the sphinx documentation and posts warnings as github comments.
+      run: cp -r docs/dash/127.0.0.1:8050/. docs/sphinx/source/_build/dash
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
