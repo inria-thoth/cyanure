@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -77,13 +78,13 @@
            <div itemprop="articleBody">
              
   <div class="section" id="tutorials">
-<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline"></a></h1>
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Many of the datasets I used are available <a class="reference external" href="http://pascal.inrialpes.fr/data2/mairal/data/">here</a>.</p>
 </div>
 <div class="section" id="examples-for-binary-classification">
-<h2>Examples for binary classification<a class="headerlink" href="#examples-for-binary-classification" title="Permalink to this headline"></a></h2>
+<h2>Examples for binary classification<a class="headerlink" href="#examples-for-binary-classification" title="Permalink to this heading"></a></h2>
 <p>The following code performs binary classification with <span class="math notranslate nohighlight">\(\ell_2\)</span>-regularized logistic regression, with no intercept, on the criteo dataset (21Gb, huge sparse matrix):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cyanure.estimators</span> <span class="kn">import</span> <span class="n">Classifier</span>
  <span class="kn">from</span> <span class="nn">cyanure.data_processing</span> <span class="kn">import</span> <span class="n">preprocess</span>
@@ -192,7 +193,7 @@ We also fit an intercept.:</p>
 </div>
 </div>
 <div class="section" id="multiclass-classification">
-<h2>Multiclass classification<a class="headerlink" href="#multiclass-classification" title="Permalink to this headline"></a></h2>
+<h2>Multiclass classification<a class="headerlink" href="#multiclass-classification" title="Permalink to this heading"></a></h2>
 <p>Let us now do something a bit more involved and perform multinomial logistic regression on the
 <em>ckn_mnist</em> dataset (10 classes, n=60000, p=2304, dense matrix), with multi-task group lasso regularization,
 using a laptop with a Intel i7-6500U CPU, and choosing a regularization parameter that yields a solution with 5% non zero coefficients.:</p>

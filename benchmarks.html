@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -82,12 +83,12 @@
            <div itemprop="articleBody">
              
   <div class="section" id="benchmarks">
-<h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline"></a></h1>
+<h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this heading"></a></h1>
 <p>We consider the problem of <span class="math notranslate nohighlight">\(\ell_2\)</span>-logistic regression for binary
 classification, or multinomial logistic regression if multiple classes are
 present.</p>
 <div class="section" id="datasets">
-<h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline"></a></h2>
+<h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this heading"></a></h2>
 <p>We will present the results obtained by the solvers of Cyanure on 11
 datasets, presented in the Table below. The 9 first datasets can be found on the
 <a class="reference external" href="https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/">LIBSVM dataset web-page</a>.
@@ -197,13 +198,13 @@ All datasets samples are normalized with <span class="math notranslate nohighlig
 </table>
 </div>
 <div class="section" id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h2>
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h2>
 <p>To select a reasonable regularization parameter <span class="math notranslate nohighlight">\(\lambda\)</span> for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid <span class="math notranslate nohighlight">\(2^{-i}/n\)</span> with <span class="math notranslate nohighlight">\(i=1,\ldots,16\)</span> when evaluating trained model on the validation set. Then, we keep the optimal parameter <span class="math notranslate nohighlight">\(\lambda\)</span>, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU &#64; 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Cyanure are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, <a class="reference internal" href="references.html#fista" id="id1"><span>[FISTA]</span></a>, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
 Experiments were conducted on Linux using the Anaconda Python 3.7 distribution.</p>
 <p>In the evaluation, we include solvers that can be called from scikit-learn, such as <a class="reference internal" href="references.html#liblinear" id="id2"><span>[LIBLINEAR]</span></a>, <a class="reference internal" href="references.html#lbfgs" id="id3"><span>[LBFGS]</span></a>, newton-cg, or the <a class="reference internal" href="references.html#saga" id="id4"><span>[SAGA]</span></a> implementation of scikit-learn. We run each solver with different tolerance parameter tol=0.1,0.01,0.001,0.0001 in order to obtain several points illustrating their accuracy-speed trade-off. Each method is run for at most 500 epochs.</p>
 </div>
 <div class="section" id="results">
-<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline"></a></h2>
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this heading"></a></h2>
 <p>The results are presented below. There are 11 datasets, and we are going to
 group them into categories leading to similar conclusions. We start with those
 requiring a small regularization parameter (e.g., <span class="math notranslate nohighlight">\(\lambda=1/(100n)\)</span>),
@@ -222,7 +223,7 @@ using the tolerance parameter tol=0.1.
 Experiments with a more recent version of liblinear will be reported soon.</p>
 </div>
 <div class="section" id="optimal-lambda-covtype-epsilon-webspam-ckn-mnist-svhn-the-hard-ones">
-<h3>optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: covtype, epsilon, webspam, ckn_mnist, svhn – the hard ones<a class="headerlink" href="#optimal-lambda-covtype-epsilon-webspam-ckn-mnist-svhn-the-hard-ones" title="Permalink to this headline"></a></h3>
+<h3>optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: covtype, epsilon, webspam, ckn_mnist, svhn – the hard ones<a class="headerlink" href="#optimal-lambda-covtype-epsilon-webspam-ckn-mnist-svhn-the-hard-ones" title="Permalink to this heading"></a></h3>
 <p>For these datasets, regularization is important, but not crucial to achieve
 a good predictive accuracy and thus the optimal <span class="math notranslate nohighlight">\(\lambda\)</span> is small. For
 instance, for ckn_mnist, the accuracy on test data is typically above 99%, and
@@ -245,7 +246,7 @@ Note that Liblinear-dual is very competitive on large sparse datasets (see next 
 <img alt="_images/svhn_logistic_l2.png" src="_images/svhn_logistic_l2.png" />
 </div>
 <div class="section" id="optimal-lambda-alpha-rcv1-real-sim-ocr-kddb-criteo-the-easy-ones">
-<h3>optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: alpha, rcv1, real-sim, ocr, kddb, criteo – the easy ones<a class="headerlink" href="#optimal-lambda-alpha-rcv1-real-sim-ocr-kddb-criteo-the-easy-ones" title="Permalink to this headline"></a></h3>
+<h3>optimal <span class="math notranslate nohighlight">\(\lambda\)</span>: alpha, rcv1, real-sim, ocr, kddb, criteo – the easy ones<a class="headerlink" href="#optimal-lambda-alpha-rcv1-real-sim-ocr-kddb-criteo-the-easy-ones" title="Permalink to this heading"></a></h3>
 <p>For these datasets, the optimal regularization parameter is close to <span class="math notranslate nohighlight">\(\frac{1}{n}\)</span>,
 which is a regime where acceleration does not bring benefits in theory.
 The results below are consistent with theory and we can draw the following conclusions:</p>
