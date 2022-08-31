@@ -46,8 +46,7 @@ def make_plot(df_runs):
     colors = px.colors.qualitative.Dark24
     n_colors = len(colors)
     fig = go.Figure()
-    hovertemplate_measure = '<b>%{meta}</b><br>%{x}<br>%{y:.0f} per Million<extra></extra>'
-    hovertemplate_prediction = '<b>%{meta}<br>prediction</b><br>in<extra></extra>'
+    hovertemplate_prediction = '<b>%{meta}</b><br>x=%{x}<br>y=%{y}<extra></extra>'
 
     for index, run in enumerate(df_runs['run_id'].unique()):
         df_temporary = df_runs[df_runs["run_id"] == run]
@@ -60,17 +59,6 @@ def make_plot(df_runs):
                                  hovertemplate=hovertemplate_prediction,
                                  visible=True))
 
-    fatalities_annotation = dict(x=0.1,
-                                 y=0.95,
-                                 xref='paper',
-                                 yref='paper',
-                                 showarrow=False,
-                                 font_size=LABEL_FONT_SIZE,
-                                 text='Fatalities per Million',
-                                 visible=False,
-                                 )
-
-
     fig.update_layout(
         showlegend=True,
         xaxis_tickfont_size=LABEL_FONT_SIZE - 4,
@@ -78,6 +66,7 @@ def make_plot(df_runs):
         yaxis_type='linear',
         yaxis_title="Relative optimality gap",
         xaxis_title="Time (s)",
+        hovermode="closest",
         height=FIRST_LINE_HEIGHT,
         margin=dict(t=0, b=0.02),
         # The legend position + font size
@@ -135,7 +124,12 @@ app.layout = html.Div([
                                                'select2d', 'lasso2d',
                                                'toggleSpikelines',
                                                'resetScale2d']}
-                , style={'marginLeft': 50},)
+                , style={'marginLeft': 50},),
+             dcc.Textarea(
+                    value='The name of the curves correspond to nb_cores|implementation|penalty|lambda|duality gap interval|number of threads|solver|tolerance|dataset',
+                    disabled=True,
+                    style={'width': '100%', 'height': 50, 'marginLeft': 125, 'marginTop': 50},
+                ),
             ]
             ),
         dcc.Store(id='store', data=fig2),
@@ -153,7 +147,7 @@ app.layout = html.Div([
 
         html.Br(),
         html.Label('Solver'),
-        dcc.Dropdown(['svrg', 'qning-svrg', 'qning-miso', 'qning-ista', 'miso', 'ista', 'fista', 'catalyst-svrg', 'catalyst-miso', 'catalyst-ista', 'acc-svrg', 'auto', 'all'], 'qning-miso', id='solver')],
+        dcc.Dropdown(['svrg', 'qning-svrg', 'qning-miso', 'qning-ista', 'miso', 'ista', 'fista', 'catalyst-svrg', 'catalyst-miso', 'catalyst-ista', 'acc-svrg', 'auto', 'all'], 'qning-miso', id='solver', style={'marginBottom': 50})],
                 style={'marginLeft': 125, 'marginTop': 50, 'width': "15%"}),
         ]),
         ],
