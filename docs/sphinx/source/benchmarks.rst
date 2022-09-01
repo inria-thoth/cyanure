@@ -41,6 +41,8 @@ All datasets samples are normalized with :math:`\ell_2`-norm and centered for de
 | ckn_svhn   | No         | 10           | 604388      |  18432    | 89           |
 +------------+------------+--------------+-------------+-----------+--------------+
 
+.. note:: It is also possible to compare the performances for some of these datasets for different BLAS implementation, number of cores and solvers on this `page <https://inria-thoth.github.io/cyanure/dash.html/>`_.
+
 Setup
 -----
 To select a reasonable regularization parameter :math:`\lambda` for each dataset, we first split each dataset into 80% training and 20% validation, and select the optimal parameter from a logarithmic grid :math:`2^{-i}/n` with :math:`i=1,\ldots,16` when evaluating trained model on the validation set. Then, we keep the optimal parameter :math:`\lambda`, merge training and validation sets and report the objective function values in terms of CPU time for various solvers. The CPU time is reported when running the different methods on an Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz with 128Gb of memory (in order to be able to handle the ckn_svhn dataset), limiting the maximum number of cores to 8. Note that most solvers of Cyanure are sequential algorithms that do not exploit multi-core capabilities. Those are nevertheless exploited by the Intel MKL library that we use for dense matrices. Gains with multiple cores are mostly noticeable for the methods ista, [FISTA]_, and qning-ista, which are able to exploit BLAS3 (matrix-matrix multiplication) instructions.
