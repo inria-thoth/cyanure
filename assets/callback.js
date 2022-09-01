@@ -41,6 +41,7 @@ window.dash_clientside.clientside = {
     //new_fig['layout']['annotations'][1]['visible'] = true;
     for (i = 0; i < fig['data'].length; i++) {
     var name = fig['data'][i]['meta'][0];
+        solver = "_" + solver + "_"
         if(dataset.includes("all")){
             dataset = ''
         }
