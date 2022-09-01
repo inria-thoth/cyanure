@@ -19,6 +19,7 @@ html:
 	cp _static/async-table* 127.0.0.1:8050/_dash-component-suites/dash/dash_table/
 	sed -i 's+_dash-component-suites+cyanure/_dash-component-suites+g' 127.0.0.1:8050/index.html 
 	sed -i 's+assets+cyanure/assets+g' 127.0.0.1:8050/index.html 
+	mv 127.0.0.1:8050/index.html 127.0.0.1:8050/dash.html
 	ps | grep python | awk '{print $$1}' | xargs kill -9	
 
 update:
