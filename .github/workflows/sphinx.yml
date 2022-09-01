@@ -27,9 +27,9 @@ jobs:
         pip install sphinx ipywidgets beautifulsoup4 sphinx-rtd-theme numpydoc furo autodocsumm docutils==0.16.0 pandas plotly dash
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cd docs/sphinx/source && sphinx-build -b html . _build && cd _build && mkdir dash
-    - name: Build the sphinx documentation and posts warnings as github comments.
+    - name: Build the dash html.
       run: cd docs/dash/ && make html
-    - name: Build the sphinx documentation and posts warnings as github comments.
+    - name: Copy the dash website to sphinx folder.
       run: cp -r docs/dash/127.0.0.1:8050/. docs/sphinx/source/_build
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
