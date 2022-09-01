@@ -41,7 +41,7 @@ All datasets samples are normalized with :math:`\ell_2`-norm and centered for de
 | ckn_svhn   | No         | 10           | 604388      |  18432    | 89           |
 +------------+------------+--------------+-------------+-----------+--------------+
 
-.. note:: It is also possible to compare the performances for some of these datasets for different BLAS implementation, number of cores and solvers on this `page <https://inria-thoth.github.io/cyanure/dash.html/>`_.
+.. note:: It is also possible to compare the performances for some of these datasets for different BLAS implementations, number of cores and solvers on this `page <https://inria-thoth.github.io/cyanure/dash.html>`_.
 
 Setup
 -----
