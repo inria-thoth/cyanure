@@ -42,9 +42,8 @@ jobs:
       - name: Move coverage file folder
         run: |
           mv cyanure_lib_tmp cyanure_lib
-          ls build/
-          mv build/temp.linux-x86_64-3.10.6/cyanure_lib/cyanure_wrap_module.gcno ./
-          mv build/temp.linux-x86_64-3.10.6/cyanure_lib/cyanure_wrap_module.gcda ./
+          mv build/temp.linux-x86_64-cpython-310/cyanure_lib/cyanure_wrap_module.gcno ./
+          mv build/temp.linux-x86_64-cpython-310/cyanure_lib/cyanure_wrap_module.gcda ./
           gcovr -r ./ . --cobertura coverage_cxx.xml
           CXX_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage_cxx.xml)
           test_cxx=$(echo "$CXX_COVERAGE < 0.6" | bc)
