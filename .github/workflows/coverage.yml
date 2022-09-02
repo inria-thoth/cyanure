@@ -17,6 +17,12 @@ jobs:
           sudo apt-get install -y libopenblas-dev libgomp1
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
+      - name: Install the package your testing.
+        run: |
+          export COVERAGE=1
+          pip install --no-build-isolation .
+      - name: Install pip package
+        run: |
           pip install numpy
           pip install scipy
           pip install scikit-learn
@@ -25,10 +31,6 @@ jobs:
           pip install pytest-cov
           pip install gcovr
           pip install wheel
-      - name: Install the package your testing.
-        run: |
-          export COVERAGE=1
-          pip install --no-build-isolation .
       - name: Move conflicting folder
         run: |
           mv cyanure_lib cyanure_lib_tmp
