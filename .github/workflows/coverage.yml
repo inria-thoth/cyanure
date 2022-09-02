@@ -20,7 +20,7 @@ jobs:
       - name: Install the package your testing.
         run: |
           export COVERAGE=1
-          pip install --no-build-isolation .
+          pip install .
       - name: Install pip package
         run: |
           pip install numpy
