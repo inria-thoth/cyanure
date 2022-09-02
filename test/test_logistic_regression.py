@@ -339,8 +339,8 @@ def test_logreg_l1():
 
     # Noise and constant features should be regularized to zero by the l1
     # penalty
-    assert_array_almost_equal(lr_liblinear.coef_[-5:, 0], np.zeros(5))
-    assert_array_almost_equal(lr_saga.coef_[-5:, 0], np.zeros(5))
+    assert_array_almost_equal(lr_liblinear.coef_[-5:], np.zeros(5))
+    assert_array_almost_equal(lr_saga.coef_[-5:], np.zeros(5))
 
 
 def test_logreg_l1_sparse_data():
@@ -379,8 +379,8 @@ def test_logreg_l1_sparse_data():
     assert_array_almost_equal(lr_saga.coef_, lr_miso.coef_)
     # Noise and constant features should be regularized to zero by the l1
     # penalty
-    assert_array_almost_equal(lr_miso.coef_[-5:, 0], np.zeros(5))
-    assert_array_almost_equal(lr_saga.coef_[-5:, 0], np.zeros(5))
+    assert_array_almost_equal(lr_miso.coef_[-5:], np.zeros(5))
+    assert_array_almost_equal(lr_saga.coef_[-5:], np.zeros(5))
 
     # Check that solving on the sparse and dense data yield the same results
     lr_saga_dense = LogisticRegression(
@@ -970,7 +970,7 @@ def test_elastic_net_versus_sgd(C, multiplier):
 
     sgd.fit(X, y)
     log.fit(X, y)
-    assert_array_almost_equal(sgd.coef_, np.transpose(log.coef_), decimal=1)
+    assert_array_almost_equal(np.squeeze(sgd.coef_), np.transpose(log.coef_), decimal=1)
 
 @pytest.mark.parametrize(
     "est",
