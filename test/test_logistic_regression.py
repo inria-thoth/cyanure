@@ -970,7 +970,7 @@ def test_elastic_net_versus_sgd(C, multiplier):
 
     sgd.fit(X, y)
     log.fit(X, y)
-    assert_array_almost_equal(sgd.coef_, np.transpose(log.coef_), decimal=1)
+    assert_array_almost_equal(np.squeeze(sgd.coef_), np.transpose(log.coef_), decimal=1)
 
 @pytest.mark.parametrize(
     "est",
