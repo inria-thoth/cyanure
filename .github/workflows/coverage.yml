@@ -24,9 +24,6 @@ jobs:
           pip install .
       - name: Install pip package
         run: |
-          pip install numpy
-          pip install scipy
-          pip install scikit-learn
           pip install pandas
           pip install pytest
           pip install pytest-cov
