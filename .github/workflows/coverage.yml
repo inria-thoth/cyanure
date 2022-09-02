@@ -13,22 +13,19 @@ jobs:
           python-version: 3.10.6
       - name: Install dependencies
         run: |
-          ls
           sudo apt-get update
           sudo apt-get install -y libopenblas-dev libgomp1
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
-      - name: Install the package your testing.
-        run: |
-          export COVERAGE=1
-          pip install .
-      - name: Install pip package
-        run: |
-          pip install pandas
+           pip install pandas
           pip install pytest
           pip install pytest-cov
           pip install gcovr
           pip install wheel
+      - name: Install the package your testing.
+        run: |
+          export COVERAGE=1
+          pip install .
       - name: Move conflicting folder
         run: |
           mv cyanure_lib cyanure_lib_tmp
