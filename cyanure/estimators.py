@@ -331,6 +331,9 @@ class ERM(BaseEstimator, ABC):
         else:
             self.coef_ = w
 
+        print(w)
+        print(self.coef_.shape)
+
         self.n_features_in_ = self.coef_.shape[0]
 
         return self
