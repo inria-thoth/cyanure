@@ -89,7 +89,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
       
     - name: Install cyanure
-      run: ls && python -m pip install --find-links dist cyanure
+      run: ls dist/ && python -m pip install --find-links dist cyanure
     
     - name: Checkout
       uses: actions/checkout@v2
