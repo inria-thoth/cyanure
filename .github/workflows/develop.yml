@@ -103,5 +103,5 @@ jobs:
       uses: knicknic/os-specific-run@v1.0.3
       with:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pytest test/
-        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && pip list && python -m pytest test/
+        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && pip list && python -m pytest test/ && cat /opt/hostedtoolcache/Python/3.7.13/x64/lib/python3.7/site-packages/cyanure/estimators.py
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pytest test/
