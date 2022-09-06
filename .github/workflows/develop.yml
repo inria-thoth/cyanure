@@ -89,11 +89,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
       
     - name: Install cyanure
-      run: python -m zipfile --extract dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl debug/ &&  cat debug/cyanure/estimators.py && python -m pip list && ls dist/ && python -m pip install dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl && which python
-
-    - uses: actions/upload-artifact@v2
-      with:
-        path: ./dist/*.whl
+      run: python -m pip install dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
     
     - name: Checkout
       uses: actions/checkout@v2
@@ -107,5 +103,5 @@ jobs:
       uses: knicknic/os-specific-run@v1.0.3
       with:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && python -m pytest test/
-        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && pip list && cat /opt/hostedtoolcache/Python/3.7.13/x64/lib/python3.7/site-packages/cyanure/estimators.py && python -m pytest test/ 
+        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && python -m pytest test/ 
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pip install pandas && python -m pytest test/
