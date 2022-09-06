@@ -90,6 +90,10 @@ jobs:
       
     - name: Install cyanure
       run: python -m pip list && ls dist/ && python -m pip install --find-links dist cyanure
+
+    - uses: actions/upload-artifact@v2
+        with:
+          path: ./dist/*.whl
     
     - name: Checkout
       uses: actions/checkout@v2
