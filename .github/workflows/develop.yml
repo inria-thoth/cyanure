@@ -89,7 +89,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
       
     - name: Install cyanure
-      run: python -m zipfile --extract dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl debug/ &&  cat debug/cyanure/estimators.py && python -m pip list && ls dist/ && python -m pip install --find-links dist cyanure && which python
+      run: python -m zipfile --extract dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl debug/ &&  cat debug/cyanure/estimators.py && python -m pip list && ls dist/ && python -m pip install dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl && which python
 
     - uses: actions/upload-artifact@v2
       with:
