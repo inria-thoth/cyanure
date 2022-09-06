@@ -89,7 +89,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
       
     - name: Install cyanure
-      run: python -m pip install dist/cyanure-1.0.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+      run: python -m pip install dist/cyanure*.whl
     
     - name: Checkout
       uses: actions/checkout@v2
