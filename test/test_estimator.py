@@ -34,7 +34,7 @@ def test_debug_2():
     estimator = clone(estimator_orig)
     y = _enforce_estimator_tags_y(estimator, y)
 
-    X, y = create_memmap_backed_data([X, y])
+    X, y = create_memmap_backed_data([X, y], False, True)
 
     set_random_state(estimator)
     assert estimator.fit(X, y) is estimator
