@@ -46,7 +46,7 @@ jobs:
           mv build/temp.linux-x86_64-cpython-310/cyanure_lib/cyanure_wrap_module.gcda ./
           gcovr -r ./ . --cobertura coverage_cxx.xml
           CXX_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage_cxx.xml)
-          test_cxx=$(echo "$CXX_COVERAGE < 0.6" | bc)
+          test_cxx=$(echo "$CXX_COVERAGE < 0.5" | bc)
           if ((test_cxx)); then echo "Failed because of cxx coverage";exit 1; fi
 
 
