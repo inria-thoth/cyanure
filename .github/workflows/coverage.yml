@@ -47,6 +47,7 @@ jobs:
           gcovr -r ./ . --cobertura coverage_cxx.xml
           ls
           CXX_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage_cxx.xml)
+          cat coverage_cxx.xml
           echo $CXX_COVERAGE
           test_cxx=$(echo "$CXX_COVERAGE < 0.1" | bc)
           if ((test_cxx)); then echo "Failed because of cxx coverage";exit 1; fi
