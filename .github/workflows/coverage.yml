@@ -39,10 +39,6 @@ jobs:
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
           test=$(echo "$PYTHON_COVERAGE < 0.8" | bc)
           if ((test)); then echo "Failed because of python coverage";exit 1; fi
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
       - name: Move coverage file folder
         run: |
           mv cyanure_lib_tmp cyanure_lib
