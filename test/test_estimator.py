@@ -13,7 +13,7 @@ from sklearn.base import clone
 estimator_orig = LogisticRegression()
 
 def test_debug():
-    """Check if self is returned when calling fit."""
+    #Check if self is returned when calling fit.
     X, y = make_blobs(random_state=0, n_samples=21)
     # some want non-negative input
     X -= X.min()
@@ -26,7 +26,7 @@ def test_debug():
     assert estimator.fit(X, y) is estimator
 
 def test_debug_2():
-    """Check if self is returned when calling fit."""
+    #Check if self is returned when calling fit.
     X, y = make_blobs(random_state=0, n_samples=21)
     # some want non-negative input
     X -= X.min()
