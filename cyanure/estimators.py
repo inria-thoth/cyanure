@@ -76,7 +76,7 @@ class ERM(BaseEstimator, ABC):
                 nclasses = labels.squeeze().shape[1]
                 yf = np.asfortranarray(labels.T)
             else:
-                nclasses = int(np.max(labels) + 1)
+                nclasses = len(np.unique(labels))
                 if platform.system() == "Windows":
                     yf = np.squeeze(np.intc(np.float64(labels)))
                 else:
