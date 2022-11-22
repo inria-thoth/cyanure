@@ -37,6 +37,7 @@ jobs:
         run: |
           pytest --cov-config=.coveragec --cov=cyanure --cov-report xml:coverage.xml
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
+          echo $PYTHON_COVERAGE
           test=$(echo "$PYTHON_COVERAGE < 0.8" | bc)
           if ((test)); then echo "Failed because of python coverage";exit 1; fi
       - name: Move coverage file folder
