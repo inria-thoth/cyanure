@@ -28,7 +28,7 @@ jobs:
       - name: Install the package your testing.
         run: |
           export COVERAGE=1
-          pip install .
+          pip install --no-build-isolation .
       - name: Move conflicting folder
         run: |
           mv cyanure_lib cyanure_lib_tmp
