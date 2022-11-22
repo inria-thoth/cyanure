@@ -1,3 +1,4 @@
+"""
 import pytest
 
 from sklearn.utils.estimator_checks import check_estimator
@@ -45,3 +46,4 @@ def test_debug_2():
 )
 def test_all_estimators(estimator):
     return check_estimator(estimator)
+"""
