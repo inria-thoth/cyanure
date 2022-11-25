@@ -145,3 +145,4 @@ setup(name='cyanure',
       packages=find_packages(),
       cmdclass={'sdist': sdistzip},
       py_modules=['cyanure'])
+
