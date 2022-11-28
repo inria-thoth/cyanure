@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 skip = ["pp*", "*musllinux*"]
 
 [tool.cibuildwheel.linux]
-before-all = "yum-config-manager --add-repo=https://rpmfind.net/linux/fedora/linux/releases/36/Everything/x86_64 && yum install -y openblas-devel libgomp  || apk add openblas-dev libgomp"
+before-all = "yum-config-manager --add-repo=https://ftp.upjs.sk/pub/mirrors/almalinux/9/CRB/x86_64/os/ && yum install -y openblas-devel libgomp  || apk add openblas-dev libgomp"
 test-command =  ["cd  {package}",]
 
 [tool.cibuildwheel.macos]
