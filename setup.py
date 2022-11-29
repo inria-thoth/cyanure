@@ -89,9 +89,10 @@ else:
     else:
 
         if "openblas" in np_blas:
-            libs = ['openblas']
-        else:
             libs = ['lapack', 'blas']
+        else:
+            libs = ['openblas']
+            
 
         extra_compile_args = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
