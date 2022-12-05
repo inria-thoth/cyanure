@@ -4,7 +4,7 @@ requires = [
     "wheel==0.37.0",
     "scipy<=1.8.1;python_version<'3.11'", "scipy>=1.8.1;python_version>='3.11'",
     "numpy>=1.23.5;python_version>='3.11'", "numpy<=1.23.5;python_version<'3.11'",
-    "scikit-learn==1.0.2"
+    "scikit-learn"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -14,7 +14,7 @@ skip = ["pp*", "*musllinux*"]
 [tool.cibuildwheel.linux]
 before-all = "yum install -y openblas-devel libgomp  || apk add openblas-dev libgomp"
 test-command =  ["cd  {package}",]
-skip = ["*i686"]
+skip = ["*i686", "pp*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
