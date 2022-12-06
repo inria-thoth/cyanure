@@ -333,6 +333,8 @@ class ERM(BaseEstimator, ABC):
 
         self.n_features_in_ = self.coef_.shape[0]
 
+        self.coef_ = np.squeeze(self.coef_)
+
         return self
 
     @abstractmethod
@@ -994,7 +996,6 @@ class Classifier(ClassifierAbstraction):
         super().fit(
             X, labels, le_parameter=self.le_)
 
-        self.coef_ = self.coef_.reshape(self.coef_.shape[0], -1)
         self.coef_ = np.squeeze(self.coef_)
         if self.fit_intercept:
             self.intercept_ = self.intercept_.reshape(1, -1)
