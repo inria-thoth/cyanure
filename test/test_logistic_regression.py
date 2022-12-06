@@ -339,8 +339,8 @@ def test_logreg_l1():
 
     # Noise and constant features should be regularized to zero by the l1
     # penalty
-    assert_array_almost_equal(lr_liblinear.coef_[-5:], np.zeros(5))
-    assert_array_almost_equal(lr_saga.coef_[-5:], np.zeros(5))
+    assert_array_almost_equal(lr_liblinear.coef_, np.zeros(5))
+    assert_array_almost_equal(lr_saga.coef_, np.zeros(5))
 
 
 def test_logreg_l1_sparse_data():
