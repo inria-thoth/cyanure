@@ -102,7 +102,6 @@ else:
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
         LIBS = libs
-        RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         EXTRA_COMPILE_ARGS = extra_compile_args
 
         if platform.system() == "Darwin":
@@ -129,7 +128,6 @@ cyanure_wrap = Extension(
     language='c++',
     library_dirs=LIBRARY_DIRS,
     extra_compile_args=EXTRA_COMPILE_ARGS,
-    runtime_library_dirs=RUNTIME_LIRABRY_DIRS,
     extra_link_args=EXTRA_LINK_ARGS,
     sources=['cyanure_lib/cyanure_wrap_module.cpp'])
 
