@@ -102,6 +102,6 @@ jobs:
     - name: Run tests without the lib
       uses: knicknic/os-specific-run@v1.0.3
       with:
-        macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && pip install scipy==1.8.1 && pip list && python -m pytest test/
+        macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && pip install scipy<=1.8.1 && pip list && python -m pytest test/
         linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && pip list && python -m pytest test/ 
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pip install pandas && python -m pytest test/
