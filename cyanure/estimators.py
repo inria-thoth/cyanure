@@ -325,6 +325,8 @@ class ERM(BaseEstimator, ABC):
                     "The max_iter was reached which means the coef_ did not converge",
                     ConvergenceWarning)
 
+        print(w.shape)
+
         if self.fit_intercept:
             self.intercept_ = w[-1, ]
             self.coef_ = w[0:-1, ]
