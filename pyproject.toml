@@ -18,12 +18,16 @@ skip = ["*i686", "pp*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
-archs = ["x86_64", "arm64"]
+archs = ["arm64", "x86_64"]
 test-skip = "*_arm64 *_universal2:arm64"
 before-all = [
   "brew install openblas",
   "brew install libomp",
   "brew install llvm",
+  "arch -x86_64 zsh",
+  "arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"",
+  "arch -x86_64 /usr/local/bin/brew install llvm ",
+  "/usr/local/opt/llvm/bin/clang++ -arch x86_64 omp_ex.cpp",
 ]
 test-command =  ["cd  {package}",]
 
