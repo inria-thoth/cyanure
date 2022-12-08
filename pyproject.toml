@@ -26,8 +26,8 @@ before-all = [
   "brew install llvm",
   "arch -x86_64 zsh",
   "arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"",
-  "arch -x86_64 /usr/local/bin/brew install llvm ",
-  "/usr/local/opt/llvm/bin/clang++ -arch x86_64 omp_ex.cpp",
+  "arch -x86_64 /usr/local/bin/brew install llvm",
+  "/usr/local/opt/llvm/bin/clang++ -arch x86_64 omp_ex.cpp"
 ]
 test-command =  ["cd  {package}",]
 
