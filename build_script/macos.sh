@@ -30,7 +30,6 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     export CC="/usr/local/opt/llvm/bin/clang"
     export CXX="/usr/local/opt/llvm/bin/clang++"
-    export CFLAGS="$CFLAGS -I$PREFIX/include"
-    export CXXFLAGS="$CXXFLAGS -I$PREFIX/include"
+    export CPPFLAGS="$CXXFLAGS -I$PREFIX/include"
     export LDFLAGS="$LDFLAGS -Wl,-rpath,$PREFIX/lib -L$PREFIX/lib -lomp"
 fi
