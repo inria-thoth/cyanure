@@ -27,7 +27,7 @@ before-all = [
 
 ]
 test-command =  ["cd  {package}",]
-before-build = "ls && sudo ./build_script/macos.sh"
+before-build = "ls && ./build_script/macos.sh"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
