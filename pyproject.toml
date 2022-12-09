@@ -20,6 +20,10 @@ skip = ["*i686", "pp*", "*musllinux*"]
 # Run multiple commands using an array
 archs = ["arm64", "x86_64"]
 test-skip = "*_arm64 *_universal2:arm64"
+before-all = [
+  "brew install llvm",
+
+]
 test-command =  ["cd  {package}",]
 before-build = "ls && ./build_script/macos.sh"
 
