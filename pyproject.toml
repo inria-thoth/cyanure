@@ -24,18 +24,10 @@ before-all = [
   "brew install openblas",
   "brew install libomp",
   "brew install llvm",
-  "arch -arm64 zsh",
-  "arch -arm64 /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)\"",
-  "arch -arm64 /usr/local/bin/brew install llvm",
-  "/usr/local/opt/llvm/bin/clang++ -arch arm64 omp_ex.cpp"
+
 ]
 test-command =  ["cd  {package}",]
-
-[tool.cibuildwheel.macos.environment]
-CC = "/usr/local/opt/llvm/bin/clang"
-CXX = "/usr/local/opt/llvm/bin/clang++"
-LDFLAGS = "-L/usr/local/opt/openblas/lib"
-CPPFLAGS = "-I/usr/local/opt/openblas/include"
+before-build = "build_script/macos.sh"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
