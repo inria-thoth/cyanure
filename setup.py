@@ -102,7 +102,7 @@ else:
         
 
         if platform.system() == "Darwin":
-            INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include"]
+            INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include"] + [numpy.get_include()]
             LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib"] 
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
