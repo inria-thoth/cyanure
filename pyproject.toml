@@ -29,8 +29,8 @@ test-command =  ["cd  {package}",]
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
 CXX = "/usr/local/opt/llvm/bin/clang++"
-LDFLAGS = "-L/usr/local/opt/openblas/lib"
-CPPFLAGS = "-I/usr/local/opt/openblas/include"
+LDFLAGS = "-L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib"
+CPPFLAGS = "-I/usr/local/miniconda/envs/build_openmp/include -I/usr/local/miniconda/envs/build_blas/include"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
