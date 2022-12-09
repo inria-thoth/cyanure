@@ -102,8 +102,8 @@ else:
         
 
         if platform.system() == "Darwin":
-            INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include"] + INCLUDE_DIRS
-            LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib"] + LIBRARY_DIRS
+            INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include"]
+            LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib"] 
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11', '-fopenmp']
