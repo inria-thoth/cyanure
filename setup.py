@@ -93,21 +93,24 @@ else:
         else:
             libs = ['lapack', 'blas']
 
-        extra_compile_args = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp']
-
         INCLUDE_DIRS = [numpy.get_include()]
 
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
         LIBS = libs
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-        EXTRA_COMPILE_ARGS = extra_compile_args
+        
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
             LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
+            EXTRA_COMPILE_ARGS = [
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11']
+        else:
+            EXTRA_COMPILE_ARGS = [
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
