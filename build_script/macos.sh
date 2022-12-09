@@ -28,8 +28,8 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     ls "/usr/local/miniconda/envs/build"
     ls "/usr/local/miniconda/envs/build/lib"
 
-    export CC = "/usr/local/opt/llvm/bin/clang"
-    export CXX = "/usr/local/opt/llvm/bin/clang++"
+    export CC="/usr/local/opt/llvm/bin/clang"
+    export CXX="/usr/local/opt/llvm/bin/clang++"
     export CPPFLAGS="$CPPFLAGS -Xpreprocessor -fopenmp"
     export CFLAGS="$CFLAGS -I$PREFIX/include"
     export CXXFLAGS="$CXXFLAGS -I$PREFIX/include"
