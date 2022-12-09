@@ -23,13 +23,4 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     fi
 
     sudo conda create -n build $OPENMP_URL
-    PREFIX="/usr/local/miniconda/envs/build"
-
-    ls "/usr/local/miniconda/envs/build"
-    ls "/usr/local/miniconda/envs/build/lib"
-
-    export CC="/usr/local/opt/llvm/bin/clang"
-    export CXX="/usr/local/opt/llvm/bin/clang++"
-    export CPPFLAGS="$CXXFLAGS -I$PREFIX/include"
-    export LDFLAGS="$LDFLAGS -Wl,-rpath,$PREFIX/lib -L$PREFIX/lib -lomp"
 fi

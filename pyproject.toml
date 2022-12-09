@@ -25,7 +25,12 @@ before-all = [
 
 ]
 test-command =  ["cd  {package}",]
-before-build = "ls && ./build_script/macos.sh"
+
+[tool.cibuildwheel.macos.environment]
+CC = "/usr/local/opt/llvm/bin/clang"
+CXX = "/usr/local/opt/llvm/bin/clang++"
+LDFLAGS = "-L/usr/local/opt/openblas/lib"
+CPPFLAGS = "-I/usr/local/opt/openblas/include"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
