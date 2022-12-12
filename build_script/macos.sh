@@ -26,4 +26,6 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     sudo conda create -n build_openmp $OPENMP_URL
     sudo conda create -n build_blas $OPENBLAS_URL
+
+    ls "/usr/local/miniconda/envs/build_blas/lib"
 fi
