@@ -107,7 +107,7 @@ else:
             LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib"] 
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp']
+            '-std=c++11']
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
