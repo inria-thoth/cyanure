@@ -27,7 +27,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     sudo conda create -n build_openmp $OPENMP_URL
     sudo conda create -n build_blas $OPENBLAS_URL
 
-    cp "/usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build_blas/lib/libopenblas.dylib"
+    sudo cp "/usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build_blas/lib/libopenblas.dylib"
 
     ls "/usr/local/miniconda/envs/build_blas/lib"
 fi
