@@ -106,12 +106,12 @@ else:
             INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include", "/usr/local/miniconda/envs/build_unwind/include"] + [numpy.get_include()]
             LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib", "/usr/local/miniconda/envs/build_unwind/lib"] 
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         else:
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
 
     if "COVERAGE" in os.environ:
