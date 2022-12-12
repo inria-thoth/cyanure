@@ -111,7 +111,7 @@ else:
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp']
+            '-std=c++11']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -119,7 +119,7 @@ else:
 
 
 if platform.system() != "Windows":
-    EXTRA_LINK_ARGS = ['-fopenmp']
+    EXTRA_LINK_ARGS = []
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
