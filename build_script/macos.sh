@@ -29,10 +29,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     sudo conda create -n build_openmp $OPENMP_URL
     sudo conda create -n build_blas $OPENBLAS_URL
-    sudo conda create -n build_unwind $UNWIND_URL
 
     sudo cp "/usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build_blas/lib/libopenblas.dylib"
-    sudo cp "/usr/local/miniconda/envs/build_unwind/lib/libosxunwind.dylib" "/usr/local/miniconda/envs/build_unwind/lib/libunwind.dylib"
 
-    ls "/usr/local/miniconda/envs/build_unwind/lib"
 fi
