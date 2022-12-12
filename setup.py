@@ -108,6 +108,7 @@ else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
+            RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
@@ -119,7 +120,7 @@ else:
 
 
 if platform.system() != "Windows":
-    EXTRA_LINK_ARGS = []
+    EXTRA_LINK_ARGS = ['-fopenmp']
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
