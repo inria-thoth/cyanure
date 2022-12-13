@@ -89,7 +89,7 @@ else:
     else:
 
         if "openblas" in np_blas:
-            libs = ['']
+            libs = ['openblas']
         else:
             libs = ['lapack', 'blas']
 
@@ -108,6 +108,7 @@ else:
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11', '-Wl,-no_compact_unwind']
+            LIBS = []
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         else:
             EXTRA_COMPILE_ARGS = [
