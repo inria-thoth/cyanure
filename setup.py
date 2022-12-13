@@ -89,7 +89,7 @@ else:
     else:
 
         if "openblas" in np_blas:
-            libs = ['openblas']
+            libs = ['']
         else:
             libs = ['lapack', 'blas']
 
