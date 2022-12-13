@@ -30,7 +30,7 @@ before-build = "build_script/macos.sh"
 
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
-CXX = "/usr/local/opt/llvm/bin/clang++ -arch arm64"
+CXX = "/usr/local/opt/llvm/bin/clang++"
 LDFLAGS = "-L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib"
 CPPFLAGS = "-I/usr/local/miniconda/envs/build_openmp/include -I/usr/local/miniconda/envs/build_blas/include"
 
