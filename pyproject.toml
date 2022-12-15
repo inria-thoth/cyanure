@@ -31,8 +31,8 @@ before-build = "build_script/macos.sh"
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
 CXX = "/usr/local/opt/llvm/bin/clang++"
-LDFLAGS = "-L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib"
-CPPFLAGS = "-I/usr/local/miniconda/envs/build_openmp/include -I/usr/local/miniconda/envs/build_blas/include"
+LDFLAGS = "-L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib -L/usr/local/miniconda/envs/build_gfortran/lib"
+CPPFLAGS = "-I/usr/local/miniconda/envs/build_openmp/include -I/usr/local/miniconda/envs/build_blas/include -I/usr/local/miniconda/envs/build_gfortran/include"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
