@@ -106,7 +106,8 @@ else:
             INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include"] + [numpy.get_include()]
             LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib"] 
             EXTRA_COMPILE_ARGS = [
-            '-DINT_64BITS']
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11']
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         else:
             EXTRA_COMPILE_ARGS = [
@@ -119,7 +120,7 @@ else:
 
 
 if platform.system() != "Windows":
-    EXTRA_LINK_ARGS = ['-fopenmp']
+    EXTRA_LINK_ARGS = []
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
