@@ -18,7 +18,7 @@ skip = ["*i686", "pp*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
-archs = ["arm64"]
+archs = ["arm64", "x86_64"]
 build = "cp*"
 test-skip = "*_arm64 *_universal2:arm64"
 before-all = [
@@ -27,15 +27,13 @@ before-all = [
 ]
 test-command =  ["cd  {package}",]
 before-build = "build_script/macos.sh"
-repair-wheel-command = "brew install patchelf && delocate-listdeps {wheel} && sudo install_name_tool -change '@rpath/libgfortran.5.dylib' '/usr/local/miniconda/envs/build_gfortran/lib/libgfortran.5.dylib' /usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib && sudo install_name_tool -change '@rpath/libomp.dylib' '/usr/local/miniconda/envs/build_openmp/lib/libomp.dylib' /usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib && delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+repair-wheel-command = "sudo install_name_tool -change '@rpath/libgfortran.5.dylib' '/usr/local/miniconda/envs/build_gfortran/lib/libgfortran.5.dylib' /usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib && sudo install_name_tool -change '@rpath/libomp.dylib' '/usr/local/miniconda/envs/build_openmp/lib/libomp.dylib' /usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib && delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
 CXX = "/usr/local/opt/llvm/bin/clang++"
 LDFLAGS = "-L/usr/local/miniconda/envs/build_gfortran/lib -L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib"
-LIBADD = "-L/usr/local/miniconda/envs/build_gfortran/lib -L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib"
 CPPFLAGS = "-I/usr/local/miniconda/envs/build_gfortran/include -I/usr/local/miniconda/envs/build_openmp/include -I/usr/local/miniconda/envs/build_blas/include"
-LD_LIBRARY_PATH = "/usr/local/miniconda/envs/build_gfortran/lib;/usr/local/miniconda/envs/build_openmp/lib;/usr/local/miniconda/envs/build_blas/lib"
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
