@@ -37,6 +37,5 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     sudo ls /usr/local/miniconda/envs/build_gfortran/lib
 
-    sudo ls /output
-
+    echo $wheel
 fi
