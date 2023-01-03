@@ -9,7 +9,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     # supported version of the macos SDK as libomp will be vendored into the
     # scikit-learn wheels for macos.
 
-    if [[ "$ARCHFLAGS" == *-arch arm64 ]]; then
+    if [[ "$ARCHFLAGS" == "-arch arm64" ]]; then
         # arm64 builds must cross compile because CI is on x64
         export PYTHON_CROSSENV=1
         # SciPy requires 12.0 on arm to prevent kernel panics
