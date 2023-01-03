@@ -35,5 +35,5 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     sudo cp "/usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build_blas/lib/libopenblas.dylib"
 
-    sudo ls /usr/local/miniconda/envs/build_gfortran/lib
+    sudo ls /usr/local/miniconda/envs/build_openmp/lib/
 fi
