@@ -27,7 +27,7 @@ before-all = [
 ]
 test-command =  ["cd  {package}",]
 before-build = "build_script/macos.sh"
-repair-wheel-command = "readelf -d {wheel} | egrep "RPATH|RUNPATH" && delvewheel repair -w {dest_dir} {wheel}"
+repair-wheel-command = "readelf -d {wheel} | egrep 'RPATH|RUNPATH' && delvewheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
