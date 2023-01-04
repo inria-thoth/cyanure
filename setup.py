@@ -102,9 +102,8 @@ else:
         
 
         if platform.system() == "Darwin":
-            print(numpy.get_include())
             INCLUDE_DIRS = ["/usr/local/miniconda/envs/build_blas/include", "/usr/local/miniconda/envs/build_openmp/include", "/usr/local/miniconda/envs/build_gfortran/include"] + [numpy.get_include()]
-            LIBRARY_DIRS = [] 
+            LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", "/usr/local/miniconda/envs/build_blas/lib", "/usr/local/miniconda/envs/build_gfortran/lib"] 
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
