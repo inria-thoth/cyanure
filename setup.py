@@ -99,7 +99,7 @@ else:
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
         LIBS = libs
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-        
+
         EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
@@ -111,7 +111,7 @@ else:
 
 if platform.system() != "Windows":
     # '-fopenmp' it does not compile, to repair
-    EXTRA_LINK_ARGS = []
+    EXTRA_LINK_ARGS = ["-fopenmp"]
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
