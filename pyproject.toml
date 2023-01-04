@@ -18,7 +18,7 @@ skip = ["*i686", "pp*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
-archs = ["arm64"]
+archs = ["arm64", "x86_64"]
 build = "cp*"
 test-skip = "*_arm64 *_universal2:arm64"
 before-all = [
