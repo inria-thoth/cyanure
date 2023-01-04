@@ -32,8 +32,9 @@ repair-wheel-command = "sudo install_name_tool -change '@rpath/libgfortran.5.dyl
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
 CXX = "/usr/local/opt/llvm/bin/clang++"
-LDFLAGS = "-L/usr/local/miniconda/envs/build_gfortran/lib -L/usr/local/miniconda/envs/build_openmp/lib -L/usr/local/miniconda/envs/build_blas/lib"
-CPPFLAGS = "-I/usr/local/miniconda/envs/build_gfortran/include -I/usr/local/miniconda/envs/build_openmp/include -I/usr/local/miniconda/envs/build_blas/include"
+LDFLAGS = "-L/usr/local/opt/openblas/lib"
+CPPFLAGS = "-I/usr/local/opt/openblas/include"
+
 
 [tool.cibuildwheel.windows]
 # Run multiple commands using an array
