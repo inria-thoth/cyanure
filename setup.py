@@ -99,6 +99,8 @@ else:
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
         LIBS = libs
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
+
+        print(platform.machine())
         
         """
         if platform.system() == "Darwin":
