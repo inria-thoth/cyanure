@@ -110,7 +110,7 @@ else:
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
         else:
         """
-            EXTRA_COMPILE_ARGS = [
+        EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
 
