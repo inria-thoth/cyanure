@@ -32,8 +32,6 @@ repair-wheel-command = "sudo install_name_tool -change '@rpath/libgfortran.5.dyl
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/local/opt/llvm/bin/clang"
 CXX = "/usr/local/opt/llvm/bin/clang++"
-LDFLAGS = "-L/usr/local/opt/openblas/lib"
-CPPFLAGS = "-I/usr/local/opt/openblas/include"
 
 
 [tool.cibuildwheel.windows]
