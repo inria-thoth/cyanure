@@ -35,7 +35,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     
 
-    PREFIX="$CONDA_HOME/envs/build"
+    PREFIX="/usr/local/miniconda/envs/build"
 
     export CC=/usr/local/opt/llvm/bin/clang
     export CXX=/usr/local/opt/llvm/bin/clang++
