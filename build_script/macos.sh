@@ -33,6 +33,8 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     sudo conda create -n build_gfortran $GFORTRAN_URL
 
     sudo cp "/usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build_blas/lib/libopenblas.dylib"
+    
+    sudo ls /usr/local/miniconda/envs/build_openmp/lib
 
     sudo otool -L /usr/local/miniconda/envs/build_openmp/lib/libgomp.dylib
 fi
