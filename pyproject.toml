@@ -18,7 +18,7 @@ skip = ["*i686", "pp*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
-archs = ["arm64"]
+archs = ["arm64", "x86_64"]
 build = "cp*"
 test-skip = "*_arm64 *_universal2:arm64"
 before-all = [
@@ -27,7 +27,6 @@ before-all = [
 ]
 test-command =  ["cd  {package}",]
 before-build = "build_script/macos.sh"
-repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/bin/clang"
