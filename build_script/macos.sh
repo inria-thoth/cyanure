@@ -36,5 +36,5 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     
     sudo ls /usr/local/miniconda/envs/build_openmp/lib/clang/11.1.0
 
-    sudo otool -L /usr/local/miniconda/envs/build_openmp/lib/libomp5.dylib
+    sudo otool -L /usr/local/miniconda/envs/build_openmp/lib/libiomp5.dylib
 fi
