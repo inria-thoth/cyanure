@@ -101,9 +101,8 @@ else:
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
 
         if platform.system() == "Darwin":
-            print(platform.machine())
-            INCLUDE_DIRS = ['/usr/local/opt/openblas/include', "/usr/local/miniconda/envs/build_openmp/include", "/usr/local/miniconda/envs/build_gfortran/include"] + [numpy.get_include()]
-            LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", '/usr/local/opt/openblas/lib', "/usr/local/miniconda/envs/build_gfortran/lib"] 
+            INCLUDE_DIRS = ['/usr/local/miniconda/envs/build_blas/include', "/usr/local/miniconda/envs/build_openmp/include", "/usr/local/miniconda/envs/build_gfortran/include"] + [numpy.get_include()]
+            LIBRARY_DIRS = ["/usr/local/miniconda/envs/build_openmp/lib", '/usr/local/miniconda/envs/build_blas/lib', "/usr/local/miniconda/envs/build_gfortran/lib"] 
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
