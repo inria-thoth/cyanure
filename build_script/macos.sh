@@ -46,6 +46,8 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     sudo cp "/usr/local/miniconda/envs/build/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build/lib/libopenblas.dylib"
 
+    sudo ls /usr/local/miniconda/envs/build
+
     sudo ls /usr/local/miniconda/envs/build/bin
 
 fi
