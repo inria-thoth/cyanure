@@ -37,7 +37,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     PREFIX="$CONDA_HOME/envs/build"
 
-    export CC=/usr/bin/clang
+    export CC=/usr/local/opt/llvm/bin/clang
     export CXX=/usr/local/opt/llvm/bin/clang++
     export CPPFLAGS="$CPPFLAGS -Xpreprocessor -fopenmp"
     export CFLAGS="$CFLAGS -I$PREFIX/include"
@@ -45,7 +45,5 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     export LDFLAGS="$LDFLAGS -Wl,-rpath,$PREFIX/lib -L$PREFIX/lib -lomp"
 
     sudo cp "/usr/local/miniconda/envs/build/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build/lib/libopenblas.dylib"
-
-    sudo ls /usr/local/miniconda/envs/build
 
 fi
