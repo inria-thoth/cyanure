@@ -48,6 +48,4 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
     sudo ls /usr/local/miniconda/envs/build
 
-    sudo ls /usr/local/miniconda/envs/build/bin
-
 fi
