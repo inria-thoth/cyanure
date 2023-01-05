@@ -20,6 +20,9 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
         OPENMP_URL="https://anaconda.org/conda-forge/llvm-openmp/11.1.0/download/osx-arm64/llvm-openmp-11.1.0-hf3c4609_1.tar.bz2"
         OPENBLAS_URL="https://anaconda.org/conda-forge/libopenblas/0.3.21/download/osx-arm64/libopenblas-0.3.21-openmp_hc731615_3.tar.bz2"
         GFORTRAN_URL="https://anaconda.org/conda-forge/libgfortran5/11.3.0/download/osx-arm64/libgfortran5-11.3.0-hdaf2cc0_26.tar.bz2"
+        LLVM_URL="https://anaconda.org/conda-forge/llvm-openmp/15.0.5/download/osx-arm64/llvm-openmp-15.0.5-h7cfbb63_0.tar.bz2"
+
+        sudo conda create -n build_llvm $LLVM_URL
         
     else
         export MACOSX_DEPLOYMENT_TARGET=10.9
@@ -33,6 +36,8 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
     sudo conda create -n build_gfortran $GFORTRAN_URL
 
     sudo cp "/usr/local/miniconda/envs/build_blas/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build_blas/lib/libopenblas.dylib"
+
+    sudo ls /usr/local/miniconda/envs/build_llvm/lib
     
     sudo ls /usr/local/miniconda/envs/build_openmp/lib/clang/11.1.0/include
 
