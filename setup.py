@@ -105,7 +105,7 @@ else:
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
-            EXTRA_LINK_ARGS = ["-fopenmp"]
+            EXTRA_LINK_ARGS = []
         else:
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
