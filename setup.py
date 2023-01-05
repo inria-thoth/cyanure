@@ -107,10 +107,12 @@ else:
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
+            EXTRA_LINK_ARGS = ["-lomp"]
         else:
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
+            EXTRA_LINK_ARGS = ["-fopenmp"]
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -119,7 +121,7 @@ else:
 
 if platform.system() != "Windows":
     # '-fopenmp' it does not compile, to repair
-    EXTRA_LINK_ARGS = ["-fopenmp"]
+    
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
