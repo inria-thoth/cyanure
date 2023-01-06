@@ -208,6 +208,8 @@ def check_input_type(X, labels, estimator):
 
         if platform.system() == "Windows":
             if scipy.sparse.issparse(X):
+                print(X.indptr.dtype)
+                print(X.indices.dtype)
                 X.indptr = X.indptr.astype(np.float64).astype(np.intc)
                 X.indices = X.indices.astype(np.float64).astype(np.intc)
                 print("ici!")
