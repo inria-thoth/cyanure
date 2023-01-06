@@ -299,7 +299,7 @@ class ERM(BaseEstimator, ABC):
             X) else np.asfortranarray(X.T)
         w = np.copy(initial_weight)
         print(training_data_fortran.dtype)
-        print(training_data_fortran.yf)
+        print(yf.dtype)
         self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, initial_weight, w, dual_variable=self.dual, loss=loss,
             penalty=self.penalty, solver=self.solver, lambda_1=float(self.lambda_1),
