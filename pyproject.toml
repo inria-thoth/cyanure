@@ -31,10 +31,10 @@ before-build = "build_script/macos.sh"
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/bin/clang"
 CXX = "/usr/bin/clang++"
-CPPFLAGS="$CPPFLAGS -Xpreprocessor -fopenmp"
-CFLAGS="$CFLAGS -I$/usr/local/miniconda/envs/build/include"
-CXXFLAGS="$CXXFLAGS -I$/usr/local/miniconda/envs/build/include"
-LDFLAGS="$LDFLAGS -Wl,-rpath,$/usr/local/miniconda/envs/build/lib -L$/usr/local/miniconda/envs/build/lib -lomp"
+CPPFLAGS="-Xpreprocessor -fopenmp"
+CFLAGS="-I/usr/local/miniconda/envs/build/include"
+CXXFLAGS="-I/usr/local/miniconda/envs/build/include"
+LDFLAGS="-Wl,-rpath,/usr/local/miniconda/envs/build/lib -L$/usr/local/miniconda/envs/build/lib -lomp"
 
 
 [tool.cibuildwheel.windows]
