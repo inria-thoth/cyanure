@@ -951,7 +951,7 @@ def test_elastic_net_versus_sgd(C, multiplier):
         penalty="elasticnet",
         random_state=1,
         fit_intercept=False,
-        tol=-np.inf,
+        tol=None,
         max_iter=2000,
         l1_ratio=multiplier,
         alpha=lambda_1,
