@@ -212,6 +212,8 @@ def check_input_type(X, labels, estimator):
                 print(X.indices.dtype)
                 X.indptr = X.indptr.astype(np.float64).astype(np.intc)
                 X.indices = X.indices.astype(np.float64).astype(np.intc)
+                print(X.indptr.dtype)
+                print(X.indices.dtype)
                 print("ici!")
             if scipy.sparse.issparse(labels):
                 labels.indptr = labels.indptr.astype(np.float64).astype(np.intc)
