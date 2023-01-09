@@ -292,9 +292,11 @@ class ERM(BaseEstimator, ABC):
             loss = self.loss
 
         labels = np.squeeze(labels)
-
+        print(X.dtype)
+        print(labels.dtype)
         initial_weight, yf, nclasses = self._initialize_weight(X, labels)
-
+        print(training_data_fortran.dtype)
+        print(yf.dtype)
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
         w = np.copy(initial_weight)
