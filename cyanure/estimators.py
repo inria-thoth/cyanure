@@ -292,21 +292,19 @@ class ERM(BaseEstimator, ABC):
             loss = self.loss
 
         labels = np.squeeze(labels)
-        print(X.dtype)
-        print(labels.dtype)
         initial_weight, yf, nclasses = self._initialize_weight(X, labels)
-        print(X.dtype)
-        print(yf.dtype)
         if platform.system() == "Windows":
             if scipy.sparse.issparse(X):
-                print("Before conversion : " + str(X.dtype))
                 X.indptr = X.indptr.astype(np.float64).astype(np.longlong)
                 X.indices = X.indices.astype(np.float64).astype(np.longlong)
-                print("After conversion : " + str(X.dtype))
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
         w = np.copy(initial_weight)
         print(training_data_fortran.dtype)
+        if platform.system() == "Windows":
+            if scipy.sparse.issparse(X):
+                print("Before conversion : " + str(X.indptr.dtype))
+                print("After conversion : " + str(X.indices.dtype))
         print(yf.dtype)
         self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, initial_weight, w, dual_variable=self.dual, loss=loss,
