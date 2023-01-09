@@ -218,7 +218,6 @@ def check_input_type(X, labels, estimator):
             if scipy.sparse.issparse(labels):
                 labels.indptr = labels.indptr.astype(np.float64).astype(np.intc)
                 labels.indices = labels.indices.astype(np.float64).astype(np.intc)
-                print("la!")
 
     return X, labels, label_encoder
 
