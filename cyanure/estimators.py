@@ -295,8 +295,8 @@ class ERM(BaseEstimator, ABC):
         initial_weight, yf, nclasses = self._initialize_weight(X, labels)
         if platform.system() == "Windows":
             if scipy.sparse.issparse(X):
-                X.indptr = X.indptr.astype(np.float64).astype(np.intp)
-                X.indices = X.indices.astype(np.float64).astype(np.intp)
+                X.indptr = X.indptr.astype(np.float64)
+                X.indices = X.indices.astype(np.float64)
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
         w = np.copy(initial_weight)
