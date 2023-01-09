@@ -301,7 +301,7 @@ class ERM(BaseEstimator, ABC):
             if scipy.sparse.issparse(X):
                 print("Before conversion : " + str(X.dtype))
                 X.indptr = X.indptr.astype(np.float64).astype(np.intc)
-                X.indices = X.indices.astype(np.float64).astype(np.intc)
+                X.indices = X.indices.astype(np.float64).astype(np.uintc)
                 print("After conversion : " + str(X.dtype))
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
