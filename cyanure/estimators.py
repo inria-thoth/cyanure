@@ -303,8 +303,8 @@ class ERM(BaseEstimator, ABC):
         print(training_data_fortran.dtype)
         if platform.system() == "Windows":
             if scipy.sparse.issparse(X):
-                print("Before conversion : " + str(X.indptr.dtype))
-                print("After conversion : " + str(X.indices.dtype))
+                print("Before conversion : " + str(training_data_fortran.indptr.dtype))
+                print("After conversion : " + str(training_data_fortran.indices.dtype))
         print(yf.dtype)
         self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, initial_weight, w, dual_variable=self.dual, loss=loss,
