@@ -198,7 +198,7 @@ static PyObject* erm_(PyObject* self, PyObject* args, PyObject* keywds)
     }
     else
     {
-        PyErr_SetString(PyExc_TypeError, ("Wrong data type combinaison: data type is: " + std::to_string(getTypeNumber<float>()) + " and pointer type is: " + std::to_string( getTypeNumber<int>())).c_str());
+        PyErr_SetString(PyExc_TypeError, ("Wrong data type combinaison: data type is: " + std::to_string(getTypeNumber<double>()) + " and pointer type is: " + std::to_string(getTypeNumber<long long int>())).c_str());
         //PyErr_SetString(PyExc_TypeError, ("Wrong data type combinaison: data type is: " + std::to_string(M) + " and pointer type is: " + std::to_string(sparse_type)).c_str());
         return NULL;
     }
