@@ -105,6 +105,9 @@ else:
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
+            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib']
+            LIBS = libs
+            RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
             EXTRA_LINK_ARGS = []
         else:
             EXTRA_COMPILE_ARGS = [
