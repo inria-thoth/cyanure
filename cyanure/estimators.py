@@ -18,7 +18,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 import cyanure_lib
 
-from cyanure.data_processing import check_input_fit, check_input_inference
+from cyanure.data_processing import check_input_fit, check_input_inference, windows_conversion
 
 from cyanure.logger import setup_custom_logger
 
@@ -294,21 +294,11 @@ class ERM(BaseEstimator, ABC):
         labels = np.squeeze(labels)
         initial_weight, yf, nclasses = self._initialize_weight(X, labels)
 
-        if platform.system() == "Windows":
-            if scipy.sparse.issparse(X):
-                X.indptr = X.indptr.astype(np.float64)
-                X.indices = X.indices.astype(np.float64)
-
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
         w = np.copy(initial_weight)
 
-        if platform.system() == "Windows":
-            if scipy.sparse.issparse(X):
-                X.indptr = X.indptr.astype(np.float64).astype(np.intc)
-                X.indices = X.indices.astype(np.float64).astype(np.intc)
-                print("Before conversion : " + str(training_data_fortran.indptr.dtype))
-                print("After conversion : " + str(training_data_fortran.indices.dtype))
+        training_data_fortran, yf = windows_conversion(training_data_fortran, yf)
 
         self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, initial_weight, w, dual_variable=self.dual, loss=loss,
