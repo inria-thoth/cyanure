@@ -23,10 +23,14 @@ build = "cp*"
 test-skip = "*_arm64 *_universal2:arm64"
 before-all = [
   "brew install llvm",
-
 ]
 test-command =  ["cd  {package}",]
 before-build = "build_script/macos.sh"
+repair-wheel-command = [
+  "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}",
+  "otool -L {wheel}",
+]
+
 
 [tool.cibuildwheel.macos.environment]
 CC = "/usr/bin/clang"
