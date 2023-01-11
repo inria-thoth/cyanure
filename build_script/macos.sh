@@ -22,7 +22,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
         GFORTRAN_URL="https://anaconda.org/conda-forge/libgfortran5/11.3.0/download/osx-arm64/libgfortran5-11.3.0-hdaf2cc0_26.tar.bz2"
         LLVM_URL="https://anaconda.org/conda-forge/llvm-openmp/15.0.5/download/osx-arm64/llvm-openmp-15.0.5-h7cfbb63_0.tar.bz2"
 
-        sudo conda create -n build $LLVM_URL $OPENBLAS_URL $GFORTRAN_URL
+        sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL
         
     else
         export MACOSX_DEPLOYMENT_TARGET=10.9
