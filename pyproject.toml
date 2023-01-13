@@ -22,6 +22,7 @@ archs = ["arm64", "x86_64"]
 build = "cp*"
 test-skip = "*_arm64 *_universal2:arm64"
 before-all = [
+  "source ~/.bashrc",
   "conda create -n building",
   "conda activate building",
   "conda install -y python=3.10",
