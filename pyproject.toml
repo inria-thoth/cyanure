@@ -26,7 +26,7 @@ before-all = [
   "conda create -n building",
   "conda activate building",
   "conda init bash",
-  "source ~/.bashrc",
+  "source ~/anaconda3/etc/profile.d/conda.sh",
   "conda install -y python=3.10",
   "brew install llvm",
 ]
