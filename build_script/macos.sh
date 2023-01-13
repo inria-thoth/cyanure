@@ -3,7 +3,7 @@
 set -e
 set -x
 
-sudo conda removr -n build
+sudo conda remove -n build
 
 # OpenMP is not present on macOS by default
 if [[ "$RUNNER_OS" == "macOS" ]]; then
