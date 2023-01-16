@@ -18,7 +18,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 import cyanure_lib
 
-from cyanure.data_processing import check_input_fit, check_input_inference
+from cyanure.data_processing import check_input_fit, check_input_inference, windows_conversion
 
 from cyanure.logger import setup_custom_logger
 
@@ -292,12 +292,14 @@ class ERM(BaseEstimator, ABC):
             loss = self.loss
 
         labels = np.squeeze(labels)
-
         initial_weight, yf, nclasses = self._initialize_weight(X, labels)
 
         training_data_fortran = X.T if scipy.sparse.issparse(
             X) else np.asfortranarray(X.T)
         w = np.copy(initial_weight)
+
+        training_data_fortran, yf = windows_conversion(training_data_fortran, yf)
+
         self.optimization_info_ = cyanure_lib.erm_(
             training_data_fortran, yf, initial_weight, w, dual_variable=self.dual, loss=loss,
             penalty=self.penalty, solver=self.solver, lambda_1=float(self.lambda_1),
@@ -325,14 +327,13 @@ class ERM(BaseEstimator, ABC):
                     "The max_iter was reached which means the coef_ did not converge",
                     ConvergenceWarning)
 
+        print(w.shape)
+
         if self.fit_intercept:
             self.intercept_ = w[-1, ]
             self.coef_ = w[0:-1, ]
         else:
             self.coef_ = w
-
-        print(w)
-        print(self.coef_.shape)
 
         self.n_features_in_ = self.coef_.shape[0]
 
