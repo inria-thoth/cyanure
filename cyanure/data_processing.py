@@ -206,15 +206,22 @@ def check_input_type(X, labels, estimator):
         if scipy.sparse.issparse(labels) and labels.getformat() != "csr":
             raise TypeError("The library only supports CSR sparse data.")
 
-        if platform.system() == "Windows":
-            if scipy.sparse.issparse(X):
-                X.indptr = X.indptr.astype(np.float64).astype(np.intc)
-                X.indices = X.indices.astype(np.float64).astype(np.intc)
-            if scipy.sparse.issparse(labels):
-                labels.indptr = labels.indptr.astype(np.float64).astype(np.intc)
-                labels.indices = labels.indices.astype(np.float64).astype(np.intc)
+        X, labels = windows_conversion(X, labels)
 
     return X, labels, label_encoder
+
+
+def windows_conversion(X, labels):
+
+    if platform.system() == "Windows":
+        if scipy.sparse.issparse(X):
+            X.indptr = X.indptr.astype(np.float64).astype(np.intc)
+            X.indices = X.indices.astype(np.float64).astype(np.intc)
+        if scipy.sparse.issparse(labels):
+            labels.indptr = labels.indptr.astype(np.float64).astype(np.intc)
+            labels.indices = labels.indices.astype(np.float64).astype(np.intc)
+
+    return X, labels
 
 
 def check_positive_parameter(parameter, message):
