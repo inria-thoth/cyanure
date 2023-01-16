@@ -93,21 +93,27 @@ else:
         else:
             libs = ['lapack', 'blas']
 
-        extra_compile_args = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', '-fopenmp']
-
         INCLUDE_DIRS = [numpy.get_include()]
 
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
         LIBS = libs
         RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-        EXTRA_COMPILE_ARGS = extra_compile_args
 
         if platform.system() == "Darwin":
-            INCLUDE_DIRS = ["/usr/local/include", "/usr/local/opt/llvm/include"] + INCLUDE_DIRS
-            LIBRARY_DIRS = ["/usr/local/lib", "/usr/local/opt/llvm/lib"] + LIBRARY_DIRS
+            INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include'] + [numpy.get_include()]
+            EXTRA_COMPILE_ARGS = [
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11']
+            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib']
+            LIBS = libs
+            RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
+            EXTRA_LINK_ARGS = []
+        else:
+            EXTRA_COMPILE_ARGS = [
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-std=c++11']
+            EXTRA_LINK_ARGS = ["-fopenmp"]
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -115,7 +121,8 @@ else:
 
 
 if platform.system() != "Windows":
-    EXTRA_LINK_ARGS = ['-fopenmp']
+    # '-fopenmp' it does not compile, to repair
+    
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
@@ -138,10 +145,12 @@ setup(name='cyanure',
       author="Julien Mairal",
       author_email="julien.mairal@inria.fr",
       license='bsd-3-clause',
-      url="http://julien.mairal.org/cyanure/",
+      url="https://inria-thoth.github.io/cyanure/welcome.html",
       description='optimization toolbox for machine learning',
-      install_requires=['scipy<=1.8.1', 'numpy>=1.21.5', 'scikit-learn'],
+      install_requires=["scipy<=1.8.1;python_version<'3.11'", "scipy>=1.8.1;python_version>='3.11'", "numpy>=1.23.5;python_version>='3.11'", "numpy<=1.23.5;python_version<'3.11'",'scikit-learn'],
       ext_modules=[cyanure_wrap],
       packages=find_packages(),
       cmdclass={'sdist': sdistzip},
-      py_modules=['cyanure'])
+      py_modules=['cyanure'],
+      long_description="Cyanure is an open-source C++ software package with a Python 3 interface. The goal of Cyanure is to provide state-of-the-art solvers for learning linear models, based on stochastic variance-reduced stochastic optimization with acceleration mechanisms and Quasi-Newton principles. Cyanure can handle a large variety of loss functions (logistic, square, squared hinge, multinomial logistic) and regularization functions (l2, l1, elastic-net, fused Lasso, multi-task group Lasso). It provides a simple Python API, which should be fully compatible with scikit-learn, which should be extended to other languages such as R or Matlab in a near future.")
+
