@@ -51,7 +51,7 @@ There is no automatic pipeline to update the conda-forge recipe. To update the c
 
 Go to the folder recipe, and update the file by:
 - incrementing the version (if needed)
-- update the hash
+- update the hash related to the archive found on Github.
 - set build number to 0 if version is incremented otherwise increment the build number
 
 ### Extra information
