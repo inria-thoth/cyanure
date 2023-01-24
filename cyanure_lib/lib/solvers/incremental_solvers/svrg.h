@@ -179,7 +179,7 @@ public:
     {
         if (param.minibatch > 1)
         {
-            logging(logERROR) << "Minibatch is not compatible with lazy updates";
+            logging(logWARNING) << "Minibatch is not compatible with lazy updates. The minibatch parameter has been set to 1.";
         }
         _minibatch = 1;
     };
