@@ -16,6 +16,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -45,8 +46,19 @@
 <li class="toctree-l1 current"><a class="reference internal" href="pythonAPI.html">Python API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="estimators.html">Estimators</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Preprocessing functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#preprocess-data">Preprocess data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#input-verification-functions">Input verification functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#preprocess-data">Preprocess data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.preprocess"><code class="docutils literal notranslate"><span class="pre">preprocess()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#input-verification-functions">Input verification functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.check_labels"><code class="docutils literal notranslate"><span class="pre">check_labels()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.check_input_type"><code class="docutils literal notranslate"><span class="pre">check_input_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.check_positive_parameter"><code class="docutils literal notranslate"><span class="pre">check_positive_parameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.check_parameters"><code class="docutils literal notranslate"><span class="pre">check_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.check_input_fit"><code class="docutils literal notranslate"><span class="pre">check_input_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.data_processing.check_input_inference"><code class="docutils literal notranslate"><span class="pre">check_input_inference()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -69,9 +81,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="pythonAPI.html">Python API</a> &raquo;</li>
-      <li>Preprocessing functions</li>
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="pythonAPI.html">Python API</a></li>
+      <li class="breadcrumb-item active">Preprocessing functions</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pythonAPI/data_processing.rst.txt" rel="nofollow"> View page source</a>
       </li>

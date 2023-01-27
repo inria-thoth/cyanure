@@ -16,6 +16,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -59,9 +60,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>cyanure.data_processing</li>
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cyanure.data_processing</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -94,7 +95,7 @@
 
 
 <div class="viewcode-block" id="preprocess"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.preprocess">[docs]</a><span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Preprocess features training data.</span>
 
 <span class="sd">    Perform in-place centering or normalization, either of columns or rows</span>
@@ -125,7 +126,7 @@
 
 
 <div class="viewcode-block" id="check_labels"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_labels">[docs]</a><span class="k">def</span> <span class="nf">check_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Verify the format of labels depending on the type of the estimator.</span>
 
 <span class="sd">    Can convert labels in some cases.</span>
@@ -196,7 +197,7 @@
 
 
 <span class="k">def</span> <span class="nf">get_element</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get an element from an array of any depth.</span>
 
 <span class="sd">    Args</span>
@@ -216,7 +217,7 @@
 
 
 <div class="viewcode-block" id="check_input_type"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_input_type">[docs]</a><span class="k">def</span> <span class="nf">check_input_type</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Verify the format of labels and features depending on the type of the estimator.</span>
 
 <span class="sd">    Can convert labels in some cases.</span>
@@ -279,19 +280,26 @@
         <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="ow">and</span> <span class="n">labels</span><span class="o">.</span><span class="n">getformat</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;csr&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The library only supports CSR sparse data.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-                <span class="n">X</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
-                <span class="n">X</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
-                <span class="n">labels</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
-                <span class="n">labels</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">windows_conversion</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span></div>
 
 
+<span class="k">def</span> <span class="nf">windows_conversion</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+            <span class="n">X</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+            <span class="n">X</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span>
+
+
 <div class="viewcode-block" id="check_positive_parameter"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_positive_parameter">[docs]</a><span class="k">def</span> <span class="nf">check_positive_parameter</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check that a parameter if a number and positive.</span>
 
 <span class="sd">    Parameters</span>
@@ -318,7 +326,7 @@
 
 
 <div class="viewcode-block" id="check_parameters"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_parameters">[docs]</a><span class="k">def</span> <span class="nf">check_parameters</span><span class="p">(</span><span class="n">estimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Verify that the different parameters of an estimator respect the constraints.</span>
 
 <span class="sd">    Parameters</span>
@@ -349,7 +357,7 @@
 
 
 <div class="viewcode-block" id="check_input_fit"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_input_fit">[docs]</a><span class="k">def</span> <span class="nf">check_input_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check the different input arrays required for training according to the estimator type.</span>
 
 <span class="sd">    Can convert data if necessary.</span>
@@ -431,7 +439,7 @@
 
 
 <div class="viewcode-block" id="check_input_inference"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_input_inference">[docs]</a><span class="k">def</span> <span class="nf">check_input_inference</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check the format of the array which will be used for inference. Input array can be converted.</span>
 
 <span class="sd">    Parameters</span>

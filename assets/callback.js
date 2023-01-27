@@ -7,24 +7,25 @@ if (!window.dash_clientside) {
 window.dash_clientside.clientside = {
     update_store_data: function(rows, dataset, core, implementation, solver, log_or_lin, store) {
 	/**
-	 * Update timeseries figure when selected countries change,
-	 * or type of cases (active cases or fatalities)
+	 * Update timeseries figure when selected values change
 	 *
 	 * Parameters
 	 * ----------
 	 *
 	 *  rows: list of dicts
 	 *	data of the table
-	 *  selectedrows: list of indices
-	 *	indices of selected countries
-	 *  cases_type: str
-	 *	active or death
+	 *  dataset: str
+	 *	value of the dataset
+	 *  core: str
+	 *	number of cores
+     *  implementation: str
+	 *	type of solver
+	 *  solver: str
+	 *	name of the solver
 	 *  log_or_lin: str
 	 *	log or linear axis
 	 *  store: list
-	 *	store[0]: plotly-figure-dict, containing all the traces (all
-	 *	countries, data and prediction, for active cases and deaths)
-	 *	store[1]: list of countries to be used at initialization
+	 *	store: plotly-figure-dict, containing all the traces 
 	 */
 	var fig = store;
 	if (!rows) {
@@ -37,11 +38,9 @@ window.dash_clientside.clientside = {
 	var max_data = 0;
     var min = 1000000;
 	var min_data = 0;
-    //new_fig['layout']['annotations'][0]['visible'] = false;
-    //new_fig['layout']['annotations'][1]['visible'] = true;
     solver = "_" + solver + "_"
     for (i = 0; i < fig['data'].length; i++) {
-    var name = fig['data'][i]['meta'][0];
+    var name = fig['data'][i]['meta'];
         if(dataset.includes("all")){
             dataset = ''
         }
@@ -54,7 +53,6 @@ window.dash_clientside.clientside = {
         if(solver.includes("all")){
             solver = ''
         }
-        console.log(solver)
         if (name.includes(dataset) && name.includes(core) && name.includes(implementation) && name.includes(solver)){
             new_fig['data'].push(fig['data'][i]);
             max_data = Math.max(...fig['data'][i]['y']);

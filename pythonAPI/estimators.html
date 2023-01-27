@@ -16,6 +16,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -45,9 +46,21 @@
 <li class="toctree-l1"><a class="reference internal" href="../welcome.html#installation">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="pythonAPI.html">Python API</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Estimators</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#the-regression-class">The Regression Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-classifier-class">The Classifier Class</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#pre-configured-classes">Pre-configured classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-regression-class">The Regression Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.estimators.Regression"><code class="docutils literal notranslate"><span class="pre">Regression</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#the-classifier-class">The Classifier Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.estimators.Classifier"><code class="docutils literal notranslate"><span class="pre">Classifier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pre-configured-classes">Pre-configured classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.estimators.LinearSVC"><code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.estimators.LogisticRegression"><code class="docutils literal notranslate"><span class="pre">LogisticRegression</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.estimators.Lasso"><code class="docutils literal notranslate"><span class="pre">Lasso</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cyanure.estimators.L1Logistic"><code class="docutils literal notranslate"><span class="pre">L1Logistic</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="data_processing.html">Preprocessing functions</a></li>
@@ -71,9 +84,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="pythonAPI.html">Python API</a> &raquo;</li>
-      <li>Estimators</li>
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="pythonAPI.html">Python API</a></li>
+      <li class="breadcrumb-item active">Estimators</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/pythonAPI/estimators.rst.txt" rel="nofollow"> View page source</a>
       </li>
