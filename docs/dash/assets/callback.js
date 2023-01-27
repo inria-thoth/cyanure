@@ -40,7 +40,7 @@ window.dash_clientside.clientside = {
 	var min_data = 0;
     solver = "_" + solver + "_"
     for (i = 0; i < fig['data'].length; i++) {
-    var name = fig['data'][i]['meta'][0];
+    var name = fig['data'][i]['meta'];
         if(dataset.includes("all")){
             dataset = ''
         }
@@ -53,7 +53,6 @@ window.dash_clientside.clientside = {
         if(solver.includes("all")){
             solver = ''
         }
-        console.log(solver)
         if (name.includes(dataset) && name.includes(core) && name.includes(implementation) && name.includes(solver)){
             new_fig['data'].push(fig['data'][i]);
             max_data = Math.max(...fig['data'][i]['y']);
