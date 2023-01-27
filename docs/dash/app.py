@@ -29,7 +29,7 @@ else:
     print("No DEBUG environment variable: defaulting to debug mode")
     debug = True
 
-def make_plot(list_of_csv):
+def make_plot(dataframes):
     """
     Build figure showing evolution of number of cases vs. time for all countries.
     The visibility of traces is set to 0 so that the interactive app will
@@ -49,14 +49,14 @@ def make_plot(list_of_csv):
     fig = go.Figure()
     hovertemplate_prediction = '<b>%{meta}</b><br>x=%{x}<br>y=%{y}<extra></extra>'
 
-    for index, path in enumerate(list_of_csv):
-        df_temporary = pd.read_csv(path)
-        fig.add_trace(go.Scatter(x=df_temporary["timestamp"] / 1000,
-                                 y=df_temporary["Relative optimality gap"], mode='lines',
+    for index, dataframe in enumerate(dataframes):
+        print(dataframe)
+        fig.add_trace(go.Scatter(x=dataframe["timestamp"] / 1000,
+                                 y=dataframe["Relative optimality gap"], mode='lines',
                                  line_dash='dash',
                                  line_color=colors[index%n_colors],
                                  showlegend=False,
-                                 meta=path.split(os.path.sep)[-1].rsplit(".", 1)[0],
+                                 meta="debug" + str(index),
                                  hovertemplate=hovertemplate_prediction,
                                  visible=True))
 
@@ -80,9 +80,12 @@ def make_plot(list_of_csv):
     return fig
 
 # -------- Data --------------------------
-
+list_of_csv = glob.glob("./csvs/*.csv")
+list_of_dataframe = list()
+for path in list_of_csv:
+    list_of_dataframe.append(pd.read_csv(path))
 # ---------------- Figures -------------------------
-fig2 = make_plot(glob.glob("./csvs/*.csv"))
+fig2 = make_plot(list_of_dataframe)
 
 # -----------App definition-----------------------
 app = dash.Dash(__name__,
