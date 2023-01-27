@@ -121,8 +121,6 @@ else:
 
 
 if platform.system() != "Windows":
-    # '-fopenmp' it does not compile, to repair
-    
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
