@@ -4,6 +4,7 @@ on:
   push: 
     branches: 
       - master
+      - mlflow
 
 jobs:
   build:
