@@ -24,8 +24,6 @@ docs/main.bbl
 docs/main.blg
 docs/main.log
 docs/main.out
-*.csv
 mlruns/
 fil-result/
 docs/dash/127.0.0.1:8050/
-!docs/dash/mlflow.csv

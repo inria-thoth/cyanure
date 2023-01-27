@@ -5,6 +5,7 @@ To launch the app, run
 Dash documentation: https://dash.plot.ly/
 """
 import os
+import glob
 import numpy as np
 import pandas as pd
 
@@ -28,7 +29,7 @@ else:
     print("No DEBUG environment variable: defaulting to debug mode")
     debug = True
 
-def make_plot(df_runs):
+def make_plot(list_of_csv):
     """
     Build figure showing evolution of number of cases vs. time for all countries.
     The visibility of traces is set to 0 so that the interactive app will
@@ -48,14 +49,14 @@ def make_plot(df_runs):
     fig = go.Figure()
     hovertemplate_prediction = '<b>%{meta}</b><br>x=%{x}<br>y=%{y}<extra></extra>'
 
-    for index, run in enumerate(df_runs['run_id'].unique()):
-        df_temporary = df_runs[df_runs["run_id"] == run]
+    for index, path in enumerate(list_of_csv):
+        df_temporary = pd.read_csv(path)
         fig.add_trace(go.Scatter(x=df_temporary["timestamp"] / 1000,
-                                 y=df_temporary["relative_optimality_gap"], mode='lines',
+                                 y=df_temporary["Relative optimality gap"], mode='lines',
                                  line_dash='dash',
                                  line_color=colors[index%n_colors],
                                  showlegend=False,
-                                 meta=df_temporary['tags.mlflow.runName'].unique(),
+                                 meta=path.split(os.path.sep)[-1].rsplit(".", 1)[0],
                                  hovertemplate=hovertemplate_prediction,
                                  visible=True))
 
@@ -79,9 +80,9 @@ def make_plot(df_runs):
     return fig
 
 # -------- Data --------------------------
-df = pd.read_csv('mlflow.csv')  
+
 # ---------------- Figures -------------------------
-fig2 = make_plot(df)
+fig2 = make_plot(glob.glob("./csvs/*.csv"))
 
 # -----------App definition-----------------------
 app = dash.Dash(__name__,
