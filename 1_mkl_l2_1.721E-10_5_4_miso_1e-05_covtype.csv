@@ -1,5 +1,0 @@
-,nb_cores,environement,penalty,lambda,Duality gap interval,nb_threads,solver,Tolerance,Dataset,Primal objective,Best dual,Relative duality gap,Diff,Relative optimality gap,timestamp,epoch
-0,1,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,0.6888020816137035,-4821412.052618522,6999706.984225646,0.0,146.17958448343128,1581,5
-1,1,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,0.7457020041160535,-4821412.052618522,6999706.984225646,0.0,146.2621915544916,3599,10
-2,1,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,1.1167907600507383,-4821412.052618522,6999706.984225646,0.0,146.8009366684223,5722,15
-3,1,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,0.8529834933321953,-4821412.052618522,6999706.984225646,0.0,146.41794237476321,7735,20
