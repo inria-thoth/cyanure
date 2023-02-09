@@ -98,7 +98,6 @@ else:
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/local/opt/openblas/lib']
         LIBS = libs
-        RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
 
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include'] + [numpy.get_include()]
@@ -111,9 +110,8 @@ else:
             EXTRA_LINK_ARGS = []
         else:
             EXTRA_COMPILE_ARGS = [
-            '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
-            EXTRA_LINK_ARGS = ["-fopenmp"]
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -121,6 +119,8 @@ else:
 
 
 if platform.system() != "Windows":
+    if platform.system() != "Darwin":
+        EXTRA_LINK_ARGS = ["-fopenmp", "-Wl,-rpath,/usr/local/opt/openblas/lib"]
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
