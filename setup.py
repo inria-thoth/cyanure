@@ -121,6 +121,7 @@ else:
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
         EXTRA_LINK_ARGS = ["-fopenmp", "-Wl,-rpath,/usr/local/opt/openblas/lib"]
+        RUNTIME_LIRABRY_DIRS = ["/usr/local/opt/openblas/lib"]
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
