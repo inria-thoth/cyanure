@@ -111,7 +111,7 @@ else:
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11']
+            '-std=c++11', "-Wl,-rpath,/usr/local/opt/openblas/lib"]
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -121,7 +121,6 @@ else:
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
         EXTRA_LINK_ARGS = ["-fopenmp", "-Wl,-rpath,/usr/local/opt/openblas/lib"]
-        RUNTIME_LIRABRY_DIRS = ["/usr/local/opt/openblas/lib"]
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
