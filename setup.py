@@ -96,7 +96,7 @@ else:
         INCLUDE_DIRS = [numpy.get_include()]
 
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/usr/lib/x86_64-linux-gnu']
+        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/scratch/clear/tryckebo/miniconda3/envs/benchopt_benchmark_logreg_l1/lib']
         LIBS = libs
 
         if platform.system() == "Darwin":
