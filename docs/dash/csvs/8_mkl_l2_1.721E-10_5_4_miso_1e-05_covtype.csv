@@ -1,5 +1,3 @@
-,nb_cores,environement,penalty,lambda,Duality gap interval,nb_threads,solver,Tolerance,Dataset,Primal objective,Best dual,Relative duality gap,Diff,Relative optimality gap,timestamp,epoch
-0,8,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,0.6888020816137035,-4821412.052618522,6999706.984225646,0.0,146.17958448343128,1527,5
-1,8,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,0.7457020041160535,-4821412.052618522,6999706.984225646,0.0,146.2621915544916,3515,10
-2,8,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,1.1167907600507383,-4821412.052618522,6999706.984225646,0.0,146.8009366684223,5592,15
-3,8,cyanure_benchmark_mkl,l2,1.721e-10,5,4,miso,1e-05,covtype,0.8529834933321953,-4821412.052618522,6999706.984225646,0.0,146.41794237476321,7584,20
+version https://git-lfs.github.com/spec/v1
+oid sha256:e67c15a9567dce33ec0093e570bf6887f9489a9844d9180969598a71ac44b862
+size 781
