@@ -126,6 +126,7 @@ protected:
                 _regul.prox(ref_barz, x, FeatureType(1.0) / _mu);
         }
         Vector<typename loss_type::index_type> indices;
+        #pragma omp parallel for
         for (int ii = 0; ii < _n; ++ii)
         {
             const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
