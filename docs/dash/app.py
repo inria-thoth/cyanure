@@ -53,7 +53,7 @@ def make_plot(list_of_csv):
         df_temporary = pd.read_csv(path)
         print(path)
         print(df_temporary.head())
-        print(df_temporary["timestamp"])
+        #print(df_temporary["timestamp"])
         quit()
         fig.add_trace(go.Scatter(x=df_temporary["timestamp"] / 1000,
                                  y=df_temporary["Relative optimality gap"], mode='lines',
