@@ -49,6 +49,7 @@ def make_plot(list_of_csv):
     fig = go.Figure()
     hovertemplate_prediction = '<b>%{meta}</b><br>x=%{x}<br>y=%{y}<extra></extra>'
 
+    print(list_of_csv)
     for index, path in enumerate(list_of_csv):
         df_temporary = pd.read_csv(path)
         fig.add_trace(go.Scatter(x=df_temporary["timestamp"] / 1000,
