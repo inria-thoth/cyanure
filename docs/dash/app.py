@@ -49,11 +49,11 @@ def make_plot(list_of_csv):
     fig = go.Figure()
     hovertemplate_prediction = '<b>%{meta}</b><br>x=%{x}<br>y=%{y}<extra></extra>'
 
-    print(list_of_csv)
     for index, path in enumerate(list_of_csv):
         df_temporary = pd.read_csv(path)
         print(path)
         print(df_temporary.head())
+        print(df_temporary["timestamp"])
         fig.add_trace(go.Scatter(x=df_temporary["timestamp"] / 1000,
                                  y=df_temporary["Relative optimality gap"], mode='lines',
                                  line_dash='dash',
