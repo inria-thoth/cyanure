@@ -52,6 +52,7 @@ def make_plot(list_of_csv):
     for index, path in enumerate(list_of_csv):
         df_temporary = pd.read_csv(path)
         print(path)
+        print(df_temporary.keys())
         print(df_temporary.head())
         #print(df_temporary["timestamp"])
         quit()
