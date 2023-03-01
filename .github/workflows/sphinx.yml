@@ -29,7 +29,7 @@ jobs:
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cd docs/sphinx/source && sphinx-build -b html . _build && cd _build && mkdir dash
     - name: Build the dash html.
-      run: git lfs fetch && cd docs/dash/ && make html
+      run: git lfs pull && cd docs/dash/ && make html
     - name: Copy the dash website to sphinx folder.
       run: cp -r docs/dash/127.0.0.1:8050/. docs/sphinx/source/_build
     - name: Deploy
