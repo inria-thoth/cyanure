@@ -86,6 +86,8 @@
 <span class="kn">import</span> <span class="nn">platform</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 
+<span class="kn">import</span> <span class="nn">concurrent.futures</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.sparse</span>
 
@@ -1317,11 +1319,14 @@
 
     <span class="n">scaling</span> <span class="o">=</span> <span class="mf">4.0</span>
     <span class="n">init</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-    <span class="n">estimator</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="kc">True</span>
+
     <span class="n">num_as</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="n">init</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">scaling</span><span class="p">))</span>
     <span class="n">active_set</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">n_active</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="n">estimator</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">estimator</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="kc">True</span>
+
     <span class="k">if</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit_intercept</span><span class="p">:</span>
         <span class="n">estimator</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -1364,6 +1369,14 @@
         <span class="k">if</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit_intercept</span><span class="p">:</span>
             <span class="n">estimator</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">intercept_</span>
 
+    <span class="k">return</span> <span class="n">estimator</span>
+
+
+<span class="k">def</span> <span class="nf">execute_fit_large_feature_number</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">auxiliary_solver</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">concurrent</span><span class="o">.</span><span class="n">futures</span><span class="o">.</span><span class="n">ProcessPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">fit_large_feature_number</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">auxiliary_solver</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># will rethrow any exceptions</span>
 
 <div class="viewcode-block" id="Lasso"><a class="viewcode-back" href="../../pythonAPI/estimators.html#cyanure.estimators.Lasso">[docs]</a><span class="k">class</span> <span class="nc">Lasso</span><span class="p">(</span><span class="n">Regression</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1416,7 +1429,11 @@
                              <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="n">duality_gap_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">duality_gap_interval</span><span class="p">,</span>
                              <span class="n">max_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
-            <span class="n">fit_large_feature_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aux</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            <span class="n">estimator</span> <span class="o">=</span> <span class="n">execute_fit_large_feature_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aux</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">coef_</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_intercept</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">intercept_</span>
 
         <span class="k">return</span> <span class="bp">self</span></div></div>
 
@@ -1487,7 +1504,12 @@
                 <span class="n">duality_gap_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">duality_gap_interval</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span>
                 <span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
-            <span class="n">fit_large_feature_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aux</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            <span class="n">estimator</span> <span class="o">=</span> <span class="n">execute_fit_large_feature_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aux</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">coef_</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_intercept</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">intercept_</span>
+
 
         <span class="k">return</span> <span class="bp">self</span></div></div>
 </pre></div>
