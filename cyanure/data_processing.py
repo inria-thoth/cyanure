@@ -258,7 +258,7 @@ def check_parameters(estimator):
     Parameters
     ----------
         estimator (ERM):
-            Estimator to veriffy
+            Estimator to verify
     """
     check_positive_parameter(
         estimator.tol, "Tolerance for stopping criteria must be positive")
@@ -267,8 +267,11 @@ def check_parameters(estimator):
     check_positive_parameter(estimator.lambda_1,
                              "Penalty term must be positive")
 
+    instance_class = estimator.__class__
+    instance = instance_class()
+
     # Verify that it is not the default value
-    if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambda_1 != 0.1:
+    if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambda_1 != instance.lambda_1:
         warnings.warn("Setting penalty='none' will ignore the lambda_1")
 
 
