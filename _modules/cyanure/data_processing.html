@@ -336,7 +336,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">        estimator (ERM):</span>
-<span class="sd">            Estimator to veriffy</span>
+<span class="sd">            Estimator to verify</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">check_positive_parameter</span><span class="p">(</span>
         <span class="n">estimator</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="s2">&quot;Tolerance for stopping criteria must be positive&quot;</span><span class="p">)</span>
@@ -345,8 +345,11 @@
     <span class="n">check_positive_parameter</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">lambda_1</span><span class="p">,</span>
                              <span class="s2">&quot;Penalty term must be positive&quot;</span><span class="p">)</span>
 
+    <span class="n">instance_class</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="vm">__class__</span>
+    <span class="n">instance</span> <span class="o">=</span> <span class="n">instance_class</span><span class="p">()</span>
+
     <span class="c1"># Verify that it is not the default value</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">estimator</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">!=</span> <span class="mf">0.1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">estimator</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">!=</span> <span class="n">instance</span><span class="o">.</span><span class="n">lambda_1</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Setting penalty=&#39;none&#39; will ignore the lambda_1&quot;</span><span class="p">)</span></div>
 
 
