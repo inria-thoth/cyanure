@@ -121,9 +121,7 @@
 
 <span class="sd">        normalize (boolean): default=True</span>
 <span class="sd">            l2-normalization</span>
-
-<span class="sd">        columns (boolean): default=False</span>
-<span class="sd">            Operates on rows (False) or columns (True).</span>
+<span class="sd">input_nameTrue).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
         <span class="n">training_data_fortran</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span>
@@ -296,7 +294,7 @@
         <span class="c1"># [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">else</span> <span class="n">y</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
-            <span class="n">_assert_all_finite</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">input_name</span><span class="o">=</span><span class="n">input_name</span><span class="p">)</span>
+            <span class="n">_assert_all_finite</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">return</span> <span class="s2">&quot;continuous&quot;</span> <span class="o">+</span> <span class="n">suffix</span>
 
     <span class="c1"># Check multiclass</span>

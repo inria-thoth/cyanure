@@ -105,20 +105,25 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="cyanure.data_processing.preprocess">
 <span class="sig-prename descclassname"><span class="pre">cyanure.data_processing.</span></span><span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cyanure/data_processing.html#preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cyanure.data_processing.preprocess" title="Permalink to this definition"></a></dt>
-<dd><p>Preprocess features training data.</p>
+<dd><blockquote>
+<div><p>Preprocess features training data.</p>
 <p>Perform in-place centering or normalization, either of columns or rows
 of the input matrix X.</p>
-<dl class="field-list simple">
+</div></blockquote>
+<dl class="field-list">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>X (numpy array or scipy sparse CSR matrix):</strong></dt><dd><p>Input matrix</p>
+<dd class="field-odd"><dl>
+<dt><strong>X (numpy array or scipy sparse CSR matrix):</strong></dt><dd><blockquote>
+<div><p>Input matrix</p>
+</div></blockquote>
+<dl class="simple">
+<dt>centering (boolean)<span class="classifier">default=False</span></dt><dd><p>Perform a centering operation</p>
 </dd>
-<dt><strong>centering (boolean)</strong><span class="classifier">default=False</span></dt><dd><p>Perform a centering operation</p>
+<dt>normalize (boolean): default=True</dt><dd><p>l2-normalization</p>
 </dd>
-<dt><strong>normalize (boolean): default=True</strong></dt><dd><p>l2-normalization</p>
+</dl>
 </dd>
-<dt><strong>columns (boolean): default=False</strong></dt><dd><p>Operates on rows (False) or columns (True).</p>
-</dd>
+<dt><strong>input_nameTrue).</strong></dt><dd></dd>
 </dl>
 </dd>
 </dl>
