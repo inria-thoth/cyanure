@@ -104,7 +104,7 @@ def sklearn_check_old_format(y):
                 " matrix instead."
             )
     except IndexError:
-        pass        
+        pass
 
 
 # Code from scikit-learn
