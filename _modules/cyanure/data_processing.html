@@ -89,7 +89,10 @@
 
 <span class="kn">from</span> <span class="nn">sklearn.exceptions</span> <span class="kn">import</span> <span class="n">DataConversionWarning</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelEncoder</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils.multiclass</span> <span class="kn">import</span> <span class="n">type_of_target</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils._array_api</span> <span class="kn">import</span> <span class="n">get_namespace</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">_assert_all_finite</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">issparse</span>
 
 <span class="kn">import</span> <span class="nn">cyanure_lib</span>
 
@@ -128,6 +131,237 @@
         <span class="n">training_data_fortran</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cyanure_lib</span><span class="o">.</span><span class="n">preprocess_</span><span class="p">(</span><span class="n">training_data_fortran</span><span class="p">,</span> <span class="n">centering</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="ow">not</span> <span class="n">columns</span><span class="p">)</span></div>
 
+<span class="c1"># Code from scikit-learn</span>
+<span class="k">def</span> <span class="nf">type_of_target</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">input_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the type of data indicated by the target.</span>
+<span class="sd">    Note that this type is the most specific type that can be inferred.</span>
+<span class="sd">    For example:</span>
+<span class="sd">        * ``binary`` is more specific but compatible with ``multiclass``.</span>
+<span class="sd">        * ``multiclass`` of integers is more specific but compatible with</span>
+<span class="sd">          ``continuous``.</span>
+<span class="sd">        * ``multilabel-indicator`` is more specific but compatible with</span>
+<span class="sd">          ``multiclass-multioutput``.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : {array-like, sparse matrix}</span>
+<span class="sd">        Target values. If a sparse matrix, `y` is expected to be a</span>
+<span class="sd">        CSR/CSC matrix.</span>
+<span class="sd">    input_name : str, default=&quot;&quot;</span>
+<span class="sd">        The data name used to construct the error message.</span>
+<span class="sd">        .. versionadded:: 1.1.0</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    target_type : str</span>
+<span class="sd">        One of:</span>
+<span class="sd">        * &#39;continuous&#39;: `y` is an array-like of floats that are not all</span>
+<span class="sd">          integers, and is 1d or a column vector.</span>
+<span class="sd">        * &#39;continuous-multioutput&#39;: `y` is a 2d array of floats that are</span>
+<span class="sd">          not all integers, and both dimensions are of size &gt; 1.</span>
+<span class="sd">        * &#39;binary&#39;: `y` contains &lt;= 2 discrete values and is 1d or a column</span>
+<span class="sd">          vector.</span>
+<span class="sd">        * &#39;multiclass&#39;: `y` contains more than two discrete values, is not a</span>
+<span class="sd">          sequence of sequences, and is 1d or a column vector.</span>
+<span class="sd">        * &#39;multiclass-multioutput&#39;: `y` is a 2d array that contains more</span>
+<span class="sd">          than two discrete values, is not a sequence of sequences, and both</span>
+<span class="sd">          dimensions are of size &gt; 1.</span>
+<span class="sd">        * &#39;multilabel-indicator&#39;: `y` is a label indicator matrix, an array</span>
+<span class="sd">          of two dimensions with at least two columns, and at most 2 unique</span>
+<span class="sd">          values.</span>
+<span class="sd">        * &#39;unknown&#39;: `y` is array-like but none of the above, such as a 3d</span>
+<span class="sd">          array, sequence of sequences, or an array of non-sequence objects.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.utils.multiclass import type_of_target</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([0.1, 0.6])</span>
+<span class="sd">    &#39;continuous&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([1, -1, -1, 1])</span>
+<span class="sd">    &#39;binary&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([&#39;a&#39;, &#39;b&#39;, &#39;a&#39;])</span>
+<span class="sd">    &#39;binary&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([1.0, 2.0])</span>
+<span class="sd">    &#39;binary&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([1, 0, 2])</span>
+<span class="sd">    &#39;multiclass&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([1.0, 0.0, 3.0])</span>
+<span class="sd">    &#39;multiclass&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([&#39;a&#39;, &#39;b&#39;, &#39;c&#39;])</span>
+<span class="sd">    &#39;multiclass&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target(np.array([[1, 2], [3, 1]]))</span>
+<span class="sd">    &#39;multiclass-multioutput&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target([[1, 2]])</span>
+<span class="sd">    &#39;multilabel-indicator&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target(np.array([[1.5, 2.0], [3.0, 1.6]]))</span>
+<span class="sd">    &#39;continuous-multioutput&#39;</span>
+<span class="sd">    &gt;&gt;&gt; type_of_target(np.array([[0, 1], [1, 1]]))</span>
+<span class="sd">    &#39;multilabel-indicator&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xp</span><span class="p">,</span> <span class="n">is_array_api</span> <span class="o">=</span> <span class="n">get_namespace</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">or</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;__array__&quot;</span><span class="p">))</span>
+        <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">is_array_api</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Expected array-like (array or non-string sequence), got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">y</span>
+        <span class="p">)</span>
+
+    <span class="n">sparse_pandas</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SparseSeries&quot;</span><span class="p">,</span> <span class="s2">&quot;SparseArray&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">sparse_pandas</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;y cannot be class &#39;SparseSeries&#39; or &#39;SparseArray&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_multilabel</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;multilabel-indicator&quot;</span>
+
+    <span class="c1"># DeprecationWarning will be replaced by ValueError, see NEP 34</span>
+    <span class="c1"># https://numpy.org/neps/nep-0034-infer-dtype-is-object.html</span>
+    <span class="c1"># We therefore catch both deprecation (NumPy &lt; 1.24) warning and</span>
+    <span class="c1"># value error (NumPy &gt;= 1.24).</span>
+    <span class="n">check_y_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">accept_sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">ensure_min_samples</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">ensure_min_features</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">VisibleDeprecationWarning</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">check_y_kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">VisibleDeprecationWarning</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Complex data not supported&quot;</span><span class="p">):</span>
+                    <span class="k">raise</span>
+
+                <span class="c1"># dtype=object should be provided explicitly for ragged arrays,</span>
+                <span class="c1"># see NEP 34</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span> <span class="o">**</span><span class="n">check_y_kwargs</span><span class="p">)</span>
+
+    <span class="c1"># The old sequence of sequences format</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__array__&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Sequence of sequences are not&quot;</span>
+                <span class="s2">&quot; supported; use a binary array or sparse&quot;</span>
+                <span class="s2">&quot; matrix instead.&quot;</span>
+            <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Invalid inputs</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="c1"># Number of dimension greater than 2: [[[1, 2]]]</span>
+        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">min</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+        <span class="c1"># Empty ndarray: []/[[]]</span>
+        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># 1-D empty array: []</span>
+            <span class="k">return</span> <span class="s2">&quot;binary&quot;</span>  <span class="c1"># []</span>
+        <span class="c1"># 2-D empty array: [[]]</span>
+        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># [obj_1] and not [&quot;label_1&quot;]</span>
+        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+
+    <span class="c1"># Check if multioutput</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;-multioutput&quot;</span>  <span class="c1"># [[1, 2], [1, 2]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># [1, 2, 3] or [[1], [2], [3]]</span>
+
+    <span class="c1"># Check float and contains non-integer float values</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span>
+        <span class="c1"># [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">else</span> <span class="n">y</span>
+        <span class="k">if</span> <span class="n">xp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+            <span class="n">_assert_all_finite</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">input_name</span><span class="o">=</span><span class="n">input_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;continuous&quot;</span> <span class="o">+</span> <span class="n">suffix</span>
+
+    <span class="c1"># Check multiclass</span>
+    <span class="n">first_row</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="k">else</span> <span class="n">y</span><span class="o">.</span><span class="n">getrow</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">if</span> <span class="n">xp</span><span class="o">.</span><span class="n">unique_values</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]</span>
+        <span class="k">return</span> <span class="s2">&quot;multiclass&quot;</span> <span class="o">+</span> <span class="n">suffix</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;binary&quot;</span>  <span class="c1"># [1, 2] or [[&quot;a&quot;], [&quot;b&quot;]]</span>
+
+<span class="c1"># Code from scikit-learn</span>
+<span class="k">def</span> <span class="nf">is_multilabel</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if ``y`` is in a multilabel format.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : ndarray of shape (n_samples,)</span>
+<span class="sd">        Target values.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    out : bool</span>
+<span class="sd">        Return ``True``, if ``y`` is in a multilabel format, else ```False``.</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.utils.multiclass import is_multilabel</span>
+<span class="sd">    &gt;&gt;&gt; is_multilabel([0, 1, 0, 1])</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_multilabel([[1], [0, 2], []])</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_multilabel(np.array([[1, 0], [0, 0]]))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_multilabel(np.array([[1], [0], [0]]))</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_multilabel(np.array([[1, 0, 0]]))</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xp</span><span class="p">,</span> <span class="n">is_array_api</span> <span class="o">=</span> <span class="n">get_namespace</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;__array__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_array_api</span><span class="p">:</span>
+        <span class="c1"># DeprecationWarning will be replaced by ValueError, see NEP 34</span>
+        <span class="c1"># https://numpy.org/neps/nep-0034-infer-dtype-is-object.html</span>
+        <span class="n">check_y_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">accept_sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">allow_nd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ensure_min_samples</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">ensure_min_features</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">VisibleDeprecationWarning</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">check_y_kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">VisibleDeprecationWarning</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Complex data not supported&quot;</span><span class="p">):</span>
+                    <span class="k">raise</span>
+
+                <span class="c1"># dtype=object should be provided explicitly for ragged arrays,</span>
+                <span class="c1"># see NEP 34</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span> <span class="o">**</span><span class="n">check_y_kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="n">dok_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">unique_values</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="mi">0</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="s2">&quot;biu&quot;</span> <span class="ow">or</span> <span class="n">_is_integral_float</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>  <span class="c1"># bool, int, uint</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">unique_values</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="s2">&quot;biu&quot;</span> <span class="ow">or</span> <span class="n">_is_integral_float</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>  <span class="c1"># bool, int, uint</span>
+        <span class="p">)</span>
+
 
 <div class="viewcode-block" id="check_labels"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_labels">[docs]</a><span class="k">def</span> <span class="nf">check_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -165,17 +399,20 @@
     <span class="n">label_encoder</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">estimator</span><span class="o">.</span><span class="n">_estimator_type</span> <span class="o">==</span> <span class="s2">&quot;classifier&quot;</span><span class="p">:</span>
+
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">):</span>
+            <span class="n">label_encoder</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
+            <span class="n">label_encoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">label_encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
         <span class="n">y_type</span> <span class="o">=</span> <span class="n">type_of_target</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">y_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
             <span class="s2">&quot;binary&quot;</span><span class="p">,</span>
             <span class="s2">&quot;multiclass&quot;</span>
         <span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown label type: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">y_type</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">):</span>
-            <span class="n">label_encoder</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span>
-            <span class="n">label_encoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
-            <span class="n">labels</span> <span class="o">=</span> <span class="n">label_encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The labels have been converted in float64&quot;</span><span class="p">)</span>
@@ -269,11 +506,12 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
         <span class="n">x_element</span> <span class="o">=</span> <span class="n">get_element</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x_element</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The features have been converted in float64&quot;</span><span class="p">)</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
-
+        
         <span class="n">labels</span><span class="p">,</span> <span class="n">label_encoder</span> <span class="o">=</span> <span class="n">check_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">)</span>
 
         <span class="n">check_is_finite</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -336,7 +574,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">        estimator (ERM):</span>
-<span class="sd">            Estimator to verify</span>
+<span class="sd">            Estimator to veriffy</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">check_positive_parameter</span><span class="p">(</span>
         <span class="n">estimator</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="s2">&quot;Tolerance for stopping criteria must be positive&quot;</span><span class="p">)</span>
@@ -351,6 +589,7 @@
     <span class="c1"># Verify that it is not the default value</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">estimator</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">estimator</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">!=</span> <span class="n">instance</span><span class="o">.</span><span class="n">lambda_1</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Setting penalty=&#39;none&#39; will ignore the lambda_1&quot;</span><span class="p">)</span></div>
+
 
 
 <span class="k">def</span> <span class="nf">convert_to_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
