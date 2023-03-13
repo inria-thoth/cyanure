@@ -168,7 +168,7 @@ def type_of_target(y, input_name=""):
         ensure_min_features=0,
     )
 
-   sklearn_catch_warnings(y)
+    sklearn_catch_warnings(y)
 
     # The old sequence of sequences format
     try:
