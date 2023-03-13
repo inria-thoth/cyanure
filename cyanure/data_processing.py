@@ -333,7 +333,6 @@ def check_labels(labels, estimator):
 
     if estimator._estimator_type == "classifier":
 
-        
         if np.issubdtype(type(labels[0]), np.str_):
             label_encoder = LabelEncoder()
             label_encoder.fit(labels)
@@ -345,7 +344,7 @@ def check_labels(labels, estimator):
             "multiclass"
         ]:
             raise ValueError("Unknown label type: %r" % y_type)
-        
+ 
     else:
         if type(labels[0]) not in (np.float32, np.float64):
             logger.info("The labels have been converted in float64")
@@ -439,12 +438,11 @@ def check_input_type(X, labels, estimator):
 
     if not scipy.sparse.issparse(X) and not scipy.sparse.issparse(labels):
         x_element = get_element(X)
-        
         if type(x_element) not in (np.float32, np.float64):
 
             logger.info("The features have been converted in float64")
             X = X.astype('float64')
-        
+
         labels, label_encoder = check_labels(labels, estimator)
 
         check_is_finite(X)
@@ -522,7 +520,6 @@ def check_parameters(estimator):
     # Verify that it is not the default value
     if (estimator.penalty is None or estimator.penalty == "none") and estimator.lambda_1 != instance.lambda_1:
         warnings.warn("Setting penalty='none' will ignore the lambda_1")
-
 
 
 def convert_to_array(X, labels):
