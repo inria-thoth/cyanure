@@ -55,3 +55,8 @@ repair-wheel-command = "delvewheel repair -v --add-path=D:\\a\\cyanure\\cyanure\
 test-command =  ["cd /d {package}",]
 # https://github.com/scipy/scipy/issues/16286
 build = ["*amd64"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::sklearn.exceptions.ConvergenceWarning"
+]
