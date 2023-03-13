@@ -223,7 +223,7 @@ def type_of_target(y, input_name=""):
 
     # Check multiclass
     first_row = y[0] if not issparse(y) else y.getrow(0).data
-    if np.unique_values(y).shape[0] > 2 or (y.ndim == 2 and len(first_row) > 1):
+    if np.unique(y).shape[0] > 2 or (y.ndim == 2 and len(first_row) > 1):
         # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
         return "multiclass" + suffix
     else:
@@ -275,14 +275,14 @@ def is_multilabel(y):
     if issparse(y):
         if isinstance(y, (dok_matrix, lil_matrix)):
             y = y.tocsr()
-        labels = np.unique_values(y.data)
+        labels = np.unique(y.data)
         return (
             len(y.data) == 0
             or (labels.size == 1 or (labels.size == 2) and (0 in labels))
             and (np.dtype.kind in "biu" or _is_integral_float(labels))  # bool, int, uint
         )
     else:
-        labels = np.unique_values(y)
+        labels = np.unique(y)
 
         return len(labels) < 3 and (
             y.dtype.kind in "biu" or _is_integral_float(labels)  # bool, int, uint
