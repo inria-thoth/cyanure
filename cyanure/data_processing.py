@@ -73,6 +73,23 @@ def sklearn_catch_warnings(y, check_y_kwargs):
                 y = check_array(y, dtype=object, **check_y_kwargs)
 
 
+def sklearn_check_invalid_inputs(y):
+    # Invalid inputs
+    if y.ndim not in (1, 2):
+        # Number of dimension greater than 2: [[[1, 2]]]
+        return "unknown"
+    if not min(y.shape):
+        # Empty ndarray: []/[[]]
+        if y.ndim == 1:
+            # 1-D empty array: []
+            return "binary"  # []
+        # 2-D empty array: [[]]
+        return "unknown"
+    if not issparse(y) and y.dtype == object and not isinstance(y.flat[0], str):
+        # [obj_1] and not ["label_1"]
+        return "unknown"
+
+
 # Code from scikit-learn
 def type_of_target(y, input_name=""):
     """Determine the type of data indicated by the target.
@@ -187,20 +204,7 @@ def type_of_target(y, input_name=""):
     except IndexError:
         pass
 
-    # Invalid inputs
-    if y.ndim not in (1, 2):
-        # Number of dimension greater than 2: [[[1, 2]]]
-        return "unknown"
-    if not min(y.shape):
-        # Empty ndarray: []/[[]]
-        if y.ndim == 1:
-            # 1-D empty array: []
-            return "binary"  # []
-        # 2-D empty array: [[]]
-        return "unknown"
-    if not issparse(y) and y.dtype == object and not isinstance(y.flat[0], str):
-        # [obj_1] and not ["label_1"]
-        return "unknown"
+    sklearn_check_invalid_inputs(y)
 
     # Check if multioutput
     if y.ndim == 2 and y.shape[1] > 1:
