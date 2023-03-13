@@ -9,12 +9,16 @@ import math
 import numpy as np
 import scipy.sparse
 
+from scipy.sparse import issparse
+from scipy.sparse import dok_matrix
+from scipy.sparse import lil_matrix
+
 from sklearn.exceptions import DataConversionWarning
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils._array_api import get_namespace
 from sklearn.utils.validation import check_array, _assert_all_finite
+
 from collections.abc import Sequence
-from scipy.sparse import issparse
 
 import cyanure_lib
 
@@ -284,6 +288,9 @@ def is_multilabel(y):
             y.dtype.kind in "biu" or _is_integral_float(labels)  # bool, int, uint
         )
 
+# Code from scikit-learn
+def _is_integral_float(y):
+    return y.dtype.kind == "f" and np.all(y.astype(int) == y)
 
 def check_labels(labels, estimator):
     """
