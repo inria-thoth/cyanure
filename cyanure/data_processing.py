@@ -57,6 +57,7 @@ def preprocess(X, centering=False, normalize=True, columns=False):
         training_data_fortran = np.asfortranarray(X.T)
     return cyanure_lib.preprocess_(training_data_fortran, centering, normalize, not columns)
 
+
 # Code from scikit-learn
 def type_of_target(y, input_name=""):
     """Determine the type of data indicated by the target.
@@ -219,6 +220,7 @@ def type_of_target(y, input_name=""):
     else:
         return "binary"  # [1, 2] or [["a"], ["b"]]
 
+
 # Code from scikit-learn
 def is_multilabel(y):
     """Check if ``y`` is in a multilabel format.
@@ -288,9 +290,11 @@ def is_multilabel(y):
             y.dtype.kind in "biu" or _is_integral_float(labels)  # bool, int, uint
         )
 
+
 # Code from scikit-learn
 def _is_integral_float(y):
     return y.dtype.kind == "f" and np.all(y.astype(int) == y)
+
 
 def check_labels(labels, estimator):
     """
