@@ -151,6 +151,23 @@
                 <span class="n">y</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span> <span class="o">**</span><span class="n">check_y_kwargs</span><span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">sklearn_check_invalid_inputs</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+    <span class="c1"># Invalid inputs</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="c1"># Number of dimension greater than 2: [[[1, 2]]]</span>
+        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">min</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+        <span class="c1"># Empty ndarray: []/[[]]</span>
+        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># 1-D empty array: []</span>
+            <span class="k">return</span> <span class="s2">&quot;binary&quot;</span>  <span class="c1"># []</span>
+        <span class="c1"># 2-D empty array: [[]]</span>
+        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># [obj_1] and not [&quot;label_1&quot;]</span>
+        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+
+
 <span class="c1"># Code from scikit-learn</span>
 <span class="k">def</span> <span class="nf">type_of_target</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">input_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the type of data indicated by the target.</span>
@@ -265,20 +282,7 @@
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
         <span class="k">pass</span>
 
-    <span class="c1"># Invalid inputs</span>
-    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="c1"># Number of dimension greater than 2: [[[1, 2]]]</span>
-        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">min</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
-        <span class="c1"># Empty ndarray: []/[[]]</span>
-        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># 1-D empty array: []</span>
-            <span class="k">return</span> <span class="s2">&quot;binary&quot;</span>  <span class="c1"># []</span>
-        <span class="c1"># 2-D empty array: [[]]</span>
-        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">issparse</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="c1"># [obj_1] and not [&quot;label_1&quot;]</span>
-        <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="n">sklearn_check_invalid_inputs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
     <span class="c1"># Check if multioutput</span>
     <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
