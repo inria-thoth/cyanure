@@ -43,9 +43,7 @@ def preprocess(X, centering=False, normalize=True, columns=False):
 
         normalize (boolean): default=True
             l2-normalization
-
-        columns (boolean): default=False
-            Operates on rows (False) or columns (True).
+input_nameTrue).
     """
     if scipy.sparse.issparse(X):
         training_data_fortran = X.T
@@ -218,7 +216,7 @@ def type_of_target(y, input_name=""):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
         data = y.data if issparse(y) else y
         if np.any(data != np.floor(data)):
-            _assert_all_finite(data, input_name=input_name)
+            _assert_all_finite(data)
             return "continuous" + suffix
 
     # Check multiclass
