@@ -90,6 +90,23 @@ def sklearn_check_invalid_inputs(y):
         return "unknown"
 
 
+def sklearn_check_old_format(y):
+    # The old sequence of sequences format
+    try:
+        if (
+            not hasattr(y[0], "__array__")
+            and isinstance(y[0], Sequence)
+            and not isinstance(y[0], str)
+        ):
+            raise ValueError(
+                "Sequence of sequences are not"
+                " supported; use a binary array or sparse"
+                " matrix instead."
+            )
+    except IndexError:
+        pass        
+
+
 # Code from scikit-learn
 def type_of_target(y, input_name=""):
     """Determine the type of data indicated by the target.
@@ -189,20 +206,7 @@ def type_of_target(y, input_name=""):
 
     sklearn_catch_warnings(y, check_y_kwargs)
 
-    # The old sequence of sequences format
-    try:
-        if (
-            not hasattr(y[0], "__array__")
-            and isinstance(y[0], Sequence)
-            and not isinstance(y[0], str)
-        ):
-            raise ValueError(
-                "Sequence of sequences are not"
-                " supported; use a binary array or sparse"
-                " matrix instead."
-            )
-    except IndexError:
-        pass
+    sklearn_check_old_format(y)
 
     sklearn_check_invalid_inputs(y)
 
