@@ -135,6 +135,7 @@
         <span class="n">training_data_fortran</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cyanure_lib</span><span class="o">.</span><span class="n">preprocess_</span><span class="p">(</span><span class="n">training_data_fortran</span><span class="p">,</span> <span class="n">centering</span><span class="p">,</span> <span class="n">normalize</span><span class="p">,</span> <span class="ow">not</span> <span class="n">columns</span><span class="p">)</span></div>
 
+
 <span class="c1"># Code from scikit-learn</span>
 <span class="k">def</span> <span class="nf">type_of_target</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">input_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the type of data indicated by the target.</span>
@@ -297,6 +298,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;binary&quot;</span>  <span class="c1"># [1, 2] or [[&quot;a&quot;], [&quot;b&quot;]]</span>
 
+
 <span class="c1"># Code from scikit-learn</span>
 <span class="k">def</span> <span class="nf">is_multilabel</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if ``y`` is in a multilabel format.</span>
@@ -366,9 +368,11 @@
             <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="s2">&quot;biu&quot;</span> <span class="ow">or</span> <span class="n">_is_integral_float</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>  <span class="c1"># bool, int, uint</span>
         <span class="p">)</span>
 
+
 <span class="c1"># Code from scikit-learn</span>
 <span class="k">def</span> <span class="nf">_is_integral_float</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">y</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span>
+
 
 <div class="viewcode-block" id="check_labels"><a class="viewcode-back" href="../../pythonAPI/data_processing.html#cyanure.data_processing.check_labels">[docs]</a><span class="k">def</span> <span class="nf">check_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
