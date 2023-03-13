@@ -57,19 +57,21 @@ def preprocess(X, centering=False, normalize=True, columns=False):
         training_data_fortran = np.asfortranarray(X.T)
     return cyanure_lib.preprocess_(training_data_fortran, centering, normalize, not columns)
 
+
 def sklearn_catch_warnings(y, check_y_kwargs):
     with warnings.catch_warnings():
-            warnings.simplefilter("error", np.VisibleDeprecationWarning)
-            if not issparse(y):
-                try:
-                    y = check_array(y, dtype=None, **check_y_kwargs)
-                except (np.VisibleDeprecationWarning, ValueError) as e:
-                    if str(e).startswith("Complex data not supported"):
-                        raise
+        warnings.simplefilter("error", np.VisibleDeprecationWarning)
+        if not issparse(y):
+            try:
+                y = check_array(y, dtype=None, **check_y_kwargs)
+            except (np.VisibleDeprecationWarning, ValueError) as e:
+                if str(e).startswith("Complex data not supported"):
+                    raise
 
-                    # dtype=object should be provided explicitly for ragged arrays,
-                    # see NEP 34
-                    y = check_array(y, dtype=object, **check_y_kwargs)
+                # dtype=object should be provided explicitly for ragged arrays,
+                # see NEP 34
+                y = check_array(y, dtype=object, **check_y_kwargs)
+
 
 # Code from scikit-learn
 def type_of_target(y, input_name=""):
@@ -168,7 +170,7 @@ def type_of_target(y, input_name=""):
         ensure_min_features=0,
     )
 
-    sklearn_catch_warnings(y, )
+    sklearn_catch_warnings(y, check_y_kwargs)
 
     # The old sequence of sequences format
     try:
