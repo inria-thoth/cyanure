@@ -57,7 +57,7 @@ def preprocess(X, centering=False, normalize=True, columns=False):
         training_data_fortran = np.asfortranarray(X.T)
     return cyanure_lib.preprocess_(training_data_fortran, centering, normalize, not columns)
 
-def sklearn_catch_warnings(y):
+def sklearn_catch_warnings(y, check_y_kwargs):
     with warnings.catch_warnings():
             warnings.simplefilter("error", np.VisibleDeprecationWarning)
             if not issparse(y):
@@ -168,7 +168,7 @@ def type_of_target(y, input_name=""):
         ensure_min_features=0,
     )
 
-    sklearn_catch_warnings(y)
+    sklearn_catch_warnings(y, )
 
     # The old sequence of sequences format
     try:
