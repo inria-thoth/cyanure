@@ -15,7 +15,6 @@ from scipy.sparse import lil_matrix
 
 from sklearn.exceptions import DataConversionWarning
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils._array_api import get_namespace
 from sklearn.utils.validation import check_array, _assert_all_finite
 
 from collections.abc import Sequence
@@ -172,11 +171,9 @@ def type_of_target(y, input_name=""):
     >>> type_of_target(np.array([[0, 1], [1, 1]]))
     'multilabel-indicator'
     """
-    xp, is_array_api = get_namespace(y)
     valid = (
         (isinstance(y, Sequence) or issparse(y) or hasattr(y, "__array__"))
         and not isinstance(y, str)
-        or is_array_api
     )
 
     if not valid:
@@ -220,13 +217,13 @@ def type_of_target(y, input_name=""):
     if y.dtype.kind == "f":
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
         data = y.data if issparse(y) else y
-        if xp.any(data != np.floor(data)):
+        if np.any(data != np.floor(data)):
             _assert_all_finite(data, input_name=input_name)
             return "continuous" + suffix
 
     # Check multiclass
     first_row = y[0] if not issparse(y) else y.getrow(0).data
-    if xp.unique_values(y).shape[0] > 2 or (y.ndim == 2 and len(first_row) > 1):
+    if np.unique_values(y).shape[0] > 2 or (y.ndim == 2 and len(first_row) > 1):
         # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
         return "multiclass" + suffix
     else:
@@ -259,8 +256,7 @@ def is_multilabel(y):
     >>> is_multilabel(np.array([[1, 0, 0]]))
     True
     """
-    xp, is_array_api = get_namespace(y)
-    if hasattr(y, "__array__") or isinstance(y, Sequence) or is_array_api:
+    if hasattr(y, "__array__") or isinstance(y, Sequence):
         # DeprecationWarning will be replaced by ValueError, see NEP 34
         # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
         check_y_kwargs = dict(
@@ -271,17 +267,7 @@ def is_multilabel(y):
             ensure_min_samples=0,
             ensure_min_features=0,
         )
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", np.VisibleDeprecationWarning)
-            try:
-                y = check_array(y, dtype=None, **check_y_kwargs)
-            except (np.VisibleDeprecationWarning, ValueError) as e:
-                if str(e).startswith("Complex data not supported"):
-                    raise
-
-                # dtype=object should be provided explicitly for ragged arrays,
-                # see NEP 34
-                y = check_array(y, dtype=object, **check_y_kwargs)
+        sklearn_catch_warnings(y, check_y_kwargs)
 
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
@@ -289,14 +275,14 @@ def is_multilabel(y):
     if issparse(y):
         if isinstance(y, (dok_matrix, lil_matrix)):
             y = y.tocsr()
-        labels = xp.unique_values(y.data)
+        labels = np.unique_values(y.data)
         return (
             len(y.data) == 0
             or (labels.size == 1 or (labels.size == 2) and (0 in labels))
-            and (y.dtype.kind in "biu" or _is_integral_float(labels))  # bool, int, uint
+            and (np.dtype.kind in "biu" or _is_integral_float(labels))  # bool, int, uint
         )
     else:
-        labels = xp.unique_values(y)
+        labels = np.unique_values(y)
 
         return len(labels) < 3 and (
             y.dtype.kind in "biu" or _is_integral_float(labels)  # bool, int, uint
