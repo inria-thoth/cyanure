@@ -48,9 +48,7 @@ EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
 
-print(openblas_path)
-
-if openblas_path:
+if openblas_path[0] is None:
     LIBRARY_DIRS += openblas_path
 
 if platform.system() == "Windows":
