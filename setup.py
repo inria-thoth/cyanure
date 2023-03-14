@@ -49,7 +49,7 @@ LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
 
 
-if openblas_path is not None:
+if openblas_path:
     LIBRARY_DIRS += openblas_path
 
 if platform.system() == "Windows":
