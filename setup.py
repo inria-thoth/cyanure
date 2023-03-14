@@ -39,11 +39,18 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION')) a
 
 np_blas = getBlas()
 
+openblas_path = list()
+openblas_path.append(os.environ.get('OPENBLAS_PATH'))
+
 LIBS = []
-INCLUDE_DIRS = []
+INCLUDE_DIRS = [numpy.get_include()]
 EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
+
+
+if openblas_path is not None:
+    LIBRARY_DIRS += openblas_path
 
 if platform.system() == "Windows":
     if 'mkl' in np_blas:
@@ -64,14 +71,12 @@ if platform.system() == "Windows":
                 '/permissive-', '/W1']
             LIBS = ['lapack', 'blas']
 
-    INCLUDE_DIRS = [numpy.get_include()]
-
     if struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib']
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib'] + LIBRARY_DIRS
     else:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib']
+        LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib'] + LIBRARY_DIRS
 
 else:
     ##### setup mkl_rt
@@ -82,7 +87,6 @@ else:
 
         LIBS = ['mkl_rt', 'iomp5']
 
-        INCLUDE_DIRS = [numpy.get_include()]
         EXTRA_COMPILE_ARGS = extra_compile_args_mkl
 
     ##### setup openblas
@@ -93,10 +97,8 @@ else:
         else:
             libs = ['lapack', 'blas']
 
-        INCLUDE_DIRS = [numpy.get_include()]
-
         INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib', '/scratch/clear/tryckebo/miniconda3/envs/benchopt_benchmark_logreg_l1/lib']
+        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
         LIBS = libs
 
         if platform.system() == "Darwin":
@@ -104,14 +106,14 @@ else:
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
-            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib']
+            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib'] + LIBRARY_DIRS
             LIBS = libs
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
             EXTRA_LINK_ARGS = []
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', "-Wl,-rpath,/usr/local/opt/openblas/lib"]
+            '-std=c++11']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -120,12 +122,11 @@ else:
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
-        EXTRA_LINK_ARGS = ["-fopenmp", "-Wl,-rpath,/usr/local/opt/openblas/lib"]
-    if "COVERAGE" in os.environ:
+        EXTRA_LINK_ARGS = ["-fopenmp"]
+    if "COVERAGE" in os.environ:    
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
     EXTRA_LINK_ARGS = []
-
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
