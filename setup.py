@@ -48,6 +48,7 @@ EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
 
+print(openblas_path)
 
 if openblas_path:
     LIBRARY_DIRS += openblas_path
