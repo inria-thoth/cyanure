@@ -122,6 +122,8 @@ else:
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
         EXTRA_LINK_ARGS = ["-fopenmp"]
+    else:
+        EXTRA_LINK_ARGS = ["-fopenmp"]
     if "COVERAGE" in os.environ:    
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
