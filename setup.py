@@ -104,7 +104,7 @@ else:
             INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11']
+            '-std=c++11', "debug"]
             LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib'] + LIBRARY_DIRS
             LIBS = libs
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
@@ -121,8 +121,6 @@ else:
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
-        EXTRA_LINK_ARGS = ["-fopenmp"]
-    else:
         EXTRA_LINK_ARGS = ["-fopenmp"]
     if "COVERAGE" in os.environ:    
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
