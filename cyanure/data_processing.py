@@ -344,7 +344,7 @@ def check_labels(labels, estimator):
             logger.info("The labels have been converted in float64")
             labels = labels.astype('float64')
 
-    check_is_finite(labels)
+    _assert_all_finite(labels)
 
     if estimator._estimator_type == "classifier" and len(np.unique(labels)) == 1:
         raise ValueError("Classifier can't train when only one class is present.")
@@ -434,7 +434,7 @@ def check_input_type(X, labels, estimator):
 
         labels, label_encoder = check_labels(labels, estimator)
 
-        check_is_finite(X)
+        _assert_all_finite(X)
 
     else:
         if scipy.sparse.issparse(X) and X.getformat() != "csr":
@@ -637,7 +637,7 @@ def check_input_inference(X, estimator):
         if X.dtype != "float32" or X.dtype != "float64":
             X = X.astype("float64")
 
-        check_is_finite(X)
+        _assert_all_finite(X)
 
     if X.ndim == 1:
         raise ValueError("Reshape your data")
