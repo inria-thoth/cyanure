@@ -353,7 +353,7 @@ def check_labels(labels, estimator):
 
 
 def check_is_finite(array_to_test):
-    if not np.isfinite(array_to_test):
+    if not np.any(np.isfinite(array_to_test)):
         raise ValueError(
             "Input contains NaN, infinity or a value too large for dtype('float64').")
 
