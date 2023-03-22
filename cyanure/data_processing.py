@@ -4,8 +4,6 @@ import warnings
 import numbers
 import platform
 
-import math
-
 import numpy as np
 import scipy.sparse
 
