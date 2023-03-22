@@ -355,14 +355,9 @@ def check_labels(labels, estimator):
 
 
 def check_is_finite(array_to_test):
-    if len(array_to_test.shape) == 1:
-        for value in array_to_test:
-            if not math.isfinite(value):
-                raise ValueError(
-                    "Input contains NaN, infinity or a value too large for dtype('float64').")
-    else:
-        for sub_array_to_test in array_to_test:
-            check_is_finite(sub_array_to_test)
+    if not np.isfinite(array_to_test):
+        raise ValueError(
+            "Input contains NaN, infinity or a value too large for dtype('float64').")
 
 
 def get_element(array):
