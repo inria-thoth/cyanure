@@ -433,14 +433,9 @@
 
 
 <span class="k">def</span> <span class="nf">check_is_finite</span><span class="p">(</span><span class="n">array_to_test</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">array_to_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">array_to_test</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Input contains NaN, infinity or a value too large for dtype(&#39;float64&#39;).&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">sub_array_to_test</span> <span class="ow">in</span> <span class="n">array_to_test</span><span class="p">:</span>
-            <span class="n">check_is_finite</span><span class="p">(</span><span class="n">sub_array_to_test</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">array_to_test</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Input contains NaN, infinity or a value too large for dtype(&#39;float64&#39;).&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">get_element</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
