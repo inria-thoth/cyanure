@@ -1,0 +1,4 @@
+,nb_cores,environement,penalty,lambda,Duality gap interval,nb_threads,solver,Tolerance,Dataset,Primal objective,Best dual,Relative duality gap,Diff,Relative optimality gap,timestamp,epoch
+0,16,cyanure_benchmark_netlib,l2,4e-11,5,16,qning-svrg,1e-05,ocr,0.5115691654372703,0.43929992808529394,0.14126972897243184,0.0,1.2204070531721576e-06,247549,5
+1,16,cyanure_benchmark_netlib,l2,4e-11,5,16,qning-svrg,1e-05,ocr,0.5115690661508784,0.507759669793504,0.0074464947343999745,0.0,1.0263249663902007e-06,509523,10
+2,16,cyanure_benchmark_netlib,l2,4e-11,5,16,qning-svrg,1e-05,ocr,0.5115690661208596,0.5115685411147738,1.0262662866004336e-06,0.0,1.0262662866004336e-06,749027,15

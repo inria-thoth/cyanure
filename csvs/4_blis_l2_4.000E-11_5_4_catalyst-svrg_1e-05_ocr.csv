@@ -1,0 +1,5 @@
+,nb_cores,environement,penalty,lambda,Duality gap interval,nb_threads,solver,Tolerance,Dataset,Primal objective,Best dual,Relative duality gap,Diff,Relative optimality gap,timestamp,epoch
+0,4,cyanure_benchmark_blis,l2,4e-11,5,4,catalyst-svrg,1e-05,ocr,0.5115740672744825,-2791.856742523287,5458.385198193266,0.0,8.888602564771045e-05,162612,5
+1,4,cyanure_benchmark_blis,l2,4e-11,5,4,catalyst-svrg,1e-05,ocr,0.5115690730246548,0.495681175892368,0.031057188501153046,0.0,7.912341457854793e-05,401038,10
+2,4,cyanure_benchmark_blis,l2,4e-11,5,4,catalyst-svrg,1e-05,ocr,0.5115690663409441,0.5067388400053155,0.009441982819988152,0.0,7.911034945960612e-05,628891,15
+3,4,cyanure_benchmark_blis,l2,4e-11,5,4,catalyst-svrg,1e-05,ocr,0.5115690661353879,0.5115285959333494,7.910994764438251e-05,0.0,7.910994764438251e-05,811313,20
