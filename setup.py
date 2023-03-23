@@ -49,7 +49,7 @@ LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
 
 if openblas_path[0] is not None:
-    LIBRARY_DIRS += openblas_path
+    pass # LIBRARY_DIRS += openblas_path
 
 if platform.system() == "Windows":
     if 'mkl' in np_blas:
