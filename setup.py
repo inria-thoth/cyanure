@@ -42,14 +42,22 @@ np_blas = getBlas()
 openblas_path = list()
 openblas_path.append(os.environ.get('OPENBLAS_PATH'))
 
+mkl_path = list()
+mkl_path.append(os.environ.get('MKL_PATH'))
+
 LIBS = []
 INCLUDE_DIRS = [numpy.get_include()]
 EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
 
-if openblas_path[0] is not None:
-    pass # LIBRARY_DIRS += openblas_path
+if mkl_path[0] is not None:
+    LIBRARY_DIRS += mkl_path
+    np_blas = "mkl"
+else:
+    if openblas_path[0] is not None:
+        LIBRARY_DIRS += openblas_path
+        np_blas = "openblas"
 
 if platform.system() == "Windows":
     if 'mkl' in np_blas:
@@ -112,7 +120,7 @@ else:
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11']
+            '-std=c++11', "-fopenmp"]
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -121,7 +129,7 @@ else:
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
-        EXTRA_LINK_ARGS = ["-fopenmp"]
+        EXTRA_LINK_ARGS = []
     if "COVERAGE" in os.environ:    
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
