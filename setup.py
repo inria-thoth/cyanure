@@ -37,6 +37,14 @@ def getBlas():
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION')) as version_file:
     version = version_file.read().strip()
 
+if platform.system() == "Darwin":
+    os.environ["CC"] = "/usr/bin/clang"
+    os.environ["CXX"] = "/usr/bin/clang++"
+    os.environ["CPPFLAGS"] = "-Xpreprocessor -fopenmp"
+    os.environ["CFLAGS"] = "-I/usr/local/miniconda/envs/build/include"
+    os.environ["CXXFLAGS"] = "-I/usr/local/miniconda/envs/build/include"
+    os.environ["LDFLAGS"] = "-Wl,-rpath,/usr/local/miniconda/envs/build/lib -L$/usr/local/miniconda/envs/build/lib -lomp"
+
 np_blas = getBlas()
 
 openblas_path = list()
