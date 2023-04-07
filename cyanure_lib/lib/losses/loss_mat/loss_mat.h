@@ -86,7 +86,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       };
       inline T eval(const Matrix<T>& input, const INTM i) const {
          T sum=0;
-//#pragma omp parallel for reduction(+ : sum) num_threads(2)
+#pragma omp parallel for reduction(+ : sum) num_threads(2)
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col;
             input.refCol(ii,col);
@@ -96,7 +96,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       };
       inline void add_grad(const Matrix<T>& input, const INTM i, Matrix<T>& output, const T eta = T(1.0)) const {
          output.resize(input.m(),input.n());
-//#pragma omp parallel for num_threads(2)
+#pragma omp parallel for num_threads(2)
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col_input, col_output;
             input.refCol(ii,col_input);
@@ -106,7 +106,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       };
       inline void double_add_grad(const Matrix<T>& input1, const Matrix<T>& input2, const INTM i, Matrix<T>& output, const T eta1 = T(1.0), const T eta2 = -T(1.0), const T dummy =T(1.0)) const {
          output.resize(input1.m(),input1.n());
-//#pragma omp parallel for num_threads(2)
+#pragma omp parallel for num_threads(2)
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col_input1, col_input2, col_output;
             input1.refCol(ii,col_input1);
@@ -117,7 +117,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       };
       inline void grad(const Matrix<T>& input, Matrix<T>& output) const {
          output.resize(input.m(),input.n());
-#pragma omp parallel for 
+#pragma omp parallel for ordered
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col_input, col_output;
             input.refCol(ii,col_input);
@@ -135,7 +135,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       inline void get_dual_variable(const Matrix<T>& input, Matrix<T>& grad1, Matrix<T>& grad2) const {
          grad1.resize(_n,input.n());
          grad2.resize(input.m(),input.n());
-#pragma omp parallel for 
+#pragma omp parallel for ordered
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col1, col2, col3;
             input.refCol(ii,col1);
@@ -163,7 +163,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       // input; nclass x n
       // output: p x nclass
       virtual void  add_feature(const Matrix<T>& input, Matrix<T>& output, const T s) const { 
-#pragma omp parallel for 
+#pragma omp parallel for ordered
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col1, col2;
             input.copyRow(ii,col1);
@@ -172,7 +172,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
          }
       }
       virtual void  add_feature(Matrix<T>& output, const INTM i, const Vector<T>& s) const { 
-//#pragma omp parallel for num_threads(2)
+#pragma omp parallel for num_threads(2)
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col;
             output.refCol(ii,col);
@@ -181,7 +181,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       };
       virtual void scal_grad(const Matrix<T>& input, const INTM i, Vector<T>& output) const {
          output.resize(_N);
-//#pragma omp parallel for num_threads(2)
+#pragma omp parallel for num_threads(2)
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col;
             input.refCol(ii,col);
