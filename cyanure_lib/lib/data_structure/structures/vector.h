@@ -512,7 +512,7 @@ template <typename floating_type> inline void Vector<floating_type>::setPointer(
 /// put a random permutation of size n (for integral vectors)
 template <> inline void Vector<int>::randi(int n) {
     for (int i = 0; i < _n; ++i)
-        _X[i] = static_cast<int>(random() % n);
+        _X[i] = static_cast<int>(random_r() % n);
 };
 
 /// put a random permutation of size n (for integral vectors)
@@ -523,7 +523,7 @@ template <> inline void Vector<int>::randperm(int n) {
         table[i] = i;
     int size = n;
     for (int i = 0; i < n; ++i) {
-        const int ind = random() % size;
+        const int ind = random_r() % size;
         _X[i] = table[ind];
         table[ind] = table[size - 1];
         --size;

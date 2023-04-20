@@ -128,7 +128,7 @@ protected:
         Vector<typename loss_type::index_type> indices;
         for (int ii = 0; ii < _n; ++ii)
         {
-            const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
+            const int ind = _non_uniform_sampling ? this->nonu_sampling() : random_r() % _n;
             const FeatureType scal = _non_uniform_sampling ? FeatureType(1.0) / (_qi[ind] * _n) : FeatureType(1.0);
             const FeatureType deltas = scal * _delta;
             if (_is_lazy)
