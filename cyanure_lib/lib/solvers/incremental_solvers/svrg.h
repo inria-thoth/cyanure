@@ -48,12 +48,12 @@ protected:
             tmp.add(_gtilde, -eta);
             for (int jj = 0; jj < _minibatch; ++jj)
             {
-                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
+                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random_r() % _n;
                 const FeatureType scal = _non_uniform_sampling ? FeatureType(1.0) / (_minibatch * _qi[ind] * _n) : FeatureType(1.0) / _minibatch;
                 _loss.double_add_grad(x, _xtilde, ind, tmp, -scal * eta, scal * eta, jj == 0 ? FeatureType(_minibatch) : 0);
             }
             _regul.prox(tmp, x, eta);
-            if (random() % nn == 0)
+            if (random_r() % nn == 0)
             {
                 _xtilde.copy(x);
                 _loss.grad(_xtilde, _gtilde);
@@ -114,7 +114,7 @@ public:
                 x.add(_gtilde, -_etak);
                 for (int jj = 0; jj < _minibatch; ++jj)
                 {
-                    const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
+                    const int ind = _non_uniform_sampling ? this->nonu_sampling() : random_r() % _n;
                     const FeatureType scal = _non_uniform_sampling ? FeatureType(1.0) / (_qi[ind] * _n * _minibatch) : FeatureType(1.0) / _minibatch;
                     _loss.double_add_grad(_y, _xtilde, ind, x, -scal * _etak, scal * _etak);
                 }
@@ -124,7 +124,7 @@ public:
                 const FeatureType betak = _deltak / (_gammak * _etak);
                 const FeatureType a = (FeatureType(1.0) - alphak) / _thetak + alphak;
                 update_acceleration_parameters();
-                if (random() % _nn == 0)
+                if (random_r() % _nn == 0)
                 {
                     _y.add_scal(_xtilde, (FeatureType(1.0) - a) * _thetak, _thetak * (a - betak));
                     _y.add(x, betak * _thetak + FeatureType(1.0) - _thetak);
@@ -212,10 +212,10 @@ public:
                 const FeatureType a = (FeatureType(1.0) - alphak) / _thetak + alphak;
                 const FeatureType scalprox = FeatureType(1.0) / (FeatureType(1.0) + lambda_1 * _etak);
                 const FeatureType eta = _etak;
-                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
+                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random_r() % _n;
                 const FeatureType scaleta = _non_uniform_sampling ? eta / (_qi[ind] * _n) : eta;
                 this->update_acceleration_parameters();
-                const bool update_xtilde = random() % _n == 0;
+                const bool update_xtilde = random_r() % _n == 0;
                 const FeatureType coeffy = _thetak * (a - betak);
                 const FeatureType coeffx = update_xtilde ? betak * _thetak + FeatureType(1.0) - _thetak : betak * _thetak;
                 const FeatureType coeffxtilde = update_xtilde ? (FeatureType(1.0) - a) * _thetak : FeatureType(1.0) - _thetak * a;
@@ -273,7 +273,7 @@ public:
             const FeatureType lambda_1 = _regul.lambda_1() + _loss.kappa(); // take care of 0.5(mu+kappa)|x|^2,
             for (int ii = 0; ii < _n; ++ii)
             {
-                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
+                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random_r() % _n;
                 const FeatureType scal = _non_uniform_sampling ? FeatureType(1.0) / (_qi[ind] * _n) : FeatureType(1.0);
                 if (_is_lazy)
                 {
@@ -288,7 +288,7 @@ public:
                     x.add_scal(_gtilde, -eta / (FeatureType(1.0) + eta * lambda_1), FeatureType(1.0) / (FeatureType(1.0) + eta * lambda_1));
                 }
 
-                if (random() % _n == 0)
+                if (random_r() % _n == 0)
                 {
                     if (_is_lazy)
                         lazyx->update();
@@ -316,7 +316,7 @@ public:
             const FeatureType lambda_1 = _regul.lambda_1(); // replace by lazyprox ?
             for (int ii = 0; ii < _n; ++ii)
             {
-                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random() % _n;
+                const int ind = _non_uniform_sampling ? this->nonu_sampling() : random_r() % _n;
                 const FeatureType scal = _non_uniform_sampling ? FeatureType(1.0) / (_qi[ind] * _n) : FeatureType(1.0);
                 if (_is_lazy)
                 {
@@ -330,7 +330,7 @@ public:
                     _loss.double_add_grad(x, _xtilde, ind, x, -scal * eta, scal * eta);
                     x.add_scal(_gtilde, -eta / (FeatureType(1.0) + eta * lambda_1), FeatureType(1.0) / (FeatureType(1.0) + eta * lambda_1));
                 }
-                if (random() % _n == 0)
+                if (random_r() % _n == 0)
                 {
                     if (_is_lazy)
                         lazyx->update();

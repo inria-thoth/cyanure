@@ -13,7 +13,7 @@
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_int_distribution<int> distr(0,INT_MAX);
-static int random() {
+static int random_r() {
    return distr(gen);
 };
 static void srandom(const int seed) {
