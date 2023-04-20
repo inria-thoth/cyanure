@@ -561,7 +561,7 @@ template <typename floating_type> inline void Vector<floating_type>::softThrshol
 
 /// performs soft-thresholding of the vector
 template <typename floating_type> inline void Vector<floating_type>::fastSoftThrshold(const floating_type nu) {
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (INTM i = 0; i < _n; ++i)
     {
         _X[i] = fastSoftThrs(_X[i], nu);
@@ -571,7 +571,7 @@ template <typename floating_type> inline void Vector<floating_type>::fastSoftThr
 /// performs soft-thresholding of the vector
 template <typename floating_type> inline void Vector<floating_type>::fastSoftThrshold(Vector<floating_type>& output, const floating_type nu) const {
     output.resize(_n, false);
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (INTM i = 0; i < _n; ++i)
         output[i] = fastSoftThrs(_X[i], nu);
 };
@@ -604,7 +604,7 @@ template <typename floating_type> inline void Vector<floating_type>::hardThrshol
 
 /// performs thresholding of the vector
 template <typename floating_type> inline void Vector<floating_type>::thrsmax(const floating_type nu) {
-    //#pragma omp parallel for private(i)
+    #pragma omp parallel for private(i)
     for (INTM i = 0; i < _n; ++i)
         if (_X[i] < nu) _X[i] = nu;
 }
