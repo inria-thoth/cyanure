@@ -26,7 +26,7 @@ public:
     {
         y.copy(x);
         int i;
-// #pragma omp parallel for private(i)
+#pragma omp parallel for private(i)
         for (i = 0; i < _N; ++i)
         {
             Vector<T> colx, coly;
@@ -48,7 +48,7 @@ public:
     T inline eval(const Matrix<T>& x) const
     {
         T sum = 0;
-// #pragma omp parallel for reduction(+ \
+#pragma omp parallel for reduction(+ \
                                    : sum)
         for (int i = 0; i < _N; ++i)
         {
@@ -69,7 +69,7 @@ public:
     T inline fenchel(Matrix<T>& grad1, Matrix<T>& grad2) const
     {
         T sum = 0;
-// #pragma omp parallel for reduction(+ \
+#pragma omp parallel for reduction(+ \
                                    : sum)
         for (int i = 0; i < _N; ++i)
         {
@@ -109,7 +109,7 @@ public:
     virtual T lambda_1() const { return _regs[0]->lambda_1(); };
     inline void lazy_prox(const Matrix<T>& input, Matrix<T>& output, const Vector<I>& indices, const T eta) const
     {
-// #pragma omp parallel for
+#pragma omp parallel for
         for (int i = 0; i < _N; ++i)
         {
             Vector<T> colx, coly;
