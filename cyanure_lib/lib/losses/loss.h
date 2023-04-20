@@ -72,13 +72,13 @@ class Loss {
          T sum=0;
          const int n = this->n();
          for (int ii=0; ii<minibatch; ++ii) 
-            sum +=eval(input,random_r() % n);
+            sum +=eval(input,random() % n);
          return sum/minibatch;
       }
       virtual void grad_random_minibatch(const D& input, D& grad, const INTM minibatch) const {
          const int n = this->n();
          for (int ii=0; ii<minibatch; ++ii) { 
-            this->add_grad(input, random_r() % n,grad,ii==0 ? 0 : T(1.0));
+            this->add_grad(input, random() % n,grad,ii==0 ? 0 : T(1.0));
          }
          grad.scal(T(1.0)/minibatch);
       }
