@@ -366,7 +366,7 @@ inline void SpMatrix<floating_type, I>::multTrans(const Vector<floating_type>& x
         y.setZeros();
     }
     const floating_type* prX = x.rawX();
-// #pragma omp parallel for
+ #pragma omp parallel for
     for (I i = 0; i < _n; ++i) {
         floating_type sum = floating_type();
         for (I j = _pB[i]; j < _pE[i]; ++j) {
