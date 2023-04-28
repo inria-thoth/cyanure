@@ -117,7 +117,6 @@ public:
         const int p = input.n();
         const int r = indices.n();
         const T thrs = _lambda * eta;
-        #pragma omp parallel for
         for (int jj = 0; jj < r; ++jj)
             output[indices[jj]] = fastSoftThrs(input[indices[jj]], thrs);
         ;
@@ -191,7 +190,6 @@ public:
         const int r = indices.n();
         const T thrs = _lambda * eta;
         const T scal = T(1.0) / (T(1.0) + _lambda2 * eta);
-        #pragma omp parallel for
         for (int jj = 0; jj < r; ++jj)
             output[indices[jj]] = scal * fastSoftThrs(input[indices[jj]], thrs);
         ;
