@@ -54,7 +54,7 @@ mkl_path = list()
 mkl_path.append(os.environ.get('MKL_PATH'))
 
 LIBS = []
-INCLUDE_DIRS = [numpy.get_include()]
+INCLUDE_DIRS = [numpy.get_include(), '/scratch/clear/tryckebo/miniconda3/include']
 EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
@@ -98,7 +98,7 @@ else:
     if 'mkl' in np_blas:
         extra_compile_args_mkl = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
-            '-fopenmp', '-std=c++11']
+             '-std=c++11', '-O3', '-fopenmp']
 
         LIBS = ['mkl_rt', 'iomp5']
 
@@ -128,7 +128,7 @@ else:
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', "-fopenmp"]
+            '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -137,7 +137,7 @@ else:
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
-        EXTRA_LINK_ARGS = ["-fopenmp"]
+        EXTRA_LINK_ARGS = ['-fopenmp']
     if "COVERAGE" in os.environ:    
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
