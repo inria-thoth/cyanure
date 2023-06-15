@@ -732,7 +732,7 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
     //floating_type* XatT=new floating_type[NUM_THREADS*n*K];
     //for (j = 0; j<NUM_THREADS*n*K; ++j) XatT[j]=floating_type();
 
- //#pragma omp parallel for private(i,j)
+ #pragma omp parallel for private(i,j)
     for (i = 0; i < M; ++i) {
         //#ifdef _OPENMP
         //      int numT=omp_get_thread_num();
