@@ -135,7 +135,7 @@ class LossMat : public LinearLossMat<typename loss_type::data_type, Matrix<typen
       inline void get_dual_variable(const Matrix<T>& input, Matrix<T>& grad1, Matrix<T>& grad2) const {
          grad1.resize(_n,input.n());
          grad2.resize(input.m(),input.n());
-#pragma omp parallel for ordered
+#pragma omp parallel for ordered         
          for (int ii=0; ii<_N; ++ii) {
             Vector<T> col1, col2, col3;
             input.refCol(ii,col1);
