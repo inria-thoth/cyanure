@@ -112,8 +112,8 @@ else:
         else:
             libs = ['lapack', 'blas']
 
-        INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
+        INCLUDE_DIRS = ['/usr/include/openblas'] + INCLUDE_DIRS
+        LIBRARY_DIRS = ['/usr/lib64/'] + LIBRARY_DIRS
         LIBS = libs
 
         if platform.system() == "Darwin":
@@ -142,10 +142,6 @@ if platform.system() != "Windows":
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
     EXTRA_LINK_ARGS = []
-
-print(LIBRARY_DIRS)
-print(os.system("rpm -ql openblas-devel"))
-print(os.system("ls /usr/local/opt/openblas/include"))
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
