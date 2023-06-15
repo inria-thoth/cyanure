@@ -100,6 +100,7 @@ public:
             }
             Timer global_all;
             global_all.start();
+#pragma omp parallel for
             for (int ii = 0; ii < nclass; ++ii)
             {
                 Vector<FeatureType> w0col, wcol, ycol, dualcol;
@@ -116,6 +117,7 @@ public:
                 if (dual_variable.m() == nclass)
                     dual_variable.copyToRow(ii, dualcol);
                 {
+#pragma omp critical
                     super::optim_info.add(optim_info_col, ii);
                     if (super::param.verbose)
                     {
