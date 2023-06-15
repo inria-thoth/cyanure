@@ -18,8 +18,8 @@ public:
     USING_SOLVER;
     IncrementalSolver(const loss_type& loss, const Regularizer<D, PointerType>& regul, const ParamSolver<FeatureType>& param, const Vector<FeatureType>* Li = NULL) : Solver<loss_type>(loss, regul, param)
     {
-        _minibatch = 1;
         _non_uniform_sampling = param.non_uniform_sampling;
+        _minibatch = param.minibatch;
         if (Li)
             _Li.copy(*Li);
     };
