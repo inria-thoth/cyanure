@@ -602,9 +602,9 @@ template <typename floating_type> inline void Vector<floating_type>::hardThrshol
 
 /// performs thresholding of the vector
 template <typename floating_type> inline void Vector<floating_type>::thrsmax(const floating_type nu) {
-    INTM i;
-    #pragma omp parallel for private(i)
-    for (i = 0; i < _n; ++i)
+
+    #pragma omp parallel for
+    for (INTM i = 0; i < _n; ++i)
         if (_X[i] < nu) _X[i] = nu;
 }
 
