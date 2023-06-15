@@ -6,7 +6,6 @@
 
 #define USING_INCREMENTAL_SOLVER                               \
     USING_SOLVER;                                              \
-    using IncrementalSolver<loss_type>::_minibatch;            \
     using IncrementalSolver<loss_type>::_non_uniform_sampling; \
     using IncrementalSolver<loss_type>::_n;                    \
     using IncrementalSolver<loss_type>::_qi;
@@ -19,7 +18,6 @@ public:
     IncrementalSolver(const loss_type& loss, const Regularizer<D, PointerType>& regul, const ParamSolver<FeatureType>& param, const Vector<FeatureType>* Li = NULL) : Solver<loss_type>(loss, regul, param)
     {
         _non_uniform_sampling = param.non_uniform_sampling;
-        _minibatch = param.minibatch;
         if (Li)
             _Li.copy(*Li);
     };
@@ -38,7 +36,7 @@ protected:
             const FeatureType Lmax = _Li.maxval();
             _non_uniform_sampling = (_non_uniform_sampling && Lmean <= FeatureType(0.9) * Lmax);
             _L = _non_uniform_sampling ? Lmean : Lmax;
-            if (_minibatch > 1)
+            if (Solver<loss_type>::_minibatch > 1)
                 heuristic_L(x0);
             _oldL = _L;
             if (_non_uniform_sampling)
@@ -62,7 +60,7 @@ protected:
     };
 
     bool _non_uniform_sampling;
-    int _minibatch;
+    
     int _n;
     Vector<FeatureType> _qi;
     Vector<double> _Ui;
@@ -120,7 +118,7 @@ protected:
     };
     
     virtual int minibatch() const { 
-        return _minibatch; 
+        return Solver<loss_type>::_minibatch; 
     };
     
     FeatureType init_kappa_acceleration(const D& x0)
@@ -146,17 +144,17 @@ private:
             logging(logINFO) << "Heuristic: Initial L=" << _L;
         }
         const FeatureType Lmax = _L;
-        _L /= _minibatch;
+        _L /= Solver<loss_type>::_minibatch;
         int iter = 0;
         D tmp, tmp2, grad;
-        while (iter <= log(_minibatch) / log(2.0) && _L < Lmax)
+        while (iter <= log(Solver<loss_type>::_minibatch) / log(2.0) && _L < Lmax)
         {
             tmp.copy(x);
-            const FeatureType fx = _loss.eval_random_minibatch(tmp, _minibatch);
-            _loss.grad_random_minibatch(tmp, grad, _minibatch); // should do non uniform
+            const FeatureType fx = _loss.eval_random_minibatch(tmp, Solver<loss_type>::_minibatch);
+            _loss.grad_random_minibatch(tmp, grad, Solver<loss_type>::_minibatch); // should do non uniform
             // compute grad and fx
             tmp.add(grad, -FeatureType(1.0) / _L);
-            const FeatureType ftmp = _loss.eval_random_minibatch(tmp, _minibatch);
+            const FeatureType ftmp = _loss.eval_random_minibatch(tmp, Solver<loss_type>::_minibatch);
             tmp2.copy(tmp);
             tmp2.sub(x);
             const FeatureType s1 = fx + grad.dot(tmp2);

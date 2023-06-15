@@ -54,7 +54,7 @@ mkl_path = list()
 mkl_path.append(os.environ.get('MKL_PATH'))
 
 LIBS = []
-INCLUDE_DIRS = [numpy.get_include(), '/scratch/clear/tryckebo/miniconda3/include']
+INCLUDE_DIRS = [numpy.get_include()]
 EXTRA_COMPILE_ARGS = []
 LIBRARY_DIRS = []
 RUNTIME_LIRABRY_DIRS = []
@@ -65,6 +65,8 @@ if mkl_path[0] is not None:
 else:
     if openblas_path[0] is not None:
         LIBRARY_DIRS += openblas_path
+        include_path = openblas_path.rsplit(os.path.sep, 1)
+        INCLUDE_DIRS += include_path + os.path.sep + "include"
         np_blas = "openblas"
 
 if platform.system() == "Windows":
@@ -117,7 +119,6 @@ else:
         LIBS = libs
 
         if platform.system() == "Darwin":
-            print(os.system("ls /usr/local/miniconda/envs/build/include"))
             INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
