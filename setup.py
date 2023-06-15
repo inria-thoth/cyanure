@@ -144,6 +144,8 @@ else:
     EXTRA_LINK_ARGS = []
 
 print(LIBRARY_DIRS)
+print(os.system("ls /usr/local/opt/openblas/lib"))
+print(os.system("ls /usr/local/opt/openblas/include"))
 
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
