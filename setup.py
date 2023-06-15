@@ -143,6 +143,8 @@ if platform.system() != "Windows":
 else:
     EXTRA_LINK_ARGS = []
 
+print(LIBRARY_DIRS)
+
 cyanure_wrap = Extension(
     'cyanure_lib.cyanure_wrap',
     libraries=LIBS,
