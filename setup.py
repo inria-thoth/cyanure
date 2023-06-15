@@ -117,6 +117,7 @@ else:
         LIBS = libs
 
         if platform.system() == "Darwin":
+            print(os.system("ls /usr/local/miniconda/envs/build/include"))
             INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
