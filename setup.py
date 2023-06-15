@@ -144,7 +144,7 @@ else:
     EXTRA_LINK_ARGS = []
 
 print(LIBRARY_DIRS)
-print(os.system("rpm -q openblas-devel"))
+print(os.system("rpm -ql openblas-devel"))
 print(os.system("ls /usr/local/opt/openblas/include"))
 
 cyanure_wrap = Extension(
