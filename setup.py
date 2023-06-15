@@ -61,12 +61,14 @@ RUNTIME_LIRABRY_DIRS = []
 
 if mkl_path[0] is not None:
     LIBRARY_DIRS += mkl_path
+    include_path = mkl_path[0].rsplit(os.path.sep, 1)[0]
+    INCLUDE_DIRS += [include_path + os.path.sep + "include"]
     np_blas = "mkl"
 else:
     if openblas_path[0] is not None:
         LIBRARY_DIRS += openblas_path
-        include_path = openblas_path.rsplit(os.path.sep, 1)
-        INCLUDE_DIRS += include_path + os.path.sep + "include"
+        include_path = openblas_path[0].rsplit(os.path.sep, 1)[0]
+        INCLUDE_DIRS += [include_path + os.path.sep + "include"]
         np_blas = "openblas"
 
 if platform.system() == "Windows":
