@@ -19,7 +19,9 @@
     using Solver<loss_type>::_regul;             \
     using Solver<loss_type>::_Li;                \
     using Solver<loss_type>::_verbose;           \
+    using Solver<loss_type>::_minibatch;            \
     using Solver<loss_type>::_max_iter_backtracking;
+    
 
 static const int NUMBER_OPTIM_PROCESS_INFO = 6;
 
@@ -127,6 +129,7 @@ public:
         _duality = _loss.provides_fenchel() && regul.provides_fenchel();
         _optim_info.resize(NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / _it0, 1));
         _L = 0;
+        _minibatch = param.minibatch;
     };
     virtual ~Solver() {};
 
@@ -266,6 +269,7 @@ protected:
     virtual void solver_aux(D& x) = 0;
     virtual void print() const = 0;
     virtual int minibatch() const { return 1; };
+    int _minibatch;
     bool _verbose;
     int _it0;
     int _nepochs;

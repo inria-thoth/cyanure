@@ -1021,9 +1021,6 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        if self.safe:
-            X = check_input_inference(X, self)
-
         pred = self.decision_function(X)
 
         output = None

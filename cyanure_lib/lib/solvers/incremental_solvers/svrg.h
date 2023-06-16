@@ -24,8 +24,6 @@ class SVRG_Solver : public IncrementalSolver<loss_type>
 public:
     USING_INCREMENTAL_SOLVER;
     SVRG_Solver(const loss_type& loss, const Regularizer<D, PointerType>& regul, const ParamSolver<FeatureType>& param, const Vector<FeatureType>* Li = NULL) : IncrementalSolver<loss_type>(loss, regul, param, Li) {
-        //TODO Vérifier avec Julien
-        _minibatch = 1;
     };
 
 protected:
@@ -78,13 +76,14 @@ public:
     Acc_SVRG_Solver(const loss_type& loss, const Regularizer<D, PointerType>& regul, const ParamSolver<FeatureType>& param, const Vector<FeatureType>* Li = NULL) : SVRG_Solver<loss_type>(loss, regul, param, Li)
     {
         _accelerated_solver = allow_acc;
-        _minibatch = 1;
+        printf("%d \n", param.minibatch);
     };
 
     virtual void solver_init(const D& x0)
     {
         IncrementalSolver<loss_type>::solver_init(x0);
         _mu = _regul.strong_convexity();
+        printf("%d \n", _minibatch);
         _nn = _n / _minibatch;
         _accelerated_solver = allow_acc && (FeatureType(20) * this->_oldL / _nn > _mu);
         if (_accelerated_solver)
@@ -110,6 +109,7 @@ public:
         {
             for (int ii = 0; ii < _nn; ++ii)
             {
+                
                 x.copy(_y);
                 x.add(_gtilde, -_etak);
                 for (int jj = 0; jj < _minibatch; ++jj)

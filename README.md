@@ -27,6 +27,21 @@ You can also install Cyanure from the sources. However, the setup file is not ma
 
 On top of that, you can not use default compiler to compile on MacOS with OpenMP.
 
+
+Installation from source
+========================
+
+It is likely that during compilation the implementation of BLAS will not be find automatically.
+In this case you can set 2 different environment variables:
+- MKL_PATH
+- OPENBLAS_PATH 
+
+The MKL variable has the priority over Openblas.
+It has to contain the path towards the Blas library.
+
+(e.g: /usr/local/opt/openblas/lib)
+
+
 Create a new release
 ====================
 
@@ -56,6 +71,20 @@ Contribution
 If you want to contribute to the library you should verify that actual CI is still passing. The CI will trigger automatically on push. It will build the package on the different OS and execute tests on all the wheels.
 
 If you add features in the library, please write tests. A CI job is dedicated to verify that code coverage does not decrease.
+
+Default Parameters
+==================
+
+The default values has been changed compared to the one of the initial Cyanure to respect scikit-learn value.
+
+The regularization parameter in Cyanure is different from the one in scikit-learn. It is the inverse from the one in sklearn. It means that larger parameter implies stronger regularization.
+
+Reproductibility
+================
+
+It is possible to have different results with the same seed due to some underlying floating point rounding errors.
+
+ 
 
 
 

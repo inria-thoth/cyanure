@@ -16,6 +16,7 @@ public:
         if (_loss.id() == PPA){
             _mu += _kappa;
         }
+        
         _isprox = (_regul.id() != L2 || _regul.intercept()) && _regul.id() != NONE;
         _is_lazy = _isprox && _regul.is_lazy() && _loss.is_sparse();
         _extern_zis = false;
@@ -138,8 +139,9 @@ protected:
             }
             solver_aux_aux(x, ref_barz, ind, deltas);
 
-            if (_isprox && (!_is_lazy || ii == _n - 1))
+            if (_isprox && (!_is_lazy || ii == _n - 1)){
                 _regul.prox(ref_barz, x, FeatureType(1.0) / _mu);
+                }
         }
     };
     
