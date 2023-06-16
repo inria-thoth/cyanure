@@ -144,6 +144,7 @@ INTT cblas_idamin( INTT n,  double* X,  INTT incX);
 INTT cblas_isamin( INTT n,  float* X,  INTT incX);
 
 //#define HAVE_MKL
+#define HAVE_OPENBLAS
 
 template <typename T>
 static inline T alt_log(const T x);

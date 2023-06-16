@@ -53,7 +53,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
             {
                 SpMatrix<M, sparse_type> X;
                 npyToSpMatrix<M, sparse_type>(inX, X, "Data");
-                param.minibatch = MIN((int)floor((M(X.n()) * M(X.m())) / M(X.nzmax())), X.n() / 100); // aggressive strategy, but only uses minibatch if required
+                param.minibatch = MAX(MIN((int)floor((M(X.n()) * M(X.m())) / M(X.nzmax())), X.n() / 100), 1); // aggressive strategy, but only uses minibatch if required
                 SIMPLE_ERM<SpMatrix<M, sparse_type>, LinearLossVec<SpMatrix<M, sparse_type>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                 problem_configuration.solve_problem(X, y);
             }

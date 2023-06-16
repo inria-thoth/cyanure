@@ -633,8 +633,10 @@ def check_input_inference(X, estimator):
 
     """
     if not scipy.sparse.issparse(X):
-        X = np.array(X)
-        if X.dtype != "float32" or X.dtype != "float64":
+        if not isinstance(X, np.ndarray):
+            X = np.array(X)
+        x_element = get_element(X)
+        if type(x_element) not in (np.float32, np.float64):
             X = X.astype("float64")
 
         _assert_all_finite(X)
