@@ -21,6 +21,8 @@ public:
     void solve_problem_vector(const InputMatrixType& X, const Vector<int>& y) {
         verify_input(X);
 
+        init_omp(super::param.threads);
+
         const int nclass = y.maxval() + 1;
         if ((super::is_regression_loss(super::model.loss) || !super::is_loss_for_matrices(super::model.loss)))
         {
@@ -33,8 +35,6 @@ public:
             MULTI_ERM<InputMatrixType, LinearLossMat<InputMatrixType, Matrix<typename InputMatrixType::value_type>>> problem_configuration(W0, W, dual_variable, super::optim_info, super::param, super::model);
             return problem_configuration.solve_problem_matrix(X, labels);
         }
-
-        init_omp(super::param.threads);
 
         typedef Matrix<FeatureType> D;
         DataMatrixLinear<InputMatrixType> data(X, super::model.intercept);
@@ -116,8 +116,8 @@ public:
                 problem_configuration.solve_problem(X, ycol);
                 if (dual_variable.m() == nclass)
                     dual_variable.copyToRow(ii, dualcol);
-#pragma omp critical
                 {
+#pragma omp critical
                     super::optim_info.add(optim_info_col, ii);
                     if (super::param.verbose)
                     {
@@ -153,7 +153,7 @@ private:
     Matrix<FeatureType>& dual_variable;
 
     inline void verify_input(const InputMatrixType& X) {
-        if ((super::model.intercept && X.m() + 1 != W0.m()) || (!super::model.intercept && X.m() != W0.m())){
+        if ((super::model.intercept && X.m() + 1 != W0.m()) || (!super::model.intercept && X.m() != W0.m())) {
             logging(logERROR) << "Dimension of initial point is not consistent.";
             return;
         }
@@ -343,15 +343,15 @@ private:
         switch (super::model.regul)
         {
         case L2:
-            regul = transpose ? static_cast<Regularizer<D, PointerType> *>(new RegVecToMat<Ridge<V, PointerType>>(super::model))
+            regul = transpose ? static_cast<Regularizer<D, PointerType>*>(new RegVecToMat<Ridge<V, PointerType>>(super::model))
                 : new RegMat<Ridge<V, PointerType>>(super::model, nclass, transpose);
             break;
         case L1:
-            regul = transpose ? static_cast<Regularizer<D, PointerType> *>(new RegVecToMat<Lasso<V, PointerType>>(super::model))
+            regul = transpose ? static_cast<Regularizer<D, PointerType>*>(new RegVecToMat<Lasso<V, PointerType>>(super::model))
                 : new RegMat<Lasso<V, PointerType>>(super::model, nclass, transpose);
             break;
         case ELASTICNET:
-            regul = transpose ? static_cast<Regularizer<D, PointerType> *>(new RegVecToMat<ElasticNet<V, PointerType>>(super::model))
+            regul = transpose ? static_cast<Regularizer<D, PointerType>*>(new RegVecToMat<ElasticNet<V, PointerType>>(super::model))
                 : new RegMat<ElasticNet<V, PointerType>>(super::model, nclass, transpose);
             break;
         case L1BALL:

@@ -61,10 +61,14 @@ RUNTIME_LIRABRY_DIRS = []
 
 if mkl_path[0] is not None:
     LIBRARY_DIRS += mkl_path
+    include_path = mkl_path[0].rsplit(os.path.sep, 1)[0]
+    INCLUDE_DIRS += [include_path + os.path.sep + "include"]
     np_blas = "mkl"
 else:
     if openblas_path[0] is not None:
         LIBRARY_DIRS += openblas_path
+        include_path = openblas_path[0].rsplit(os.path.sep, 1)[0]
+        INCLUDE_DIRS += [include_path + os.path.sep + "include"]
         np_blas = "openblas"
 
 if platform.system() == "Windows":
@@ -98,7 +102,7 @@ else:
     if 'mkl' in np_blas:
         extra_compile_args_mkl = [
             '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
-            '-fopenmp', '-std=c++11']
+             '-std=c++11', '-O3', '-fopenmp']
 
         LIBS = ['mkl_rt', 'iomp5']
 
@@ -112,23 +116,23 @@ else:
         else:
             libs = ['lapack', 'blas']
 
-        INCLUDE_DIRS = ['/usr/local/opt/openblas/include'] + INCLUDE_DIRS
-        LIBRARY_DIRS = ['/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
+        INCLUDE_DIRS = ['/usr/include/openblas'] + INCLUDE_DIRS
+        LIBRARY_DIRS = ['/usr/lib64/'] + LIBRARY_DIRS
         LIBS = libs
 
         if platform.system() == "Darwin":
-            INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include'] + [numpy.get_include()]
+            INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
-            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib'] + LIBRARY_DIRS
+            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
             LIBS = libs
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
             EXTRA_LINK_ARGS = []
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11', "-fopenmp"]
+            '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
@@ -137,7 +141,7 @@ else:
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
-        EXTRA_LINK_ARGS = ["-fopenmp"]
+        EXTRA_LINK_ARGS = ['-fopenmp']
     if "COVERAGE" in os.environ:    
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
 else:
