@@ -28,6 +28,7 @@ before-all = [
   "conda activate building",
   "conda install -y python=3.10",
   "brew install llvm",
+  "brew install bzip2",
 ]
 test-command =  ["cd  {package}",]
 before-build = "build_script/macos.sh"
