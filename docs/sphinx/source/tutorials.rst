@@ -7,7 +7,7 @@ Examples for binary classification
 ----------------------------------
 The following code performs binary classification with :math:`\ell_2`-regularized logistic regression, with no intercept, on the criteo dataset (21Gb, huge sparse matrix)::
 
-   from cyanure.estimators import Classifier
+    from cyanure.estimators import Classifier
     from cyanure.data_processing import preprocess
     import scipy.sparse
     import numpy as np
@@ -28,8 +28,7 @@ The following code performs binary classification with :math:`\ell_2`-regularize
     classifier.fit(X,y)
 
 Before we comment the previous choices, let us 
-run the above code on a regular three-years-old quad-core workstation with 32Gb of memory
-(Intel Xeon CPU E5-1620 v3). ::
+run the above code on one thread on a Intel(R) Xeon(R) Silver 4112 CPU @ 2.60GHz CPUs with 32Gb of memory. ::
 
     Info : Matrix X, n=45840617, p=999999
     Info : *********************************
@@ -40,21 +39,21 @@ run the above code on a regular three-years-old quad-core workstation with 32Gb 
     Info : Lipschitz constant: 0.250004
     Info : Logistic Loss is used
     Info : L2 regularization
-    Info : Epoch: 5, primal objective: 0.456014, time: 124.345
+    Info : Epoch: 5, primal objective: 0.456014, time: 159.994
     Info : Best relative duality gap: 14383.9
-    Info : Epoch: 10, primal objective: 0.450885, time: 288.115
+    Info : Epoch: 10, primal objective: 0.450885, time: 370.813
     Info : Best relative duality gap: 1004.69
-    Info : Epoch: 15, primal objective: 0.450728, time: 456.976
+    Info : Epoch: 15, primal objective: 0.450728, time: 578.932
     Info : Best relative duality gap: 6.50049
-    Info : Epoch: 20, primal objective: 0.450724, time: 620.227
+    Info : Epoch: 20, primal objective: 0.450724, time: 787.282
     Info : Best relative duality gap: 0.068658
-    Info : Epoch: 25, primal objective: 0.450724, time: 789.031
+    Info : Epoch: 25, primal objective: 0.450724, time: 997.926
     Info : Best relative duality gap: 0.00173208
-    Info : Epoch: 30, primal objective: 0.450724, time: 951.987
+    Info : Epoch: 30, primal objective: 0.450724, time: 1215.44
     Info : Best relative duality gap: 0.00173207
-    Info : Epoch: 35, primal objective: 0.450724, time: 1120.44
+    Info : Epoch: 35, primal objective: 0.450724, time: 1436.1
     Info : Best relative duality gap: 9.36947e-05
-    Info : Time elapsed : 1130.85
+    Info : Time elapsed : 1448.06
 
 The solver used was *catalyst-miso*; the problem was solved up to
 accuracy tol=0.001 in about 20mn after 35 epochs (without taking into account
@@ -67,7 +66,7 @@ GPUs, or distributed computing architectures.
 
 In the next example, we use the squared hinge loss with
 :math:`\ell_1`-regularization, choosing the regularization parameter such that the
-obtained solution has about 10\% non-zero coefficients.
+obtained solution has about 10\% non-zero coefficients. It runs on 16 threads.
 We also fit an intercept.::
 
     from cyanure.estimators import Classifier
@@ -102,14 +101,14 @@ which yields::
     Info : Lipschitz constant: 1
     Info : Squared Hinge Loss is used
     Info : L1 regularization
-    Info : Epoch: 10, primal objective: 0.0915524, time: 7.3084
-    Info : Best relative duality gap: 0.387338
-    Info : Epoch: 20, primal objective: 0.0915441, time: 15.5574
-    Info : Best relative duality gap: 0.00426003
-    Info : Epoch: 30, primal objective: 0.0915441, time: 25.6204
-    Info : Best relative duality gap: 0.000312145
-    Info : Time elapsed : 25.7541
-    Info : Total additional line search steps: 8
+    Info : Epoch: 10, primal objective: 0.0916455, time: 9.38925
+    Info : Best relative duality gap: 0.486061
+    Info : Epoch: 20, primal objective: 0.0916331, time: 18.2816
+    Info : Best relative duality gap: 0.0197286
+    Info : Epoch: 30, primal objective: 0.0916331, time: 30.6386
+    Info : Best relative duality gap: 0.000296367
+    Info : Time elapsed : 30.806
+    Info : Total additional line search steps: 4
     Info : Total skipping l-bfgs steps: 0
 
 
@@ -117,7 +116,7 @@ Multiclass classification
 -------------------------
 Let us now do something a bit more involved and perform multinomial logistic regression on the
 *ckn_mnist* dataset (10 classes, n=60000, p=2304, dense matrix), with multi-task group lasso regularization,
-using a laptop with a Intel i7-6500U CPU, and choosing a regularization parameter that yields a solution with 5\% non zero coefficients.::
+using 2 Intel(R) Xeon(R) Silver 4112 CPU @ 2.60GHz CPUs with 32Gb of memory., and choosing a regularization parameter that yields a solution with 5\% non zero coefficients.::
 
     from cyanure.estimators import Classifier
     from cyanure.data_processing import preprocess
@@ -135,7 +134,7 @@ using a laptop with a Intel i7-6500U CPU, and choosing a regularization paramete
     #declare a multinomial logistic classifier with group Lasso regularization
     classifier=Classifier(loss='multiclass-logistic',penalty='l1l2',lambda_1=0.0001,max_iter=500,tol=1e-3,duality_gap_interval=5, verbose=True, fit_intercept=False)
     # uses the auto solver by default, performs at most 500 epochs
-    classifier.fit(X,y)) 
+    classifier.fit(X,y)
 
 which produces::
 
@@ -149,22 +148,20 @@ which produces::
     Info : Lipschitz constant: 0.25
     Info : Multiclass logistic Loss is used
     Info : Mixed L1-L2 norm regularization
-    Info : Epoch: 5, primal objective: 0.340267, time: 38.5398
-    Info : Best relative duality gap: 0.332094
-    Info : Epoch: 10, primal objective: 0.337645, time: 81.2934
-    Info : Best relative duality gap: 0.0696317
-    Info : Epoch: 15, primal objective: 0.337337, time: 117.92
-    Info : Best relative duality gap: 0.0174771
-    Info : Epoch: 20, primal objective: 0.337294, time: 153.597
-    Info : Best relative duality gap: 0.0103667
-    Info : Epoch: 25, primal objective: 0.337285, time: 214.605
-    Info : Best relative duality gap: 0.0042598
-    Info : Epoch: 30, primal objective: 0.337284, time: 273.082
-    Info : Best relative duality gap: 0.00133971
-    Info : Epoch: 35, primal objective: 0.337284, time: 326.157
-    Info : Best relative duality gap: 0.000633275
-    Info : Time elapsed : 326.667
-    Info : Total additional line search steps: 7
+    Info : Epoch: 5, primal objective: 0.340267, time: 23.5437
+    Info : Best relative duality gap: 0.332296
+    Info : Epoch: 10, primal objective: 0.337646, time: 47.2198
+    Info : Best relative duality gap: 0.069921
+    Info : Epoch: 15, primal objective: 0.337337, time: 70.9591
+    Info : Best relative duality gap: 0.0177314
+    Info : Epoch: 20, primal objective: 0.337294, time: 94.5435
+    Info : Best relative duality gap: 0.0106599
+    Info : Epoch: 25, primal objective: 0.337285, time: 127.509
+    Info : Best relative duality gap: 0.00454883
+    Info : Epoch: 30, primal objective: 0.337284, time: 160.711
+    Info : Best relative duality gap: 0.00094165
+    Info : Time elapsed : 161.034
+    Info : Total additional line search steps: 4
     Info : Total skipping l-bfgs steps: 0
 
 
@@ -190,32 +187,31 @@ of learning l2-logistic regression classifiers on the same dataset, in a one-vs-
     # uses the auto solver by default, performs at most 500 epochs
     classifier.fit(X,y)
 
-Then, the 10 classifiers are learned in parallel using the four cpu cores
-(still on the same laptop), which gives the following output after about 18 sec::
+Then, the 10 classifiers are learned in parallel using the 2 CPUs, which gives the following output after about 18 sec::
     
     Info : Matrix X, n=60000, p=2304
-    Info : Solver 6 has terminated after 30 epochs in 4.81277 seconds
-    Info :    Primal objective: 0.00696712, relative duality gap: 0.000259394
-    Info : Solver 3 has terminated after 40 epochs in 6.66197 seconds
-    Info :    Primal objective: 0.00806731, relative duality gap: 6.45332e-05
-    Info : Solver 0 has terminated after 40 epochs in 6.79647 seconds
-    Info :    Primal objective: 0.00581547, relative duality gap: 0.000814821
-    Info : Solver 8 has terminated after 50 epochs in 8.89198 seconds
-    Info :    Primal objective: 0.0154151, relative duality gap: 0.000295737
-    Info : Solver 4 has terminated after 30 epochs in 5.006 seconds
-    Info :    Primal objective: 0.00892158, relative duality gap: 0.000320581
-    Info : Solver 1 has terminated after 30 epochs in 5.0446 seconds
-    Info :    Primal objective: 0.00555609, relative duality gap: 0.000898035
-    Info : Solver 7 has terminated after 50 epochs in 9.10058 seconds
-    Info :    Primal objective: 0.0105672, relative duality gap: 5.41137e-05
-    Info : Solver 9 has terminated after 30 epochs in 5.34556 seconds
-    Info :    Primal objective: 0.0162128, relative duality gap: 0.000435193
-    Info : Solver 5 has terminated after 40 epochs in 5.39682 seconds
-    Info :    Primal objective: 0.00918654, relative duality gap: 0.000391729
-    Info : Solver 2 has terminated after 50 epochs in 6.20206 seconds
-    Info :    Primal objective: 0.010768, relative duality gap: 0.000145563
+    Info : Solver 7 has terminated after 30 epochs in 20.0901 seconds
+    Info :    Primal objective: 0.0105676, relative duality gap: 0.000956126
+    Info : Solver 9 has terminated after 30 epochs in 20.5337 seconds
+    Info :    Primal objective: 0.0162128, relative duality gap: 0.000267688
+    Info : Solver 2 has terminated after 40 epochs in 25.8979 seconds
+    Info :    Primal objective: 0.010768, relative duality gap: 3.20012e-05
+    Info : Solver 1 has terminated after 40 epochs in 26.1818 seconds
+    Info :    Primal objective: 0.00555594, relative duality gap: 0.000841066
+    Info : Solver 5 has terminated after 40 epochs in 26.4256 seconds
+    Info :    Primal objective: 0.00918652, relative duality gap: 5.50489e-05
+    Info : Solver 4 has terminated after 50 epochs in 28.2959 seconds
+    Info :    Primal objective: 0.00892122, relative duality gap: 4.20708e-05
+    Info : Solver 0 has terminated after 50 epochs in 28.4744 seconds
+    Info :    Primal objective: 0.00581546, relative duality gap: 4.98054e-05
+    Info : Solver 3 has terminated after 50 epochs in 28.6934 seconds
+    Info :    Primal objective: 0.00806731, relative duality gap: 4.7563e-05
+    Info : Solver 8 has terminated after 50 epochs in 28.8942 seconds
+    Info :    Primal objective: 0.0154151, relative duality gap: 1.63124e-05
+    Info : Solver 6 has terminated after 50 epochs in 29.0729 seconds
+    Info :    Primal objective: 0.00696687, relative duality gap: 3.22834e-05
     Info : Time for the one-vs-all strategy
-    Info : Time elapsed : 18.5133
+    Info : Time elapsed : 29.3725
 
 
 
