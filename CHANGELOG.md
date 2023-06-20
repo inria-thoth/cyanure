@@ -1,14 +1,11 @@
 # Changes
 
-- Add CI 
-- Package released on PyPi and conda-forge
-- API compliant with scikit-learn
-- Fix some bugs: 
-    - Issues related to int type on Windows
-    - Issues related to uninitialized variables
+- Fix several issues concerning memory consumption
+- Fix several issues concerning execution time
+- Fix the number of threads parameter with MKL and Openblas 
+- Changes in the handling of dependencies when installing from source
 
 # Known issues:
 
-- There are issues concerning the utilization of CPU cores.
-- It seems that there are some inconsistencies in the execution speed depending on the BLAS implementation.
+- Floating point rounding errors with certain solvers.
 - The preprocessing is not working if the array is already in fortran format.

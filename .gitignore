@@ -27,3 +27,4 @@ docs/main.out
 mlruns/
 fil-result/
 docs/dash/127.0.0.1:8050/
+*.pyc
