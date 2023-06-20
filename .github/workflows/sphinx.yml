@@ -25,7 +25,7 @@ jobs:
     - name: Install the building dependencies.
     # With higher version of docutils bullet lists does not work
       run: |
-        pip install sphinx ipywidgets beautifulsoup4 sphinx-rtd-theme numpydoc furo autodocsumm docutils==0.16.0 pandas plotly dash==2.5.0
+        pip install sphinx ipywidgets beautifulsoup4 sphinx-rtd-theme numpydoc furo autodocsumm docutils==0.16.0 pandas plotly dash==2.5.0 flask=2.2.3
     - name: Build the sphinx documentation and posts warnings as github comments.
       run: cd docs/sphinx/source && sphinx-build -b html . _build && cd _build && mkdir dash
     - name: Build the dash html.
