@@ -91,6 +91,7 @@ jobs:
     - if: runner.os == 'macOS'
       run: |
         brew install bzip2
+        export DYLD_LIBRARY_PATH="/usr/local/opt/bzip2/lib:$DYLD_LIBRARY_PATH"
         export LDFLAGS="-L/usr/local/opt/bzip2/lib"
         export CFLAGS="-I/usr/local/opt/bzip2/include"
         export CPPFLAGS="-I/usr/local/opt/bzip2/include"
