@@ -4,6 +4,7 @@
 - Fix several issues concerning execution time
 - Fix the number of threads parameter with MKL and Openblas 
 - Changes in the handling of dependencies when installing from source
+- Support for ARM archiecture on MacOS
 
 # Known issues:
 
