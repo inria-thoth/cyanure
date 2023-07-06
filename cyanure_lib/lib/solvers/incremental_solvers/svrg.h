@@ -76,14 +76,12 @@ public:
     Acc_SVRG_Solver(const loss_type& loss, const Regularizer<D, PointerType>& regul, const ParamSolver<FeatureType>& param, const Vector<FeatureType>* Li = NULL) : SVRG_Solver<loss_type>(loss, regul, param, Li)
     {
         _accelerated_solver = allow_acc;
-        printf("%d \n", param.minibatch);
     };
 
     virtual void solver_init(const D& x0)
     {
         IncrementalSolver<loss_type>::solver_init(x0);
         _mu = _regul.strong_convexity();
-        printf("%d \n", _minibatch);
         _nn = _n / _minibatch;
         _accelerated_solver = allow_acc && (FeatureType(20) * this->_oldL / _nn > _mu);
         if (_accelerated_solver)
