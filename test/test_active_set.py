@@ -106,19 +106,6 @@ def test_active_set_finance_without_subprocess_intercept(dataset_finance):
     fit_large_feature_number(primary, secondary, X, y)
 
 def test_fit_large_feature_number():
-    # Test case with small number of features
-    X = np.random.rand(3, 2)
-    labels = np.array([0, 1, 0])
-    estimator = Regression(lambda_1=0.1, fit_intercept=True, tol=1e-4, verbose=True)
-    aux = Regression(lambda_1=0.1, fit_intercept=True, tol=1e-4, verbose=True)
-    type(estimator).__name__ = "Lasso"
-    type(aux).__name__ = "Lasso"
-    result = fit_large_feature_number(estimator, aux, X, labels)
-    assert isinstance(result, Regression)
-    assert result.coef_.shape == (2,)
-    assert result.intercept_ is not None
-    assert result.intercept_ == 0
-
     # Test case with large number of features and dense matrix
     X = np.random.rand(100, 1001)
     labels = np.random.randint(2, size=100)

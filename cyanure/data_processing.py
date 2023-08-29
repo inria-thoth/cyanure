@@ -341,7 +341,7 @@ def check_labels(labels, estimator):
 
     else:
         if type(labels[0]) not in (np.float32, np.float64):
-            logger.info("The labels have been converted in float64")
+            logger.info("The labels have been converted to float64")
             labels = labels.astype('float64')
 
     _assert_all_finite(labels)

@@ -43,7 +43,7 @@ class ERM(BaseEstimator, ABC):
     def _warm_start(self, X, initial_weight, nclasses):
         if self.warm_start and hasattr(self, "coef_"):
             if self.verbose:
-                logger.info("Restart")
+                logger.info("Restarting with current coefficients")
             if self.fit_intercept:
                 initial_weight[-1, ] = self.intercept_
                 initial_weight[0:-1, ] = np.squeeze(self.coef_)
@@ -58,6 +58,8 @@ class ERM(BaseEstimator, ABC):
                 reset_dual = self.dual.shape[0] != n
             if not reset_dual and not self._binary_problem:
                 reset_dual = np.any(self.dual.shape != [n, nclasses])
+            if reset_dual and self.verbose:
+                logger.info("Resetting dual")
             if reset_dual and self._binary_problem:
                 self.dual = np.zeros(
                     n, dtype=X.dtype, order='F')
@@ -726,11 +728,11 @@ class Regression(ERM):
             X = check_input_inference(X, self)
 
         X = self._validate_data(X, accept_sparse="csr", reset=False)
+        
+        pred = safe_sparse_dot(X, self.coef_, dense_output=False) 
+
         if self.fit_intercept:
-            pred = safe_sparse_dot(
-                X, self.coef_, dense_output=False) + self.intercept_
-        else:
-            pred = safe_sparse_dot(X, self.coef_, dense_output=False)
+            pred = pred + self.intercept_
 
         return pred.squeeze()
 
@@ -1246,25 +1248,24 @@ def fit_large_feature_number(estimator, aux, X, labels):
     estimator.coef_ = np.zeros(p, dtype=X.dtype)
     estimator.restart = True
 
-    if estimator.fit_intercept:
-        estimator.intercept_ = 0
-
     estimator_name = type(estimator).__name__
-
+    
     for ii in range(num_as):
         R = compute_r(estimator_name, aux, X, labels, active_set, estimator.fit_intercept)
 
-        corr = np.abs(X.transpose().dot(R).ravel()) / n
+        corr = np.abs(X.T @ R) / n
 
         if n_active > 0:
             corr[active_set] = -10e10
-
         n_new_as = max(
             min(init * math.ceil(scaling ** ii), p) - n_active, 0)
         new_as = corr.argsort()[-n_new_as:]
-
+        
         if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambda_1 * (1 + estimator.tol):
-            break
+            if ii == 0:
+                return estimator.fit_fallback(X, labels)
+            else: 
+                break
 
         if len(active_set) > 0:
             neww = np.zeros(n_active + n_new_as,
@@ -1278,15 +1279,16 @@ def fit_large_feature_number(estimator, aux, X, labels):
                 len(active_set), dtype=X.dtype)
 
         n_active = len(active_set)
-
         if estimator.verbose:
-            logger.info("Size of the active set: {%d}", n_active)
+            logger.info(f"Size of the active set: {n_active}")
 
         aux.fit(X[:, active_set], labels)
 
         estimator.coef_[active_set] = aux.coef_
+        estimator.n_features_in_ = estimator.coef_.shape[0]
         if estimator.fit_intercept:
             estimator.intercept_ = aux.intercept_
+
 
     return estimator
 
@@ -1354,6 +1356,36 @@ class Lasso(Regression):
             self.coef_ = estimator.coef_
             if self.fit_intercept:
                 self.intercept_ = estimator.intercept_
+
+        return self
+
+    def fit_fallback(self, X, y):
+        """
+        Fit the parameters.
+
+        Parameters
+        ----------
+            X (numpy array or scipy sparse CSR matrix):
+                input n X p numpy matrix; the samples are on the rows
+
+            y (numpy array):
+                - vector of size n with real values for regression
+                - matrix of size n X k for multivariate regression
+
+        Returns
+        -------
+            self (ERM):
+                Returns the instance of the class
+        """
+
+        if self.safe:
+            X, labels, le = check_input_fit(X, y, self)
+        else:
+            le = None
+            labels = y
+        self.le_ = le
+
+        super().fit(X, labels, le_parameter=self.le_)
 
         return self
 
@@ -1429,5 +1461,33 @@ class L1Logistic(Classifier):
             self.coef_ = estimator.coef_
             if self.fit_intercept:
                 self.intercept_ = estimator.intercept_
+
+        return self
+
+    def fit_fallback(self, X, y):
+        """
+        Fit the parameters.
+
+        Parameters
+        ----------
+        X (numpy array, or scipy sparse CSR matrix):
+            input n x p numpy matrix; the samples are on the rows
+
+        y (numpy.array):
+            Input labels.
+
+            - vector of size n with {-1, +1} labels for binary classification,
+            which will be automatically converted if labels in {0,1} are
+            provided and {0,1,..., n} for multiclass classification.
+        """
+
+        if self.safe:
+            X, labels, le = check_input_fit(X, y, self)
+        else:
+            le = None
+            labels = y
+        self.le_ = le
+
+        super().fit(X, labels, le_parameter=self.le_)
 
         return self
