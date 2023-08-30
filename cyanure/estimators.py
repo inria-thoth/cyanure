@@ -728,8 +728,8 @@ class Regression(ERM):
             X = check_input_inference(X, self)
 
         X = self._validate_data(X, accept_sparse="csr", reset=False)
-        
-        pred = safe_sparse_dot(X, self.coef_, dense_output=False) 
+
+        pred = safe_sparse_dot(X, self.coef_, dense_output=False)
 
         if self.fit_intercept:
             pred = pred + self.intercept_
@@ -1249,7 +1249,7 @@ def fit_large_feature_number(estimator, aux, X, labels):
     estimator.restart = True
 
     estimator_name = type(estimator).__name__
-    
+
     for ii in range(num_as):
         R = compute_r(estimator_name, aux, X, labels, active_set, estimator.fit_intercept)
 
@@ -1260,11 +1260,11 @@ def fit_large_feature_number(estimator, aux, X, labels):
         n_new_as = max(
             min(init * math.ceil(scaling ** ii), p) - n_active, 0)
         new_as = corr.argsort()[-n_new_as:]
-        
+
         if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambda_1 * (1 + estimator.tol):
             if ii == 0:
                 return estimator.fit_fallback(X, labels)
-            else: 
+            else:
                 break
 
         if len(active_set) > 0:
@@ -1288,7 +1288,6 @@ def fit_large_feature_number(estimator, aux, X, labels):
         estimator.n_features_in_ = estimator.coef_.shape[0]
         if estimator.fit_intercept:
             estimator.intercept_ = aux.intercept_
-
 
     return estimator
 
