@@ -56,7 +56,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
-          name: wheel
+          name: wheel-${{ matrix.os }}
 
   test_imports:
     needs: [build_wheels]
@@ -118,3 +118,11 @@ jobs:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas  && python -m pip install libsvmdata && pip list && python -m pytest test/
         linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas  && python -m pip install libsvmdata && pip list && python -m pytest test/ 
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pip install libsvmdata && python -m pip install pandas && python -m pytest test/
+  merge_artifact:
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: artifact 
