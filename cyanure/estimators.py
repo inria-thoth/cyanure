@@ -319,6 +319,12 @@ class ERM(BaseEstimator, ABC):
             n_threads=int(self.n_threads), seed=int(self.random_state)
         )
 
+        if ((self.multi_class == "multinomial" or
+           (self.multi_class == "auto" and not self._binary_problem)) and
+           self.loss == "logistic") and self.optimization_info_.shape[0] == 1:
+            self.optimization_info_ = np.repeat(
+                self.optimization_info_, nclasses, axis=0)
+
         self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1]
                                 for class_index in range(self.optimization_info_.shape[0])])
 
