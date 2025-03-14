@@ -290,18 +290,13 @@ class ERM(BaseEstimator, ABC):
             if len(np.unique(labels)) != 2:
                 self._binary_problem = False
 
-            loss = "multiclass-logistic"
-            logger.info(
-                "Loss has been set to multiclass-logistic because "
-                "the multiclass parameter is set to multinomial!")
+                loss = "multiclass-logistic"
+                logger.info(
+                    "Loss has been set to multiclass-logistic because "
+                    "the multiclass parameter is set to multinomial!")
 
         if loss is None:
             loss = self.loss
-
-        if (loss == "multiclass-logistic" or loss == "logistic") and self.lambda_1 == np.inf:
-            self.lambda_1 = 0
-        elif (self.lambda_1 == np.inf):
-            self.lambda_1 = 0
 
         labels = np.squeeze(labels)
         initial_weight, yf, nclasses = self._initialize_weight(X, labels)
@@ -323,12 +318,6 @@ class ERM(BaseEstimator, ABC):
             univariate=bool(self._binary_problem),
             n_threads=int(self.n_threads), seed=int(self.random_state)
         )
-
-        if ((self.multi_class == "multinomial" or
-           (self.multi_class == "auto" and not self._binary_problem)) and
-           self.loss == "logistic") and self.optimization_info_.shape[0] == 1:
-            self.optimization_info_ = np.repeat(
-                self.optimization_info_, nclasses, axis=0)
 
         self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1]
                                 for class_index in range(self.optimization_info_.shape[0])])
@@ -1180,7 +1169,7 @@ class LogisticRegression(Classifier):
     _estimator_type = "classifier"
 
     def __init__(self, penalty='l2', loss='logistic', fit_intercept=True,
-                 verbose=False, lambda_1=np.inf, lambda_2=0, lambda_3=0,
+                 verbose=False, lambda_1=0, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10,
                  max_iter=500, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1,
