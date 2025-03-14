@@ -56,6 +56,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: wheel
 
   test_imports:
     needs: [build_wheels]
@@ -70,7 +71,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: artifact
-        path: dist
+        path: wheel
 
     - name: Set up Python
       uses: actions/setup-python@v3
@@ -93,7 +94,7 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: artifact
-        path: dist
+        path: wheel
     
     - name: Set up Python
       uses: actions/setup-python@v3
