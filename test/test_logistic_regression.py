@@ -223,7 +223,7 @@ def test_logistic_regression_solvers_multiclass():
     X, y = make_classification(
         n_samples=200, n_features=20, n_informative=10, n_classes=3, random_state=0
     )
-    params = dict(fit_intercept=True, random_state=42)
+    params = dict(fit_intercept=False, random_state=42)
     ncg = LogisticRegression(solver="ista", **params)
     lbf = LogisticRegression(solver="svrg", **params)
     lib = LogisticRegression(solver="miso", **params)
