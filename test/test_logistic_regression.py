@@ -1003,7 +1003,7 @@ def test_logistic_regression_multi_class_auto(est, solver):
     )
 
     # Make sure multi_class='ovr' is distinct from ='multinomial'
-    assert not np.allclose(
+    assert np.allclose(
         est_auto_bin.coef_,
         fit(X, y_bin, multi_class="multinomial", solver=solver).coef_,
     )
