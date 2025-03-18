@@ -674,7 +674,6 @@ class Regression(ERM):
         tags.regressor_tags = RegressorTags()
         return tags
 
-
     _estimator_type = "regressor"
 
     def _more_tags(self):
@@ -959,7 +958,6 @@ class Classifier(ClassifierAbstraction):
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
         return tags
-
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=1e-3, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50, verbose=True,
