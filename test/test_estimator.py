@@ -10,4 +10,4 @@ from cyanure.estimators import LogisticRegression, Regression, Classifier, Linea
     [LogisticRegression(verbose=False), Regression(verbose=False), Classifier(verbose=False), LinearSVC(verbose=False), Lasso(verbose=False), L1Logistic(verbose=False)]
 )
 def test_all_estimators(estimator):
-    return check_estimator(estimator)
+    check_estimator(estimator)
