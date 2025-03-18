@@ -197,7 +197,7 @@ def type_of_target(y, input_name=""):
         ensure_min_features=0,
     )
 
-    sklearn_catch_warnings(y, check_y_kwargs)
+    # sklearn_catch_warnings(y, check_y_kwargs)
 
     sklearn_check_old_format(y)
 
@@ -263,7 +263,7 @@ def is_multilabel(y):
             ensure_min_samples=0,
             ensure_min_features=0,
         )
-        sklearn_catch_warnings(y, check_y_kwargs)
+        # sklearn_catch_warnings(y, check_y_kwargs)
 
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
