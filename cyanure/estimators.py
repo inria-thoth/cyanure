@@ -244,7 +244,7 @@ class ERM(BaseEstimator, ABC):
 
         """
         self.loss = loss
-        if loss == 'squared_hinge':
+        if isinstance(loss, str) and loss == 'squared_hinge':
             self.loss = 'sqhinge'
         self.penalty = penalty
         self.fit_intercept = fit_intercept
