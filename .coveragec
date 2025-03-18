@@ -1,11 +1,6 @@
 [run]
-include =cyanure/cyanure/*
-omit =test*
-
-
-[report]
-include =cyanure/*
-omit =test*
+include = cyanure/cyanure/*
+omit = test*
 
 exclude_lines =
     def __repr__
