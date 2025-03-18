@@ -4,7 +4,7 @@ requires = [
     "wheel",
     "scipy<=1.8.1;python_version<'3.11'", "scipy>=1.8.1;python_version>='3.11'",
     "numpy>=1.23.5;python_version>='3.11'", "numpy<=1.23.5;python_version<'3.11'",
-    "scikit-learn"
+    "scikit-learn>=1.6"
 ]
 build-backend = "setuptools.build_meta"
 
