@@ -1481,7 +1481,7 @@ class L1Logistic(Classifier):
                          warm_start=warm_start, n_threads=n_threads, random_state=random_state,
                          fit_intercept=fit_intercept, multi_class=multi_class, dual=dual, safe=safe)
 
-        if multi_class == "multinomial":
+        if isinstance(loss, str) and multi_class == "multinomial":
             self.loss = "multiclass-logistic"
 
     def fit(self, X, y):
