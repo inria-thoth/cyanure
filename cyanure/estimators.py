@@ -16,6 +16,7 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, softmax
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils.validation import validate_data
 
 from sklearn.utils import ClassifierTags, RegressorTags
 
@@ -741,7 +742,7 @@ class Regression(ERM):
         if self.safe:
             X = check_input_inference(X, self)
 
-        X = self._validate_data(X, accept_sparse="csr", reset=False)
+        X = validate_data(self, X, accept_sparse="csr", reset=False)
 
         pred = safe_sparse_dot(X, self.coef_, dense_output=False)
 
@@ -1057,7 +1058,7 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        X = self._validate_data(X, accept_sparse="csr", reset=False)
+        X = validate_data(self, X, accept_sparse="csr", reset=False)
 
         pred = self.decision_function(X)
 
