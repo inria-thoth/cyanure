@@ -17,9 +17,9 @@ jobs:
           sudo apt-get install -y libopenblas-dev
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
-          pip install numpy==1.23.3
-          pip install scipy==1.8.1
-          pip install scikit-learn==1.2.2
+          pip install numpy
+          pip install scipy
+          pip install scikit-learn==1.6
           pip install pandas
           pip install pytest
           pip install pytest-cov
