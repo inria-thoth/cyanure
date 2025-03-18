@@ -1126,8 +1126,6 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
-        X, y = self._validate_data(X, y, accept_sparse="csr", reset=False)
-
         if self.safe:
             X = check_input_inference(X, self)
 
