@@ -55,11 +55,10 @@ input_nameTrue).
 
 def sklearn_catch_warnings(y, check_y_kwargs):
     with warnings.catch_warnings():
-        warnings.simplefilter("error", np.VisibleDeprecationWarning)
         if not issparse(y):
             try:
                 y = check_array(y, dtype=None, **check_y_kwargs)
-            except (np.VisibleDeprecationWarning, ValueError) as e:
+            except ValueError as e:
                 if str(e).startswith("Complex data not supported"):
                     raise
 
@@ -197,7 +196,7 @@ def type_of_target(y, input_name=""):
         ensure_min_features=0,
     )
 
-    # sklearn_catch_warnings(y, check_y_kwargs)
+    sklearn_catch_warnings(y, check_y_kwargs)
 
     sklearn_check_old_format(y)
 
@@ -252,6 +251,18 @@ def is_multilabel(y):
     >>> is_multilabel(np.array([[1, 0, 0]]))
     True
     """
+    if hasattr(y, "__array__") or isinstance(y, Sequence):
+        # DeprecationWarning will be replaced by ValueError, see NEP 34
+        # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
+        check_y_kwargs = dict(
+            accept_sparse=True,
+            allow_nd=True,
+            force_all_finite=False,
+            ensure_2d=False,
+            ensure_min_samples=0,
+            ensure_min_features=0,
+        )
+        sklearn_catch_warnings(y, check_y_kwargs)
 
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
