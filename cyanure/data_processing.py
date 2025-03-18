@@ -644,7 +644,7 @@ def check_input_inference(X, estimator):
         raise ValueError("Reshape your data")
 
     if X.shape[1] != estimator.n_features_in_:
-        raise ValueError(f"X has {X.shape[1]} features, but estimator \
-            is expecting {estimator.n_features_in_} features as input")
+        raise ValueError(f"X has {X.shape[1]} features, but estimator "
+            "is expecting {estimator.n_features_in_} features as input")
 
     return X
