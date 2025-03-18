@@ -1366,7 +1366,7 @@ class Lasso(Regression):
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, dual=None, safe=True):
-        super().__init__(loss='square', penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
+        super().__init__(penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart,
                          verbose=verbose, warm_start=warm_start, n_threads=n_threads,
@@ -1400,7 +1400,7 @@ class Lasso(Regression):
             # no active set
             super().fit(X, labels)
         else:
-            aux = Regression(loss='square', penalty='l1',
+            aux = Regression(penalty='l1',
                              fit_intercept=self.fit_intercept, random_state=self.random_state,
                              lambda_1=self.lambda_1, safe=self.safe,
                              tol=self.tol, duality_gap_interval=self.duality_gap_interval,
