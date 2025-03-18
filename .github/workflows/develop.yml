@@ -79,7 +79,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Try to import cyanure
-      run: pip install setuptools && pip install "scipy<=1.8.1" && pip install "numpy<=1.23.5" && pip install "scikit-learn>=1.6" && python -m pip install --no-index --find-links wheel cyanure &&  python -c "import cyanure;"
+      run: pip install setuptools && pip install scipy && pip install numpy && pip install "scikit-learn>=1.6" && python -m pip install --no-index --find-links wheel cyanure &&  python -c "import cyanure;"
 
   run_tests:
     needs: [build_wheels, merge_artifact]
