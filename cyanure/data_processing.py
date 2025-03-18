@@ -252,18 +252,6 @@ def is_multilabel(y):
     >>> is_multilabel(np.array([[1, 0, 0]]))
     True
     """
-    if hasattr(y, "__array__") or isinstance(y, Sequence):
-        # DeprecationWarning will be replaced by ValueError, see NEP 34
-        # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
-        check_y_kwargs = dict(
-            accept_sparse=True,
-            allow_nd=True,
-            force_all_finite=False,
-            ensure_2d=False,
-            ensure_min_samples=0,
-            ensure_min_features=0,
-        )
-        # sklearn_catch_warnings(y, check_y_kwargs)
 
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
