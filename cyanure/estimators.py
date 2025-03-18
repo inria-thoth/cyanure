@@ -717,6 +717,8 @@ class Regression(ERM):
         else:
             labels = y
 
+        X = self._validate_data(X, accept_sparse="csr", reset=False)
+
         if labels.squeeze().ndim <= 1:
             self._binary_problem = True
         else:
