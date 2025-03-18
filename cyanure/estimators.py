@@ -17,6 +17,8 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, softmax
 from sklearn.exceptions import ConvergenceWarning
 
+from sklearn.utils import ClassifierTags, RegressorTags
+
 import cyanure_lib
 
 from cyanure.data_processing import check_input_fit, check_input_inference, windows_conversion
@@ -38,6 +40,10 @@ class ERM(BaseEstimator, ABC):
 
     def _more_tags(self):
         return {"requires_y": True}
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        return tags
 
     def _warm_start(self, X, initial_weight, nclasses):
         if self.warm_start and hasattr(self, "coef_"):
@@ -661,6 +667,14 @@ class Regression(ERM):
 
     """
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.target_tags.multi_output = True
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+        return tags
+
+
     _estimator_type = "regressor"
 
     def _more_tags(self):
@@ -940,6 +954,13 @@ class Classifier(ClassifierAbstraction):
 
     _estimator_type = "classifier"
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
+
+
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=1e-3, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50, verbose=True,
                  warm_start=False, multi_class="auto",
@@ -1152,6 +1173,12 @@ class Classifier(ClassifierAbstraction):
 class LinearSVC(Classifier):
     """A pre-configured class for square hinge loss."""
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
+
     def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True,
                  verbose=False, lambda_1=0.1, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10,
@@ -1171,6 +1198,12 @@ class LinearSVC(Classifier):
 
 class LogisticRegression(Classifier):
     """A pre-configured class for logistic regression loss."""
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
 
     _estimator_type = "classifier"
 
@@ -1323,6 +1356,13 @@ class Lasso(Regression):
     Using active set when the number of features is superior to 1000.
     """
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.target_tags.multi_output = True
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+        return tags
+
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, verbose=True,
@@ -1412,6 +1452,12 @@ class L1Logistic(Classifier):
 
     Using active set when the number of features is superior to 1000
     """
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
 
     _estimator_type = "classifier"
 
