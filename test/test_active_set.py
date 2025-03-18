@@ -67,12 +67,12 @@ def test_active_set_finance_without_subprocess(dataset_finance):
 
     n_samples = X.shape[0]
 
-    primary = Regression(loss='square', penalty='l1',
+    primary = Regression(penalty='l1',
                              fit_intercept=False,
                              lambda_1=2697 / n_samples,
                              max_iter=500, verbose=False)
 
-    secondary = Regression(loss='square', penalty='l1',
+    secondary = Regression(penalty='l1',
                              fit_intercept=False,
                              lambda_1=2697 / n_samples,
                              max_iter=500, verbose=False)
@@ -90,12 +90,12 @@ def test_active_set_finance_without_subprocess_intercept(dataset_finance):
 
     n_samples = X.shape[0]
 
-    primary = Regression(loss='square', penalty='l1',
+    primary = Regression(penalty='l1',
                              fit_intercept=True,
                              lambda_1=0.1 / n_samples,
                              max_iter=10, verbose=False)
 
-    secondary = Regression(loss='square', penalty='l1',
+    secondary = Regression(penalty='l1',
                              fit_intercept=True,
                              lambda_1=0.1 / n_samples,
                              max_iter=10, verbose=False)
