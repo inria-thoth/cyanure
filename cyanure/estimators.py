@@ -1186,7 +1186,7 @@ class LinearSVC(Classifier):
                  solver='auto', tol=1e-3, duality_gap_interval=10,
                  max_iter=500, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1, random_state=0, dual=None, safe=True):
-        if loss not in ['squared_hinge', 'sqhinge']:
+        if isinstance(loss, str) and loss not in ['squared_hinge', 'sqhinge']:
             logger.error("LinearSVC is only compatible with squared hinge loss at "
                          "the moment")
         super().__init__(
