@@ -436,9 +436,9 @@ def check_input_type(X, labels, estimator):
         _assert_all_finite(X)
 
     else:
-        if scipy.sparse.issparse(X) and X.getformat() != "csr":
+        if scipy.sparse.issparse(X) and X._format() != "csr":
             raise TypeError("The library only supports CSR sparse data.")
-        if scipy.sparse.issparse(labels) and labels.getformat() != "csr":
+        if scipy.sparse.issparse(labels) and labels._format() != "csr":
             raise TypeError("The library only supports CSR sparse data.")
 
         X, labels = windows_conversion(X, labels)
