@@ -1059,6 +1059,8 @@ class Classifier(ClassifierAbstraction):
         """
         check_is_fitted(self)
 
+        X = self._validate_data(X, accept_sparse="csr", reset=False)
+
         pred = self.decision_function(X)
 
         output = None
