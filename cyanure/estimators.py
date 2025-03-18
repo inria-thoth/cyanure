@@ -679,14 +679,12 @@ class Regression(ERM):
     def _more_tags(self):
         return {"multioutput": True, "requires_y": True}
 
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0,
+    def __init__(self, penalty='l2', fit_intercept=True, random_state=0,
                  lambda_1=0, lambda_2=0, lambda_3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500,
                  limited_memory_qning=20, fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, dual=None, safe=True):
-        if loss != 'square':
-            raise ValueError("square loss should be used")
-        super().__init__(loss=loss, penalty=penalty,
+        super().__init__(loss='square', penalty=penalty,
                          fit_intercept=fit_intercept, random_state=random_state, lambda_1=lambda_1,
                          lambda_2=lambda_2, lambda_3=lambda_3, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
