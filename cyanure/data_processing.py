@@ -190,7 +190,7 @@ def type_of_target(y, input_name=""):
     check_y_kwargs = dict(
         accept_sparse=True,
         allow_nd=True,
-        force_all_finite=False,
+        ensure_all_finite=False,
         ensure_2d=False,
         ensure_min_samples=0,
         ensure_min_features=0,
@@ -257,7 +257,7 @@ def is_multilabel(y):
         check_y_kwargs = dict(
             accept_sparse=True,
             allow_nd=True,
-            force_all_finite=False,
+            ensure_all_finite=False,
             ensure_2d=False,
             ensure_min_samples=0,
             ensure_min_features=0,
