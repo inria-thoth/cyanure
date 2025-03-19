@@ -591,8 +591,7 @@ def check_input_fit(X, labels, estimator):
     if X.shape[0] == 1:
         raise ValueError("There should have more than 1 sample")
 
-    if not estimator.__sklearn_tags__["multioutput"] and \
-       not estimator.__sklearn_tags__["multioutput_only"] and labels.ndim > 1:
+    if not estimator.target_tags.multi_output and labels.ndim > 1:
         warnings.warn(
             "A column-vector y was passed when a 1d array was expected", DataConversionWarning)
 
