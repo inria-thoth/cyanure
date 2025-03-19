@@ -7,7 +7,7 @@ from cyanure.estimators import LogisticRegression, Regression, Classifier, Linea
 
 @pytest.mark.parametrize(
     "estimator",
-    [LogisticRegression(verbose=False), Regression(verbose=False), Classifier(verbose=False), LinearSVC(verbose=True), Lasso(verbose=False), L1Logistic(verbose=False)]
+    [LogisticRegression(verbose=False), Regression(verbose=False), Classifier(verbose=False), LinearSVC(verbose=False), Lasso(verbose=False), L1Logistic(verbose=False)]
 )
 def test_all_estimators(estimator):
     check_estimator(estimator)
