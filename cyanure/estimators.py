@@ -38,10 +38,6 @@ class ERM(BaseEstimator, ABC):
         min_{w,b} (1/n) sum_{i=1}^n L( y_i, <w, x_i> + b)   + psi(w)
 
     """
-
-    def _more_tags(self):
-        return {"requires_y": True}
-
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         return tags
@@ -675,11 +671,6 @@ class Regression(ERM):
         tags.regressor_tags = RegressorTags()
         return tags
 
-    _estimator_type = "regressor"
-
-    def _more_tags(self):
-        return {"multioutput": True, "requires_y": True}
-
     def __init__(self, penalty='l2', fit_intercept=True, random_state=0,
                  lambda_1=0, lambda_2=0, lambda_3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500,
@@ -949,9 +940,6 @@ class Classifier(ClassifierAbstraction):
         Determine the comportment of the instance in case of multivariate problem
 
     """
-
-    _estimator_type = "classifier"
-
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         tags.estimator_type = "classifier"
@@ -1203,8 +1191,6 @@ class LogisticRegression(Classifier):
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
         return tags
-
-    _estimator_type = "classifier"
 
     def __init__(self, penalty='l2', loss='logistic', fit_intercept=True,
                  verbose=False, lambda_1=0, lambda_2=0, lambda_3=0,
@@ -1458,14 +1444,15 @@ class L1Logistic(Classifier):
         tags.classifier_tags = ClassifierTags()
         return tags
 
-    _estimator_type = "classifier"
-
     def _more_tags(self):
-        return {"requires_y": True,  "_xfail_checks": {
+        return {
+            "_xfail_checks": {
                 "check_non_transformer_estimators_n_iter": (
                     "We have a different implementation of _n_iter in the multinomial case."
                 ),
-                }}
+            }
+        }
+
 
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
