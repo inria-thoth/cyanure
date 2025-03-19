@@ -671,6 +671,8 @@ class Regression(ERM):
         tags.regressor_tags = RegressorTags()
         return tags
 
+    _estimator_type = "regressor"
+
     def __init__(self, penalty='l2', fit_intercept=True, random_state=0,
                  lambda_1=0, lambda_2=0, lambda_3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500,
@@ -940,6 +942,9 @@ class Classifier(ClassifierAbstraction):
         Determine the comportment of the instance in case of multivariate problem
 
     """
+
+    _estimator_type = "classifier"
+
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         tags.estimator_type = "classifier"
@@ -1192,6 +1197,8 @@ class LogisticRegression(Classifier):
         tags.classifier_tags = ClassifierTags()
         return tags
 
+    _estimator_type = "classifier"
+
     def __init__(self, penalty='l2', loss='logistic', fit_intercept=True,
                  verbose=False, lambda_1=0, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10,
@@ -1443,6 +1450,8 @@ class L1Logistic(Classifier):
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
         return tags
+
+    _estimator_type = "classifier"
 
     def _more_tags(self):
         return {
