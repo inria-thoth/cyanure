@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 skip = ["pp*", "*musllinux*", "cp36-*", "cp37-*", "cp38-*"]
 
 [tool.cibuildwheel.linux]
-before-all = "yum install -y openblas-devel libgomp lapack-devel && ls /usr/lib64"
+before-all = "yum remove blas-devel && yum install -y openblas-devel libgomp lapack-devel && ls /usr/lib64"
 test-command =  ["cd  {package}",]
 skip = ["*i686", "pp*", "*musllinux*", "cp36-*", "cp37-*", "cp38-*"]
 
