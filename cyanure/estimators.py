@@ -42,7 +42,7 @@ class ERM(BaseEstimator, ABC):
         tags = super().__sklearn_tags__()
         return tags
 
-    def _set_dual(self):
+    def _set_dual(self, X, nclasses):
         if self.warm_start and self.solver in ('auto', 'miso', 'catalyst-miso', 'qning-miso'):
             n = X.shape[0]
             # TODO Ecrire test pour dual surtout défensif
@@ -76,7 +76,7 @@ class ERM(BaseEstimator, ABC):
 
         initial_weight = np.asfortranarray(initial_weight, X.dtype)
 
-        self._set_dual()
+        self._set_dual(X, nclasses)
 
         return initial_weight
 
