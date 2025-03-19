@@ -338,7 +338,7 @@ class ERM(BaseEstimator, ABC):
         self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1]
                                 for class_index in range(self.optimization_info_.shape[0])])
 
-        print(self.n_iter)
+        print(self.n_iter_)
 
         for index in range(self.n_iter_.shape[0]):
             if self.n_iter_[index] == self.max_iter:
