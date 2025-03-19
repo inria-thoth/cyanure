@@ -1453,7 +1453,6 @@ class L1Logistic(Classifier):
             }
         }
 
-
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, verbose=True, warm_start=False, n_threads=-1,
