@@ -42,22 +42,7 @@ class ERM(BaseEstimator, ABC):
         tags = super().__sklearn_tags__()
         return tags
 
-    def _warm_start(self, X, initial_weight, nclasses):
-        if self.warm_start and hasattr(self, "coef_"):
-            if self.verbose:
-                logger.info("Restarting with current coefficients")
-            if self.fit_intercept:
-                if len(initial_weight.shape) > 1:
-                    initial_weight[-1, :] = self.intercept_
-                    initial_weight[0:-1, :] = np.squeeze(self.coef_)
-                else:
-                    initial_weight[-1] = self.intercept_
-                    initial_weight[0:-1] = np.squeeze(self.coef_)
-            else:
-                initial_weight = np.squeeze(self.coef_)
-
-        initial_weight = np.asfortranarray(initial_weight, X.dtype)
-
+    def _set_dual(self):
         if self.warm_start and self.solver in ('auto', 'miso', 'catalyst-miso', 'qning-miso'):
             n = X.shape[0]
             # TODO Ecrire test pour dual surtout défensif
@@ -74,6 +59,24 @@ class ERM(BaseEstimator, ABC):
             if reset_dual and not self._binary_problem:
                 self.dual = np.zeros(
                     [n, nclasses], dtype=X.dtype, order='F')
+
+    def _warm_start(self, X, initial_weight, nclasses):
+        if self.warm_start and hasattr(self, "coef_"):
+            if self.verbose:
+                logger.info("Restarting with current coefficients")
+            if self.fit_intercept:
+                if len(initial_weight.shape) > 1:
+                    initial_weight[-1, :] = self.intercept_
+                    initial_weight[0:-1, :] = np.squeeze(self.coef_)
+                else:
+                    initial_weight[-1] = self.intercept_[0]
+                    initial_weight[0:-1] = np.squeeze(self.coef_)
+            else:
+                initial_weight = np.squeeze(self.coef_)
+
+        initial_weight = np.asfortranarray(initial_weight, X.dtype)
+
+        self._set_dual()
 
         return initial_weight
 
@@ -334,6 +337,8 @@ class ERM(BaseEstimator, ABC):
 
         self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1]
                                 for class_index in range(self.optimization_info_.shape[0])])
+
+        print(self.n_iter)
 
         for index in range(self.n_iter_.shape[0]):
             if self.n_iter_[index] == self.max_iter:
