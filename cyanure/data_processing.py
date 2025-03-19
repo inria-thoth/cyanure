@@ -592,7 +592,7 @@ def check_input_fit(X, labels, estimator):
         raise ValueError("There should have more than 1 sample")
 
     tags = estimator.__sklearn_tags__()
-    if hasattr(tags, 'multi_output') and not tags.multi_output and labels.ndim > 1:
+    if hasattr(tags, 'target_tags') and not tags.target_tags.multi_output and labels.ndim > 1:
         warnings.warn(
             "A column-vector y was passed when a 1d array was expected", DataConversionWarning)
 
