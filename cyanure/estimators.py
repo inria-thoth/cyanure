@@ -51,8 +51,8 @@ class ERM(BaseEstimator, ABC):
             if self.verbose:
                 logger.info("Restarting with current coefficients")
             if self.fit_intercept:
-                initial_weight[-1, ] = self.intercept_
-                initial_weight[0:-1, ] = np.squeeze(self.coef_)
+                initial_weight[-1, :] = self.intercept_
+                initial_weight[0:-1, :] = np.squeeze(self.coef_)
             else:
                 initial_weight = np.squeeze(self.coef_)
 
