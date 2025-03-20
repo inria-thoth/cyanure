@@ -171,7 +171,7 @@ static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     {
         throw ConversionError((obj_name + " matrices should be f-contiguous 3D " + getTypeName<T>() + " array").c_str());
     }
-    double *array_data = (double *)PyArray_DATA(array);
+    T *rawX = reinterpret_cast<T *>(PyArray_DATA(array));
     const npy_intp *shape = PyArray_DIMS(array);
     npy_intp nclass = shape[0];
     npy_intp m = shape[1];
@@ -183,7 +183,7 @@ static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     for (npy_intp i = 0; i < nclass; i++) {
       for (npy_intp j = 0; j < m; j++) {
           for (npy_intp k = 0; k < n; k++) {
-                array_data[i * m * n + j * m + k] = matrix(i, j, k);
+                rawX[i * m * n + j * m + k] = matrix(i, j, k);
             }
         }
     }
