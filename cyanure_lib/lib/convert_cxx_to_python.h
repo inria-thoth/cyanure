@@ -180,10 +180,10 @@ static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     logging(logERROR) << m ;
     logging(logERROR) << n ;
      // Iterate through the 3D array and copy values from struct
-    for (npy_intp i = 0; i < nclass; ++i) {
-      for (npy_intp j = 0; j < m; ++j) {
-          for (npy_intp k = 0; k < n; ++k) {
-                matrix(i, j, k);
+    for (npy_intp i = 0; i < nclass; i++) {
+      for (npy_intp j = 0; j < m; j++) {
+          for (npy_intp k = 0; k < n; k++) {
+                array_data[i * m * n + j * m + k] = matrix(i, j, k);
             }
         }
     }
