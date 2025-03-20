@@ -118,7 +118,7 @@ public:
                     dual_variable.copyToRow(ii, dualcol);
                 {
 #pragma omp critical
-                    super::optim_info.add(optim_info_col, ii);
+                    super::optim_info.refCol(ii, optim_info_col);
                     if (super::param.verbose)
                     {
                         const int noptim = optim_info_col.n() - 1;
@@ -339,7 +339,7 @@ private:
     {
         typedef Matrix<FeatureType> D;
         typedef Vector<FeatureType> V;
-        Regularizer<D, PointerType>* regul;
+        Regularizer<D, PointerType>* regul;  
         switch (super::model.regul)
         {
         case L2:
