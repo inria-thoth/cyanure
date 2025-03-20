@@ -118,18 +118,18 @@ public:
                     dual_variable.copyToRow(ii, dualcol);
                 {
 #pragma omp critical
-                    super::optim_info.refCol(ii, optim_info_col);
+                    super::optim_info.add(optim_info_col, ii);
                     if (super::param.verbose)
                     {
                         const int noptim = optim_info_col.n() - 1;
-                        logging(logINFO) << "Solver " << ii << " has terminated after " << optim_info_col(0, 0, noptim) << " epochs in " << optim_info_col(0, 5, noptim) << " seconds";
-                        if (optim_info_col(0, 4, noptim) == 0)
+                        logging(logINFO) << "Solver " << ii << " has terminated after " << super::optim_info(ii, 0, noptim) << " epochs in " << super::optim_info(ii, 5, noptim) << " seconds";
+                        if (super::optim_info(ii, 4, noptim) == 0)
                         {
-                            logging(logINFO) << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", relative duality gap: " << optim_info_col(0, 3, noptim);
+                            logging(logINFO) << "   Primal objective: " << super::optim_info(ii, 1, noptim) << ", relative duality gap: " << super::optim_info(ii, 3, noptim);
                         }
                         else
                         {
-                            logging(logINFO) << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", tol: " << optim_info_col(0, 4, noptim);
+                            logging(logINFO) << "   Primal objective: " << super::optim_info(ii, 1, noptim) << ", tol: " << super::optim_info(ii, 4, noptim);
                         }
                     }
                 }
