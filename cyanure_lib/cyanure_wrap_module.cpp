@@ -37,9 +37,9 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         if (univariate)
         {
             Vector<M> y, w0, w, dual_variable;
-            npyToVector<M>(inY, y, "Data y");
-            npyToVector<M>(inw0, w0, "x0");
-            npyToVector<M>(inw, w, "x");
+            npyToVector<M>(inY, y, "y");
+            npyToVector<M>(inw0, w0, "w0");
+            npyToVector<M>(inw, w, "w");
             if (reinterpret_cast<PyObject*>(in_dual) != Py_None)
             {
                 npyToVector<M>(in_dual, dual_variable, "dual");
@@ -119,7 +119,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         }
         PyArrayObject* out = create_np_optim_info<M>(optim_info.nclass(), optim_info.m(), optim_info.n());
         OptimInfo<M> outm;
-        npyToOptimInfo(out, outm, "optim info");
+        optimInfoToNpy(out, outm, "optim info");
         outm.copy(optim_info);
         return out;
     }

@@ -159,7 +159,7 @@ static void npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, std::string obj
 }
 
 template <typename T>
-static void npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
+static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
@@ -171,12 +171,19 @@ static void npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     {
         throw ConversionError((obj_name + " matrices should be f-contiguous 3D " + getTypeName<T>() + " array").c_str());
     }
-    T *rawX = reinterpret_cast<T *>(PyArray_DATA(array));
+    double *array_data = (double *)PyArray_DATA(array);
     const npy_intp *shape = PyArray_DIMS(array);
     npy_intp nclass = shape[0];
     npy_intp m = shape[1];
     npy_intp n = shape[2];
-    matrix.setData(rawX, nclass, m, n);
+     // Iterate through the 3D array and copy values from struct
+    for (npy_intp i = 0; i < nclass; i++) {
+        for (npy_intp j = 0; j < m; j++) {
+            for (npy_intp k = 0; k < n; k++) {
+                array_data[i * m * n + j * n + k] = matrix[i][j][k];
+            }
+        }
+    }
 }
 
 template <typename T>
