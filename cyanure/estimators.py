@@ -40,6 +40,7 @@ class ERM(BaseEstimator, ABC):
     """
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
+        tags.input_tags.sparse=True
         return tags
 
     def _set_dual(self, X, nclasses):
