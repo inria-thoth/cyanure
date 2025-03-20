@@ -25,7 +25,7 @@
 
 static const int NUMBER_OPTIM_PROCESS_INFO = 6;
 
-loglevel_e loglevel = logDEBUG4;
+loglevel_e loglevel = logINFO;
 
 enum solver_t
 {
@@ -128,6 +128,7 @@ public:
         _best_primal = INFINITY;
         _duality = _loss.provides_fenchel() && regul.provides_fenchel();
         _optim_info.resize(NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / _it0, 1));
+        _optim_info.setZeros();
         _L = 0;
         _minibatch = param.minibatch;
     };
@@ -136,13 +137,13 @@ public:
     virtual void solve(const D& x0, D& x)
     {
         _time.start();
+
         x.copy(x0);
         if (!_duality && _nepochs > 1)
             _xold.copy(x0);
         solver_init(x0);
         if (_verbose)
         {
-            logging(logINFO) << "*********************************";
             print();
             _loss.print();
             _regul.print();
@@ -199,6 +200,7 @@ private:
             return -INFINITY;
         }
         D grad1, grad2;
+
         _loss.get_dual_variable(x, grad1, grad2);
         const T dual = -_regul.fenchel(grad1, grad2);
         return dual - _loss.fenchel(grad1);
