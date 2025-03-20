@@ -180,7 +180,7 @@ static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     for (npy_intp i = 0; i < nclass; i++) {
         for (npy_intp j = 0; j < m; j++) {
             for (npy_intp k = 0; k < n; k++) {
-                matrix(i, j, k);
+                array_data[i * m * n + k * m + j] = matrix(i, j, k);
             }
         }
     }
