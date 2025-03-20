@@ -118,9 +118,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
             }
         }
         PyArrayObject* out = create_np_optim_info<M>(optim_info.nclass(), optim_info.m(), optim_info.n());
-        OptimInfo<M> outm;
-        optimInfoToNpy(out, outm, "optim info");
-        outm.copy(optim_info);
+        optimInfoToNpy(out, optim_info, "optim info");
         return out;
     }
     catch (NotImplementedException const &e)
