@@ -111,10 +111,7 @@ else:
     ##### setup openblas
     else:
 
-        if "openblas" in np_blas:
-            libs = ['openblas']
-        else:
-            libs = ['lapack', 'blas']
+        libs = ['openblas']
 
         INCLUDE_DIRS = ['/usr/include/openblas'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/lib64/'] + LIBRARY_DIRS
