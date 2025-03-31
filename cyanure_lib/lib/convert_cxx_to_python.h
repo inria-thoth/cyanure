@@ -176,15 +176,12 @@ static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     npy_intp nclass = shape[0];
     npy_intp m = shape[1];
     npy_intp n = shape[2];
-    logging(logERROR) << nclass ;
-    logging(logERROR) << m ;
-    logging(logERROR) << n ;
      // Iterate through the 3D array and copy values from struct
     for (npy_intp i = 0; i < nclass; i++) {
       for (npy_intp j = 0; j < m; j++) {
           for (npy_intp k = 0; k < n; k++) {
                 double *ptr = (double *)PyArray_GETPTR3(array, i, j, k);
-                *ptr = matrix(i, j, k);
+                 rawX[i * m * n + j * m + k] = matrix(i, j, k);
             }
         }
     }
