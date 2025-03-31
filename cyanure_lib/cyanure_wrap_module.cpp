@@ -73,6 +73,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         {
             Matrix<M> w0, w, dual_variable;
             npyToMatrix<M>(inw0, w0, "x0");
+            nclass = w0.n();
             npyToMatrix<M>(inw, w, "x");
             if (reinterpret_cast<PyObject*>(in_dual) != Py_None){
                 npyToMatrix<M>(in_dual, dual_variable, "dual");  
@@ -86,7 +87,6 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Vector<int> y;
                     npyToVector<int>(inY, y, "Data y");
-                    nclass = y.maxval() + 1;
                     MULTI_ERM<SpMatrix<M, sparse_type>, LinearLossMat<SpMatrix<M, sparse_type>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
@@ -94,7 +94,6 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Matrix<M> y;
                     npyToMatrix<M>(inY, y, "Data y");
-                    nclass = y.maxval() + 1;
                     MULTI_ERM<SpMatrix<M, sparse_type>, LinearLossMat<SpMatrix<M, sparse_type>, Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_matrix(X, y);
                 }
@@ -107,8 +106,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 if (array_type(inY) == getTypeNumber<int>())
                 {
                     Vector<int> y;
-                    npyToVector<int>(inY, y, "Data y");
-                    nclass = y.maxval() + 1;
+                    npyToVector<int>(inY, y, "Data y");                    
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
@@ -116,7 +114,6 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Matrix<M> y;
                     npyToMatrix<M>(inY, y, "Data y");
-                    nclass = y.maxval() + 1;
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_matrix(X, y);
                 }
