@@ -34,6 +34,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
     OptimInfo<M> optim_info;
     try
     {
+        int nclass = 1;
         if (univariate)
         {
             Vector<M> y, w0, w, dual_variable;
@@ -85,6 +86,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Vector<int> y;
                     npyToVector<int>(inY, y, "Data y");
+                    nclass = y.maxval() + 1;
                     MULTI_ERM<SpMatrix<M, sparse_type>, LinearLossMat<SpMatrix<M, sparse_type>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
@@ -92,6 +94,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Matrix<M> y;
                     npyToMatrix<M>(inY, y, "Data y");
+                    nclass = y.maxval() + 1;
                     MULTI_ERM<SpMatrix<M, sparse_type>, LinearLossMat<SpMatrix<M, sparse_type>, Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_matrix(X, y);
                 }
@@ -105,6 +108,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Vector<int> y;
                     npyToVector<int>(inY, y, "Data y");
+                    nclass = y.maxval() + 1;
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
@@ -112,12 +116,12 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 {
                     Matrix<M> y;
                     npyToMatrix<M>(inY, y, "Data y");
+                    nclass = y.maxval() + 1;
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Matrix<M>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_matrix(X, y);
                 }
             }
         }
-        const int nclass = y.maxval() + 1;
         PyArrayObject* out = create_np_optim_info<M>(nclass, NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / MAX(param.duality_gap_interval, 1), 1));
         optimInfoToNpy(out, optim_info, "optim info");
         return out;
