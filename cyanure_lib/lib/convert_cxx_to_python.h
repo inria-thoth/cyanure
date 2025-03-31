@@ -231,7 +231,10 @@ inline PyArrayObject *create_np_optim_info(const int nclass, const int m, const 
 {
     const int nd = 3;
     npy_intp dims[nd] = {nclass, m, n};
-    return (PyArrayObject *)PyArray_ZEROS(nd, dims, NPY_DOUBLE, 0);
+    PyObject *array_obj = (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>())
+    memset(PyArray_DATA((PyArrayObject *)array_obj), 0, PyArray_NBYTES((PyArrayObject *)array_obj));
+    return array_obj;
+
 }
 
 template <typename T>
