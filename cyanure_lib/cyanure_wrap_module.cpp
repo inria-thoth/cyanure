@@ -9,6 +9,8 @@
 #include "lib/erm/simple_erm.h"
 #include "lib/erm/multi_erm.h"
 
+static const int NUMBER_OPTIM_PROCESS_INFO = 6;
+
 template <typename M, typename sparse_type>
 static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0, PyArrayObject* inw, PyArrayObject* in_dual, const int max_iter, const int limited_memory_qning, const int fista_restart, const M tol, const int duality_gap_interval, const bool verbose, char* solver, char* loss, char* regul, const M lambda_1, const M lambda_2, const M lambda_3, const bool intercept, const bool univariate, const int n_threads)
 {
@@ -117,7 +119,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 }
             }
         }
-        PyArrayObject* out = create_np_optim_info<M>(50, 50, 50);
+        PyArrayObject* out = create_np_optim_info<M>(50, NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / MAX(param.duality_gap_interval, 1), 1));
         optimInfoToNpy(out, optim_info, "optim info");
         return out;
     }
