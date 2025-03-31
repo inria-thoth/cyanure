@@ -173,7 +173,7 @@ template <typename floating_type> inline void OptimInfo<floating_type>::setZeros
 };
 
 /// Resize the optimInfo
-template <typename floating_type> inline void OptimInfo<floating_type>::resize(INTM nclass, INTM m, INTM n, const bool set_zeros = true) {
+template <typename floating_type> inline void OptimInfo<floating_type>::resize(INTM nclass, INTM m, INTM n, const bool set_zeros) {
    if (_nclass==nclass && _n==n && _m==m) return;
    clear();
    _nclass=nclass;
