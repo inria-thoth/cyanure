@@ -172,7 +172,8 @@ public:
                 ++count;
         if (count > 0)
         {
-            optim.resize(1, NUMBER_OPTIM_PROCESS_INFO, count);
+            if(optim.empty())
+                optim.resize(1, NUMBER_OPTIM_PROCESS_INFO, count);
         }
         for (int ii = 0; ii < count; ++ii)
             for (int jj = 0; jj < NUMBER_OPTIM_PROCESS_INFO; ++jj){

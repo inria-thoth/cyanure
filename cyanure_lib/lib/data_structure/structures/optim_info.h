@@ -30,6 +30,8 @@ template<typename floating_type> class OptimInfo {
     /// Destructor
     virtual ~OptimInfo();
 
+    inline bool empty() const { return _m == 0 && _n==0 && _nclass==0; };
+
     /// Accessors
     /// Number of class
     inline INTM nclass() const { return _nclass; };
@@ -57,6 +59,8 @@ template<typename floating_type> class OptimInfo {
    inline void resize(INTM nclass,INTM m, INTM n, const bool set_zeros = true);
    /// add alpha*optimInfo to the current matrix
    inline void add(const OptimInfo<floating_type>& mat, const int index, const floating_type alpha = 1.0);
+   /// replace optimInfo to the current matrix
+   inline void replace(const OptimInfo<floating_type>& mat, const int index);
 
    /// Change the data in the optimInfo
    inline void setData(floating_type* X, INTM nclass, INTM m, INTM n);
@@ -222,6 +226,17 @@ template <typename floating_type> inline void OptimInfo<floating_type>::add(cons
    for (INTT i = 0; i<_m * _n; ++i){
        //FIXME maybe slow
       _X[index * _m * _n + i] += alpha*optim[i];
+   }
+};
+
+/// add alpha*optim to the current optim info at a given index
+template <typename floating_type> inline void OptimInfo<floating_type>::replace(const OptimInfo<floating_type>& optim, const int index) {
+   assert(optim._m == _m && optim._n == _n);
+   for (INTM i = 0; i<_m; ++i) {
+      for (INTM j = 0; j<_n; ++j) {
+       //FIXME maybe slow
+      _X[index *_m*_n + i*_m+j] = optim[i*_m+j];
+      }
    }
 };
 

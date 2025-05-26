@@ -105,6 +105,8 @@ public:
             {
                 Vector<FeatureType> w0col, wcol, ycol, dualcol;
                 OptimInfo<FeatureType> optim_info_col;
+                optim_info_col.resize(1, NUMBER_OPTIM_PROCESS_INFO, MAX(super::param.max_iter / duality_gap_interval, 1));
+                optim_info_col.setZeros();
                 W0.refCol(ii, w0col);
                 W.refCol(ii, wcol);
                 y.copyRow(ii, ycol);
@@ -118,7 +120,7 @@ public:
                     dual_variable.copyToRow(ii, dualcol);
                 {
 #pragma omp critical
-                    super::optim_info.add(optim_info_col, ii);
+                    super::optim_info.replace(optim_info_col, ii);
                     if (super::param.verbose)
                     {
                         const int noptim = optim_info_col.n() - 1;
