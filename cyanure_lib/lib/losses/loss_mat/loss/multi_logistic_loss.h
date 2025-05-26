@@ -16,7 +16,7 @@ public:
 
     inline T eval(const Matrix<T>& input) const {
          Matrix<T> tmp;
-         _data.pred(input,tmp); 
+         _data.pred(input,tmp);
          const int n = tmp.n();
          T sum=0;
 #pragma omp parallel for reduction(+:sum) schedule(static)
@@ -28,6 +28,7 @@ public:
          }
          return sum / n;
       };
+
     inline T eval(const Matrix<T>& input, const INTM i) const {
         Vector<T> tmp;
         _data.pred(i, input, tmp);

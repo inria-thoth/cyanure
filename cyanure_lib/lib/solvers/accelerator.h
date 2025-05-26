@@ -281,8 +281,6 @@ private:
         else
         {
             _skipping_steps++;
-            // if (_skipping_steps % 10 == 0)
-            //    reset_lbfgs();
         }
     };
 

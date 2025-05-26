@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 
 /* consider adding boost thread id since we'll want to know whose writting and
  * won't want to repeat it for every single call */
@@ -28,11 +29,11 @@ public:
             << std::string(_loglevel > logDEBUG ? (_loglevel - logDEBUG) * 4 
                 : 1, ' ') ;
         else if (_loglevel == logERROR)
-            _buffer << "\033[31m" <<  getStringForEnum(_loglevel) << " :" 
+            _buffer << "\033[31m" << std::fixed << std::setprecision(20) <<  getStringForEnum(_loglevel) << " :" 
                 << std::string(_loglevel > logDEBUG ? (_loglevel - logDEBUG) * 4 
                     : 1, ' ') ;
         else
-             _buffer <<  getStringForEnum(_loglevel) << " :" 
+             _buffer << std::fixed << std::setprecision(20) <<  getStringForEnum(_loglevel) << " :" 
                 << std::string(_loglevel > logDEBUG ? (_loglevel - logDEBUG) * 4 
                     : 1, ' ') ;
         

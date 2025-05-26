@@ -137,7 +137,7 @@ template <typename floating_type> inline void OptimInfo<floating_type>::print(co
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {
           for (INTM k = 0; k<_nclass; ++k) {
-         printf("%10.5g ",static_cast<double>(_X[i*_m*_n + k*_m+j]));
+         printf("%10.5g ",static_cast<double>(_X[k*_m*_n + i*_m+j]));
          }
       printf("\n ");
       }
@@ -157,7 +157,7 @@ template <typename floating_type> inline void OptimInfo<floating_type>::dump(con
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {
           for (INTM k = 0; k<_nclass; ++k) {
-         f << static_cast<double>(_X[i*_m*_n + k*_m+j]) << " ";
+         f << static_cast<double>(_X[k*_m*_n + i*_m+j]) << " ";
          }
       f << std::endl;
       }

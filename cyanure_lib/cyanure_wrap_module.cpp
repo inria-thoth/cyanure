@@ -119,7 +119,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 }
             }
         }
-        PyArrayObject* out = create_np_optim_info<M>(nclass, NUMBER_OPTIM_PROCESS_INFO, MAX(param.max_iter / MAX(param.duality_gap_interval, 1), 1));
+        PyArrayObject* out = create_np_optim_info<M>(optim_info.nclass(), optim_info.m(), optim_info.n());
         optimInfoToNpy(out, optim_info, "optim info");
         return out;
     }

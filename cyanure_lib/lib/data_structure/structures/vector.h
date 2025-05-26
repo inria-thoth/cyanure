@@ -1208,8 +1208,14 @@ inline void Vector<floating_type>::project_sft_binary(const Vector<floating_type
                 ztilde[ii] = _X[ii];
             }
         ztilde.l1project(xtilde, floating_type(count));
-        for (int ii = 0; ii < _n; ++ii)
-            _X[ii] = y[ii] > 0 ? xtilde[ii] - floating_type(1.0) : xtilde[ii];
+        for (int ii = 0; ii < _n; ++ii){
+            if(y[ii] > 0 ){
+                _X[ii] = xtilde[ii] - floating_type(1.0);
+            }
+            else{
+                _X[ii] = xtilde[ii];
+            }
+        }
     }
     else {
         for (int ii = 0; ii < _n; ++ii)

@@ -336,11 +336,20 @@ class ERM(BaseEstimator, ABC):
             self.optimization_info_ = np.repeat(
                 self.optimization_info_, nclasses, axis=0)
 
-        self.n_iter_ = np.array([
-                    next((val for val in reversed(self.optimization_info_[class_index][0]) if val != 0), 0)
-                    for class_index in range(self.optimization_info_.shape[0])])
 
-        print(self.n_iter_)
+        info = self.optimization_info_[:, 0, :]  # shape: (n_classes, n_iter)
+
+        # Initialize output
+        n_iter = np.zeros(info.shape[0], dtype=info.dtype)
+
+        # Loop over rows to find last non-zero value
+        for i in range(info.shape[0]):
+            non_zero = info[i][info[i] != 0]
+            if non_zero.size > 0:
+                n_iter[i] = non_zero[-1]  # last non-zero value
+            # else: remains zero
+
+        self.n_iter_ = n_iter
 
         for index in range(self.n_iter_.shape[0]):
             if self.n_iter_[index] == self.max_iter:

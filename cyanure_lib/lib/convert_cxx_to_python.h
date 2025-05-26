@@ -180,8 +180,7 @@ static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     for (npy_intp i = 0; i < nclass; i++) {
       for (npy_intp j = 0; j < m; j++) {
           for (npy_intp k = 0; k < n; k++) {
-                double *ptr = (double *)PyArray_GETPTR3(array, i, j, k);
-                 rawX[i * m * n + k * m + j] = matrix(i, j, k);
+                rawX[i * m * n + k * m + j] = matrix(i, j, k);
             }
         }
     }
