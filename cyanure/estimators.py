@@ -336,7 +336,6 @@ class ERM(BaseEstimator, ABC):
             self.optimization_info_ = np.repeat(
                 self.optimization_info_, nclasses, axis=0)
 
-
         info = self.optimization_info_[:, 0, :]  # shape: (n_classes, n_iter)
 
         # Initialize output
