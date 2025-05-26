@@ -123,7 +123,13 @@ public:
                     super::optim_info.replace(optim_info_col, ii);
                     if (super::param.verbose)
                     {
-                        const int noptim = optim_info_col.n() - 1;
+                        int noptim = super::optim_info.n() - 1;
+                        for (int k = noptim; k >= 0; --k) {
+                            if (super::optim_info(ii, 0, k) != 0) {
+                                noptim = k;
+                                break;
+                            }
+                        }
                         logging(logINFO) << "Solver " << ii << " has terminated after " << super::optim_info(ii, 0, noptim) << " epochs in " << super::optim_info(ii, 5, noptim) << " seconds";
                         if (super::optim_info(ii, 4, noptim) == 0)
                         {
