@@ -1,6 +1,8 @@
 name: Verify that tests pass on all platforms
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   lint_code:
