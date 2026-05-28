@@ -20,6 +20,7 @@ skip = ["*i686", "pp*", "*musllinux*", "cp36-*", "cp37-*", "cp38-*"]
 archs = ["arm64", "x86_64"]
 build = "cp*"
 test-skip = "*_arm64 *_universal2:arm64"
+environment = {MACOSX_DEPLOYMENT_TARGET = "11.0"}
 before-all = [
   "conda create -y -n building",  
   "conda init bash",
