@@ -125,7 +125,7 @@ else:
             LIBRARY_DIRS = ['/Users/runner/miniconda3/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
             LIBS = libs
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-            EXTRA_LINK_ARGS = []
+            EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names']
         else:
             EXTRA_COMPILE_ARGS = [
             '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
