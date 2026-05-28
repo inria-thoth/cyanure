@@ -30,7 +30,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
         LIBCXX_URL="https://anaconda.org/conda-forge/libcxx/11.0.0/download/osx-arm64/libcxx-11.0.0-h7cf67bf_1.tar.bz2"
 
         sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL $OPENBLAS_DEVEL_URL $LIBCXX_URL
-        sudo conda install -n build -c conda-forge --no-deps "llvm-openmp>=15"
+        sudo CONDA_SUBDIR=osx-arm64 conda install -n build -c conda-forge --no-deps "llvm-openmp>=15"
 
     else
         export MACOSX_DEPLOYMENT_TARGET=11.0
@@ -40,7 +40,7 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
         GFORTRAN_URL="https://anaconda.org/conda-forge/libgfortran5/11.3.0/download/osx-64/libgfortran5-11.3.0-h082f757_26.tar.bz2"
 
         sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL $OPENBLAS_DEVEL_URL
-        sudo conda install -n build -c conda-forge --no-deps "llvm-openmp>=15"
+        sudo CONDA_SUBDIR=osx-64 conda install -n build -c conda-forge --no-deps "llvm-openmp>=15"
     fi
 
     
