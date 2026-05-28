@@ -70,7 +70,7 @@ class ERM(BaseEstimator, ABC):
                     initial_weight[-1, :] = self.intercept_
                     initial_weight[0:-1, :] = np.squeeze(self.coef_)
                 else:
-                    initial_weight[-1] = self.intercept_[0]
+                    initial_weight[-1] = np.squeeze(self.intercept_)
                     initial_weight[0:-1] = np.squeeze(self.coef_)
             else:
                 initial_weight = np.squeeze(self.coef_)
