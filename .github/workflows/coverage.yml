@@ -37,7 +37,9 @@ jobs:
         run: |
           mv cyanure_lib cyanure_lib_tmp
       - name: Get coverage
-        # fail_if_regression_in_coverage  
+        # fail_if_regression_in_coverage
+        env:
+          OMP_NUM_THREADS: 1
         run: |
           pytest --cov-config=.coveragec --cov=cyanure --cov-report xml:coverage.xml
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
