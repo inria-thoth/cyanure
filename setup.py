@@ -128,7 +128,7 @@ else:
             EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names']
         else:
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
             '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:
