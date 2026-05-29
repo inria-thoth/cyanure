@@ -34,6 +34,9 @@ static inline void set_mkl_parallel() {
 static inline int init_omp(const int numThreads) {
     int NUM_THREADS;
 #ifdef _OPENMP
+    if (omp_in_parallel()) {
+        return 1;
+    }
     const int num_procs = omp_get_num_procs();
     int blas_threads;
     if (numThreads == -1) {
