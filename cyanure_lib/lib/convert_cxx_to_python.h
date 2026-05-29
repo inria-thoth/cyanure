@@ -131,11 +131,13 @@ static void npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string o
     I *pB = (I *)PyArray_DATA(indptr);
     I *pE = pB + 1;
     I nzmax = (I)PyArray_SIZE(data);
+    T *data_ptr = (T *)PyArray_DATA(data);
+    I *indices_ptr = (I *)PyArray_DATA(indices);
+    matrix.setData(data_ptr, indices_ptr, pB, pE, m, n, nzmax);
     Py_DECREF(indptr);
     Py_DECREF(indices);
     Py_DECREF(data);
     Py_DECREF(shape);
-    matrix.setData((T *)PyArray_DATA(data), (I *)PyArray_DATA(indices), pB, pE, m, n, nzmax);
 }
 
 template <typename T>
