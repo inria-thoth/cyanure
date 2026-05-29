@@ -49,7 +49,7 @@ static inline int init_omp(const int numThreads) {
     const int num_procs = omp_get_num_procs();
     int blas_threads;
     if (numThreads == -1) {
-        if (num_procs <= 2) {
+        if (num_procs <= 3) {
             NUM_THREADS = num_procs;
             blas_threads = 1;
         } else {
