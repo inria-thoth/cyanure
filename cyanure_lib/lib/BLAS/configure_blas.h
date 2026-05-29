@@ -34,14 +34,15 @@ static inline void set_mkl_parallel() {
 static inline int init_omp(const int numThreads) {
     int NUM_THREADS;
 #ifdef _OPENMP
-    NUM_THREADS = (numThreads == -1) ? MIN(MAX_THREADS, omp_get_num_procs()) : numThreads;
+    const int num_procs = omp_get_num_procs();
+    NUM_THREADS = (numThreads == -1) ? MIN(MAX_THREADS, num_procs) : numThreads;
     omp_set_dynamic(1);
     omp_set_num_threads(NUM_THREADS);
     omp_set_max_active_levels(1);
 #ifdef HAVE_MKL
     set_mkl_parallel();
 #elif defined(HAVE_OPENBLAS)
-    openblas_set_num_threads(NUM_THREADS);
+    openblas_set_num_threads(MAX(1, num_procs / NUM_THREADS));
 #endif
 #else
     NUM_THREADS = 1;
