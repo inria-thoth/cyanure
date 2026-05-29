@@ -37,8 +37,13 @@ static inline int init_omp(const int numThreads) {
     const int num_procs = omp_get_num_procs();
     int blas_threads;
     if (numThreads == -1) {
-        NUM_THREADS = MAX(1, num_procs / 2);
-        blas_threads = MAX(1, num_procs / 2);
+        if (num_procs <= 2) {
+            NUM_THREADS = num_procs;
+            blas_threads = 1;
+        } else {
+            NUM_THREADS = num_procs / 2 + 1;
+            blas_threads = MAX(1, num_procs - NUM_THREADS);
+        }
     } else {
         NUM_THREADS = numThreads;
         blas_threads = MAX(1, num_procs / NUM_THREADS);
