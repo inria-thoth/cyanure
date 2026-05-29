@@ -690,7 +690,7 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
 
     /* compute alpha alpha^floating_type */
     aat.resize(K, K);
-    int NUM_THREADS = init_omp(MAX_THREADS);
+    int NUM_THREADS = get_omp_threads();
     floating_type* aatT = new floating_type[NUM_THREADS * K * K];
     for (j = 0; j < NUM_THREADS * K * K; ++j) aatT[j] = floating_type();
 
@@ -746,7 +746,7 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
 
     XAt.resize(n, K);
     /* compute X alpha^floating_type */
-    int NUM_THREADS = init_omp(MAX_THREADS);
+    int NUM_THREADS = get_omp_threads();
     floating_type* XatT = new floating_type[NUM_THREADS * n * K];
     for (j = 0; j < NUM_THREADS * n * K; ++j) XatT[j] = floating_type();
 
@@ -782,7 +782,7 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
     assert(numRepX * Mx == M);
     XAt.resize(n, K);
     /* compute X alpha^floating_type */
-    int NUM_THREADS = init_omp(numThreads);
+    int NUM_THREADS = get_omp_threads();
     floating_type* XatT = new floating_type[NUM_THREADS * n * K];
     for (j = 0; j < NUM_THREADS * n * K; ++j) XatT[j] = floating_type();
 

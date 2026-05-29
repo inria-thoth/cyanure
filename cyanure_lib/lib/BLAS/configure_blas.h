@@ -31,6 +31,15 @@ static inline void set_mkl_parallel() {
 };
 
 
+static inline int get_omp_threads() {
+#ifdef _OPENMP
+    if (omp_in_parallel()) return 1;
+    return omp_get_max_threads();
+#else
+    return 1;
+#endif
+}
+
 static inline int init_omp(const int numThreads) {
     int NUM_THREADS;
 #ifdef _OPENMP

@@ -1947,7 +1947,7 @@ template <typename floating_type> inline void Matrix<floating_type>::sparseProje
       const floating_type lambda_2, const floating_type lambda_3, const bool pos,
       const int numThreads) {
 
-   int NUM_THREADS=init_omp(numThreads);
+   int NUM_THREADS = get_omp_threads();
    Vector<floating_type>* XXT= new Vector<floating_type>[NUM_THREADS];
    for (int i = 0; i<NUM_THREADS; ++i) {
       XXT[i].resize(_m);
@@ -2129,7 +2129,7 @@ template <typename floating_type> inline void Matrix<floating_type>::NadarayaWat
       const Vector<INTM>& ind, const floating_type sigma) {
    if (ind.n() != _n) return;
 
-   init_omp(MAX_THREADS);
+   get_omp_threads();
 
    const INTM Ngroups=ind.maxval();
    INTM i;

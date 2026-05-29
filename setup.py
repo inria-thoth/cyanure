@@ -120,7 +120,7 @@ else:
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/Users/runner/miniconda3/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
-            '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
             LIBRARY_DIRS = ['/Users/runner/miniconda3/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
             LIBS = libs
