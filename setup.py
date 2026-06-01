@@ -135,12 +135,23 @@ else:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
         LIBS = LIBS + ['gcov']
 
+    sanitize = os.environ.get("SANITIZE")
+    if sanitize:
+        # Drop NDEBUG and add debug info + sanitizer flags. Use -O1 so the
+        # report has usable line numbers without hiding races behind -O3.
+        EXTRA_COMPILE_ARGS = [a for a in EXTRA_COMPILE_ARGS
+                              if a not in ('-DNDEBUG', '-O3')]
+        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + [
+            f'-fsanitize={sanitize}', '-fno-omit-frame-pointer', '-O1', '-g']
+
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
         EXTRA_LINK_ARGS = ['-fopenmp']
-    if "COVERAGE" in os.environ:    
+    if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
+    if os.environ.get("SANITIZE"):
+        EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + [f'-fsanitize={os.environ["SANITIZE"]}']
 else:
     EXTRA_LINK_ARGS = []
 
