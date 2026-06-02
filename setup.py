@@ -41,9 +41,9 @@ if platform.system() == "Darwin":
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
     os.environ["CPPFLAGS"] = "-Xpreprocessor -fopenmp"
-    os.environ["CFLAGS"] = "-I/usr/local/miniconda/envs/build/include"
-    os.environ["CXXFLAGS"] = "-I/usr/local/miniconda/envs/build/include"
-    os.environ["LDFLAGS"] = "-Wl,-rpath,/usr/local/miniconda/envs/build/lib -L$/usr/local/miniconda/envs/build/lib -lomp"
+    os.environ["CFLAGS"] = "-I/Users/runner/miniconda3/envs/build/include"
+    os.environ["CXXFLAGS"] = "-I/Users/runner/miniconda3/envs/build/include"
+    os.environ["LDFLAGS"] = "-Wl,-rpath,/Users/runner/miniconda3/envs/build/lib -L/Users/runner/miniconda3/envs/build/lib -lomp"
 
 np_blas = getBlas()
 
@@ -111,39 +111,47 @@ else:
     ##### setup openblas
     else:
 
-        if "openblas" in np_blas:
-            libs = ['openblas']
-        else:
-            libs = ['lapack', 'blas']
+        libs = ['openblas']
 
         INCLUDE_DIRS = ['/usr/include/openblas'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['/usr/lib64/'] + LIBRARY_DIRS
         LIBS = libs
 
         if platform.system() == "Darwin":
-            INCLUDE_DIRS = ['/usr/local/miniconda/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
+            INCLUDE_DIRS = ['/Users/runner/miniconda3/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
             '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
-            LIBRARY_DIRS = ['/usr/local/miniconda/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
+            LIBRARY_DIRS = ['/Users/runner/miniconda3/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
             LIBS = libs
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
-            EXTRA_LINK_ARGS = []
+            EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names']
         else:
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
             '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
         LIBS = LIBS + ['gcov']
 
+    sanitize = os.environ.get("SANITIZE")
+    if sanitize:
+        # Drop NDEBUG and add debug info + sanitizer flags. Use -O1 so the
+        # report has usable line numbers without hiding races behind -O3.
+        EXTRA_COMPILE_ARGS = [a for a in EXTRA_COMPILE_ARGS
+                              if a not in ('-DNDEBUG', '-O3')]
+        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + [
+            f'-fsanitize={sanitize}', '-fno-omit-frame-pointer', '-O1', '-g']
+
 
 if platform.system() != "Windows":
     if platform.system() != "Darwin":
         EXTRA_LINK_ARGS = ['-fopenmp']
-    if "COVERAGE" in os.environ:    
+    if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
+    if os.environ.get("SANITIZE"):
+        EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + [f'-fsanitize={os.environ["SANITIZE"]}']
 else:
     EXTRA_LINK_ARGS = []
 
@@ -165,7 +173,7 @@ setup(name='cyanure',
       license='bsd-3-clause',
       url="https://inria-thoth.github.io/cyanure/welcome.html",
       description='optimization toolbox for machine learning',
-      install_requires=["scipy<=1.8.1;python_version<'3.11'", "scipy>=1.8.1;python_version>='3.11'", "numpy>=1.23.5;python_version>='3.11'", "numpy<=1.23.5;python_version<'3.11'",'scikit-learn'],
+      install_requires=["scipy", "numpy",'scikit-learn>=1.6'],
       ext_modules=[cyanure_wrap],
       packages=find_packages(),
       cmdclass={'sdist': sdistzip},

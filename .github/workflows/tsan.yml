@@ -1,0 +1,53 @@
+name: ThreadSanitizer race hunt
+
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  tsan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev g++
+          python -m pip install --upgrade pip
+          pip install numpy scipy "scikit-learn>=1.6" pytest pandas libsvmdata
+
+      - name: Build with -fsanitize=thread
+        env:
+          SANITIZE: thread
+        run: pip install --no-build-isolation -e . -v
+
+      - name: Run focused tests under TSan
+        env:
+          TSAN_OPTIONS: "halt_on_error=0:second_deadlock_stack=1:history_size=7:abort_on_error=0:exitcode=0"
+          LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libtsan.so.2
+        run: |
+          # Run the tests that were known to crash. -s keeps output flowing,
+          # -p no:cacheprovider avoids unrelated file races in pytest's cache.
+          python -m pytest -s -v -p no:cacheprovider \
+            test/test_logistic_regression.py::test_max_iter \
+            test/test_logistic_regression.py::test_warm_start \
+            2>&1 | tee tsan_output.log
+
+      - name: Extract race reports
+        if: always()
+        run: |
+          echo '=== WARNING: ThreadSanitizer summary ==='
+          grep -A 40 'WARNING: ThreadSanitizer' tsan_output.log | head -400 || echo 'No race reports captured.'
+
+      - name: Upload full log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tsan-log
+          path: tsan_output.log
