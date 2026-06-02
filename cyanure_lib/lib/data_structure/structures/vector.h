@@ -1,6 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <cstdio>
 #include <fstream>
 #ifdef WINDOWS
 #include <string>
@@ -745,6 +746,13 @@ template <typename floating_type> inline void Vector<floating_type>::add(const f
 
 /// A <- A - x
 template <typename floating_type> inline void Vector<floating_type>::sub(const Vector<floating_type>& x) {
+    if (_n != x._n) {
+        fprintf(stderr,
+            "[cyanure-diag] Vector::sub size mismatch: this->_n=%lld x._n=%lld caller=%p\n",
+            (long long)_n, (long long)x._n,
+            __builtin_return_address(0));
+        fflush(stderr);
+    }
     assert(_n == x._n);
     vSub<floating_type>(_n, _X, x._X, _X);
 };
