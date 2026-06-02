@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: '3.9'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -33,22 +33,43 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
-          
+        with:
+          python-version: '3.10'
+        if: runner.os == 'macOS' && runner.arch == 'ARM64'
+
+      - uses: conda-incubator/setup-miniconda@v3
+        if: runner.os == 'macOS'
+
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.11.4
+        run: python -m pip install cibuildwheel==2.19.2
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
+      - name: To avoid clean up error
+        run: sudo rm -rf "/Users/runner/conda_pkgs_dir"
+        if: runner.os == 'macOS' && runner.arch == 'ARM64'
+
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: wheel-${{ matrix.os }}
+
+  merge_artifact:
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge wheel artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: wheel
+          pattern: wheel-*
 
   build_sdist:
     needs: [lint_code]
@@ -64,122 +85,121 @@ jobs:
         name: Install Python
         with:
           python-version: '3.9'
-          
-      - name: Install numpy 
-        run: pip install numpy
+
+      - name: Install build deps
+        run: pip install numpy "setuptools>=78.1.1" "wheel>=0.38.1"
 
       - name: Build sdist
         run: python setup.py sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          path: dist/*.tar.gz
-          
-      - name: version
-        run: echo "::set-output name=version::${{ env.PACKAGE_VERSION }}"
-        id: version
-      - name: release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: upload zip archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/cyanure-${{ env.PACKAGE_VERSION }}.zip
-          asset_name: cyanure-${{ env.PACKAGE_VERSION }}.zip
-          asset_content_type: application/gzip
-      - name: upload targz archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
-          asset_name: cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
-          asset_content_type: application/gzip
+          path: dist/*
+          name: sdist
 
   test_imports:
-    needs: [build_wheels]
-    name: Smoke test for c++ depenencies on raw ${{ matrix.os }}
+    needs: [merge_artifact]
+    name: Smoke test for c++ dependencies on raw ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: artifact
-        path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: wheel
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Try to import cyanure
-      run: pip install "scipy<=1.8.1" && pip install "numpy<=1.23.5" && pip install "scikit-learn>=1.1.3" && python -m pip install --no-index --find-links dist cyanure &&  python -c "import cyanure;"
+      - name: Try to import cyanure
+        run: pip install setuptools && pip install scipy && pip install numpy && pip install "scikit-learn>=1.6" && python -m pip install --no-index --find-links wheel cyanure && python -c "import cyanure;"
 
   run_tests:
-    needs: [build_wheels]
+    needs: [merge_artifact]
     name: Run the tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: artifact
-        path: dist
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-      
-    - name: Try to import cyanure
-      run: python -m pip install --find-links dist cyanure
-    
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-          
-    - name: Switch to Current Branch
-      run: git checkout ${{ env.BRANCH }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: wheel
 
-    - name: Run tests without the lib
-      uses: knicknic/os-specific-run@v1.0.3
-      with:
-        macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install libsvmdata && python -m pip install pandas && python -m pytest test/
-        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install libsvmdata && python -m pip install pandas && python -m pytest test/
-        windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pip install libsvmdata && python -m pip install pandas && python -m pytest test/
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install cyanure
+        run: pip install setuptools && pip install scipy && pip install numpy && pip install "scikit-learn>=1.6" && python -m pip install --no-index --find-links wheel cyanure
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run tests without the lib
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && python -m pip install libsvmdata && python -m pytest test/
+          linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas && python -m pip install libsvmdata && python -m pytest test/
+          windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pip install libsvmdata && python -m pip install pandas && python -m pytest test/
+
+  release:
+    if: github.ref == 'refs/heads/master'
+    needs: [build_sdist, test_imports, run_tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "PACKAGE_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.PACKAGE_VERSION }}
+          name: ${{ env.PACKAGE_VERSION }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: |
+            dist/cyanure-${{ env.PACKAGE_VERSION }}.zip
+            dist/cyanure-${{ env.PACKAGE_VERSION }}.tar.gz
 
   upload_pypi:
     if: github.ref == 'refs/heads/master'
-    needs: [build_wheels, build_sdist, test_imports, run_tests]
+    needs: [release, merge_artifact]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: wheel
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@v1.4.2
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
-          password: ${{secrets.PYPI}}
+          password: ${{ secrets.PYPI }}
