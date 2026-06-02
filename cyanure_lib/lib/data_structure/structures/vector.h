@@ -2,6 +2,10 @@
 #define VECTOR_H
 
 #include <cstdio>
+#include <cstdlib>
+#if defined(__GNUC__) || defined(__clang__)
+#include <execinfo.h>
+#endif
 #include <fstream>
 #ifdef WINDOWS
 #include <string>
@@ -747,15 +751,18 @@ template <typename floating_type> inline void Vector<floating_type>::add(const f
 /// A <- A - x
 template <typename floating_type> inline void Vector<floating_type>::sub(const Vector<floating_type>& x) {
     if (_n != x._n) {
-#if defined(__GNUC__) || defined(__clang__)
-        fprintf(stderr,
-            "[cyanure-diag] Vector::sub size mismatch: this->_n=%lld x._n=%lld caller=%p\n",
-            (long long)_n, (long long)x._n,
-            __builtin_return_address(0));
-#else
         fprintf(stderr,
             "[cyanure-diag] Vector::sub size mismatch: this->_n=%lld x._n=%lld\n",
             (long long)_n, (long long)x._n);
+#if defined(__GNUC__) || defined(__clang__)
+        void* frames[16];
+        int nframes = backtrace(frames, 16);
+        char** syms = backtrace_symbols(frames, nframes);
+        if (syms) {
+            for (int i = 0; i < nframes; ++i)
+                fprintf(stderr, "[cyanure-diag]   #%d %s\n", i, syms[i]);
+            free(syms);
+        }
 #endif
         fflush(stderr);
     }
