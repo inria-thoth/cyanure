@@ -139,7 +139,7 @@ public:
         _time.start();
 
         x.copy(x0);
-        if (!_duality && _nepochs > 1)
+        if (!_duality)
             _xold.copy(x0);
         solver_init(x0);
         if (_verbose)
