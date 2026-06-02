@@ -1047,6 +1047,8 @@ def test_large_sparse_matrix(solver):
         setattr(X, attr, getattr(X, attr).astype("int64"))
     y = np.random.randint(2, size=X.shape[0])
 
+    LogisticRegression(solver=solver).fit(X, y)
+
 
 def test_optimization_info_per_class():
     # Non-regression: OptimInfo::replace had wrong indexing that wrote each
@@ -1082,5 +1084,3 @@ def test_optimization_info_per_class():
         assert (iters[c] != 0).any(), f"class {c} has no recorded iteration"
         assert np.isfinite(primals[c]).all(), f"class {c} has non-finite primal"
         assert (primals[c] != 0).any(), f"class {c} has no recorded primal"
-
-    LogisticRegression(solver=solver).fit(X, y)
