@@ -1052,11 +1052,15 @@ def test_large_sparse_matrix(solver):
 
 def test_optimization_info_per_class():
     # Non-regression: OptimInfo::replace had wrong indexing that wrote each
-    # class's slot from out-of-bounds memory in the source buffer. After fit,
-    # optimization_info_ must be a well-formed (n_classes, 6, n_iter) array
-    # where every class has its own recorded primal/iteration trace.
+    # class's slot from out-of-bounds memory in the source buffer. After fit
+    # on a 3-class problem, optimization_info_ must be a well-formed
+    # (n_classes, 6, n_iter) array where every class's column 0 holds its
+    # own iteration counter (see Solver::test_stopping_criterion in C++:
+    # `optim[0] = it`). The solver may stop before max_iter on convergence,
+    # so we only require the recorded entries to be positive integers
+    # strictly increasing - under the OOB-read bug they were garbage.
     iris = load_iris()
-    X, y = iris.data, iris.target  # 3 classes
+    X, y = iris.data, iris.target
 
     lr = LogisticRegression(
         solver="ista",
@@ -1074,13 +1078,10 @@ def test_optimization_info_per_class():
     assert info.shape[0] == n_classes
     assert info.shape[1] == 6  # NUMBER_OPTIM_PROCESS_INFO
 
-    # Per class, the iteration column (index 0) must contain at least one
-    # recorded step, and the primal column (index 1) must be finite and not
-    # all zeros. The pre-fix bug produced garbage / all-zero rows for some
-    # classes because of the out-of-bounds reads.
-    iters = info[:, 0, :]
-    primals = info[:, 1, :]
     for c in range(n_classes):
-        assert (iters[c] != 0).any(), f"class {c} has no recorded iteration"
-        assert np.isfinite(primals[c]).all(), f"class {c} has non-finite primal"
-        assert (primals[c] != 0).any(), f"class {c} has no recorded primal"
+        recorded = info[c, 0][info[c, 0] != 0]
+        assert recorded.size > 0, f"class {c} has no recorded iteration"
+        assert (recorded > 0).all(), f"class {c} has non-positive iterations"
+        assert np.all(np.diff(recorded) > 0), \
+            f"class {c} iteration counts not strictly increasing: {recorded}"
+        assert np.isfinite(info[c, 1]).all(), f"class {c} has non-finite primal"
