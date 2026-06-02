@@ -232,10 +232,9 @@ template <typename floating_type> inline void OptimInfo<floating_type>::add(cons
 /// add alpha*optim to the current optim info at a given index
 template <typename floating_type> inline void OptimInfo<floating_type>::replace(const OptimInfo<floating_type>& optim, const int index) {
    assert(optim._m == _m && optim._n == _n);
-   for (INTM i = 0; i<_m; ++i) {
-      for (INTM j = 0; j<_n; ++j) {
-       //FIXME maybe slow
-      _X[index *_m*_n + i*_m+j] = optim[i*_m+j];
+   for (INTM k = 0; k < _n; ++k) {
+      for (INTM j = 0; j < _m; ++j) {
+         _X[index*_m*_n + k*_m + j] = optim[k*_m + j];
       }
    }
 };
