@@ -199,6 +199,11 @@ jobs:
           name: sdist
           path: dist
 
+      - name: Drop the .zip sdist
+        # PyPI only accepts one sdist per release; we ship the .tar.gz there
+        # and keep the .zip on the GitHub release.
+        run: rm -f dist/*.zip
+
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
