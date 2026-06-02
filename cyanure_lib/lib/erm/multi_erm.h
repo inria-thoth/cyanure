@@ -105,6 +105,8 @@ public:
             {
                 Vector<FeatureType> w0col, wcol, ycol, dualcol;
                 OptimInfo<FeatureType> optim_info_col;
+                optim_info_col.resize(1, NUMBER_OPTIM_PROCESS_INFO, MAX(super::param.max_iter / duality_gap_interval, 1));
+                optim_info_col.setZeros();
                 W0.refCol(ii, w0col);
                 W.refCol(ii, wcol);
                 y.copyRow(ii, ycol);
@@ -118,18 +120,24 @@ public:
                     dual_variable.copyToRow(ii, dualcol);
                 {
 #pragma omp critical
-                    super::optim_info.add(optim_info_col, ii);
+                    super::optim_info.replace(optim_info_col, ii);
                     if (super::param.verbose)
                     {
-                        const int noptim = optim_info_col.n() - 1;
-                        logging(logINFO) << "Solver " << ii << " has terminated after " << optim_info_col(0, 0, noptim) << " epochs in " << optim_info_col(0, 5, noptim) << " seconds";
-                        if (optim_info_col(0, 4, noptim) == 0)
+                        int noptim = super::optim_info.n() - 1;
+                        for (int k = noptim; k >= 0; --k) {
+                            if (super::optim_info(ii, 0, k) != 0) {
+                                noptim = k;
+                                break;
+                            }
+                        }
+                        logging(logINFO) << "Solver " << ii << " has terminated after " << super::optim_info(ii, 0, noptim) << " epochs in " << super::optim_info(ii, 5, noptim) << " seconds";
+                        if (super::optim_info(ii, 4, noptim) == 0)
                         {
-                            logging(logINFO) << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", relative duality gap: " << optim_info_col(0, 3, noptim);
+                            logging(logINFO) << "   Primal objective: " << super::optim_info(ii, 1, noptim) << ", relative duality gap: " << super::optim_info(ii, 3, noptim);
                         }
                         else
                         {
-                            logging(logINFO) << "   Primal objective: " << optim_info_col(0, 1, noptim) << ", tol: " << optim_info_col(0, 4, noptim);
+                            logging(logINFO) << "   Primal objective: " << super::optim_info(ii, 1, noptim) << ", tol: " << super::optim_info(ii, 4, noptim);
                         }
                     }
                 }
@@ -339,7 +347,7 @@ private:
     {
         typedef Matrix<FeatureType> D;
         typedef Vector<FeatureType> V;
-        Regularizer<D, PointerType>* regul;
+        Regularizer<D, PointerType>* regul;  
         switch (super::model.regul)
         {
         case L2:

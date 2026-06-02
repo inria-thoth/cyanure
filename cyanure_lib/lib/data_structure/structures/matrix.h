@@ -468,8 +468,9 @@ template <typename floating_type> inline floating_type Matrix<floating_type>::op
 
 /// Print the matrix to std::cout
 template <typename floating_type> inline void Matrix<floating_type>::print(const std::string& name) const {
-   logging(logERROR) << name;
-   logging(logERROR) << _m;
+   printf(name.c_str());
+   printf("\n ");
+   printf("Size: %lld\n", _m);
    for (INTM i = 0; i<_m; ++i) {
       for (INTM j = 0; j<_n; ++j) {
          printf("%10.5g ",static_cast<double>(_X[j*_m+i]));
@@ -1946,7 +1947,7 @@ template <typename floating_type> inline void Matrix<floating_type>::sparseProje
       const floating_type lambda_2, const floating_type lambda_3, const bool pos,
       const int numThreads) {
 
-   int NUM_THREADS=init_omp(numThreads);
+   int NUM_THREADS = init_omp(numThreads);
    Vector<floating_type>* XXT= new Vector<floating_type>[NUM_THREADS];
    for (int i = 0; i<NUM_THREADS; ++i) {
       XXT[i].resize(_m);

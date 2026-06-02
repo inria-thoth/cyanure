@@ -19,6 +19,8 @@ public:
     {
         logging(logINFO) << "No regularization";
     }
+
+    static inline std::string getName() { return "No regularization"; };
 };
 
 template <typename D, typename I>

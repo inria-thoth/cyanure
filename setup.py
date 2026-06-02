@@ -75,18 +75,18 @@ if platform.system() == "Windows":
     if 'mkl' in np_blas:
         LIBS = ['mkl_rt', 'iomp5']
         EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+            '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
     else:
         if np_blas == "" or "openblas" in np_blas:
             EXTRA_COMPILE_ARGS = [
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
             LIBS = ["libopenblas"]
 
         elif 'blas' in np_blas:
             EXTRA_COMPILE_ARGS = [
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
             LIBS = ['lapack', 'blas']
 
@@ -101,7 +101,7 @@ else:
     ##### setup mkl_rt
     if 'mkl' in np_blas:
         extra_compile_args_mkl = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
+            '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
              '-std=c++11', '-O3', '-fopenmp']
 
         LIBS = ['mkl_rt', 'iomp5']
@@ -128,7 +128,7 @@ else:
             EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names']
         else:
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
+            '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
             '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:

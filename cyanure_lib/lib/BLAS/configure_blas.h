@@ -2,6 +2,7 @@
 #define CONFIGURE_BLAS_H
 
 #include <cblas.h>
+#include <cstdlib>
 
 #ifdef HAVE_MKL
 extern "C" {
@@ -34,14 +35,39 @@ static inline void set_mkl_parallel() {
 static inline int init_omp(const int numThreads) {
     int NUM_THREADS;
 #ifdef _OPENMP
-    NUM_THREADS = (numThreads == -1) ? MIN(MAX_THREADS, omp_get_num_procs()) : numThreads;
+    if (omp_in_parallel()) {
+        return 1;
+    }
+    const int num_procs = omp_get_num_procs();
+    int blas_threads;
+    // An explicit OMP_NUM_THREADS in the environment wins over the -1 "auto"
+    // request, so operators (and the coverage build) can force a thread count.
+    int requested = numThreads;
+    if (requested == -1) {
+        const char* env = getenv("OMP_NUM_THREADS");
+        if (env != NULL && env[0] != '\0') {
+            requested = atoi(env);
+        }
+    }
+    if (requested == -1) {
+        if (num_procs <= 3) {
+            NUM_THREADS = num_procs;
+            blas_threads = 1;
+        } else {
+            NUM_THREADS = num_procs / 2 + 1;
+            blas_threads = MAX(1, num_procs - NUM_THREADS);
+        }
+    } else {
+        NUM_THREADS = MAX(1, requested);
+        blas_threads = MAX(1, num_procs / NUM_THREADS);
+    }
     omp_set_dynamic(1);
     omp_set_num_threads(NUM_THREADS);
     omp_set_max_active_levels(1);
 #ifdef HAVE_MKL
     set_mkl_parallel();
 #elif defined(HAVE_OPENBLAS)
-    openblas_set_num_threads(NUM_THREADS);
+    openblas_set_num_threads(blas_threads);
 #endif
 #else
     NUM_THREADS = 1;

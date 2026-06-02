@@ -34,12 +34,13 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
     OptimInfo<M> optim_info;
     try
     {
+        int nclass = 1;
         if (univariate)
         {
             Vector<M> y, w0, w, dual_variable;
-            npyToVector<M>(inY, y, "Data y");
-            npyToVector<M>(inw0, w0, "x0");
-            npyToVector<M>(inw, w, "x");
+            npyToVector<M>(inY, y, "y");
+            npyToVector<M>(inw0, w0, "w0");
+            npyToVector<M>(inw, w, "w");
             if (reinterpret_cast<PyObject*>(in_dual) != Py_None)
             {
                 npyToVector<M>(in_dual, dual_variable, "dual");
@@ -72,6 +73,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
         {
             Matrix<M> w0, w, dual_variable;
             npyToMatrix<M>(inw0, w0, "x0");
+            nclass = w0.n();
             npyToMatrix<M>(inw, w, "x");
             if (reinterpret_cast<PyObject*>(in_dual) != Py_None){
                 npyToMatrix<M>(in_dual, dual_variable, "dual");  
@@ -104,7 +106,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
                 if (array_type(inY) == getTypeNumber<int>())
                 {
                     Vector<int> y;
-                    npyToVector<int>(inY, y, "Data y");
+                    npyToVector<int>(inY, y, "Data y");                    
                     MULTI_ERM<Matrix<M>, LinearLossMat<Matrix<M>, Vector<int>>> problem_configuration(w0, w, dual_variable, optim_info, param, model);
                     problem_configuration.solve_problem_vector(X, y);
                 }
@@ -118,9 +120,7 @@ static PyArrayObject* erm(PyObject* inX, PyArrayObject* inY, PyArrayObject* inw0
             }
         }
         PyArrayObject* out = create_np_optim_info<M>(optim_info.nclass(), optim_info.m(), optim_info.n());
-        OptimInfo<M> outm;
-        npyToOptimInfo(out, outm, "optim info");
-        outm.copy(optim_info);
+        optimInfoToNpy(out, optim_info, "optim info");
         return out;
     }
     catch (NotImplementedException const &e)

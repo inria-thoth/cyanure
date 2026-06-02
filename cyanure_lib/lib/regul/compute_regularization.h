@@ -170,7 +170,12 @@ public:
         grad1.toVect(g1);
         Vector<T> w, b;
         get_wb(grad2, w, b);
-        return (this->_intercept && ((b.nrm2sq()) > 1e-7) ? INFINITY : _reg->fenchel(g1, w));
+        if (this->_intercept && ((b.nrm2sq()) > 1e-7)){
+            return INFINITY;
+        }
+        else{
+            return _reg->fenchel(g1, w);
+        }
     };
     void print() const
     {

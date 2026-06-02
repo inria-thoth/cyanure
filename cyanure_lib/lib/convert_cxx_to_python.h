@@ -131,11 +131,13 @@ static void npyToSpMatrix(PyObject *array, SpMatrix<T, I> &matrix, std::string o
     I *pB = (I *)PyArray_DATA(indptr);
     I *pE = pB + 1;
     I nzmax = (I)PyArray_SIZE(data);
+    T *data_ptr = (T *)PyArray_DATA(data);
+    I *indices_ptr = (I *)PyArray_DATA(indices);
+    matrix.setData(data_ptr, indices_ptr, pB, pE, m, n, nzmax);
     Py_DECREF(indptr);
     Py_DECREF(indices);
     Py_DECREF(data);
     Py_DECREF(shape);
-    matrix.setData((T *)PyArray_DATA(data), (I *)PyArray_DATA(indices), pB, pE, m, n, nzmax);
 }
 
 template <typename T>
@@ -159,7 +161,7 @@ static void npyToMatrix(PyArrayObject *array, Matrix<T> &matrix, std::string obj
 }
 
 template <typename T>
-static void npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
+static void optimInfoToNpy(PyArrayObject *array, OptimInfo<T> &matrix, std::string obj_name)
 {
     if (array == NULL)
     {
@@ -176,7 +178,14 @@ static void npyToOptimInfo(PyArrayObject *array, OptimInfo<T> &matrix, std::stri
     npy_intp nclass = shape[0];
     npy_intp m = shape[1];
     npy_intp n = shape[2];
-    matrix.setData(rawX, nclass, m, n);
+     // Iterate through the 3D array and copy values from struct
+    for (npy_intp i = 0; i < nclass; ++i) {
+      for (npy_intp j = 0; j < m; ++j) {
+          for (npy_intp k = 0; k < n; ++k) {
+                rawX[i + j * nclass + k * m * nclass] = matrix(i, j, k);
+            }
+        }
+    }
 }
 
 template <typename T>
@@ -220,7 +229,10 @@ inline PyArrayObject *create_np_optim_info(const int nclass, const int m, const 
 {
     const int nd = 3;
     npy_intp dims[nd] = {nclass, m, n};
-    return (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>());
+    PyArrayObject *array_obj = (PyArrayObject *)PyArray_SimpleNewF(nd, dims, getTypeNumber<T>());
+    memset(PyArray_DATA((PyArrayObject *)array_obj), 0, PyArray_NBYTES((PyArrayObject *)array_obj));
+    return array_obj;
+
 }
 
 template <typename T>

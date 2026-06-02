@@ -2,13 +2,16 @@ name: Calculate code coverage
 
 on: [push]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   pytest_coverage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.10
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: 3.10.6
       - name: Install dependencies
@@ -17,9 +20,9 @@ jobs:
           sudo apt-get install -y libopenblas-dev
           sudo apt-get install libxml2-utils
           python -m pip install --upgrade pip
-          pip install numpy==1.23.3
-          pip install scipy==1.8.1
-          pip install scikit-learn==1.2.2
+          pip install numpy
+          pip install scipy
+          pip install scikit-learn==1.6
           pip install pandas
           pip install pytest
           pip install pytest-cov
@@ -34,7 +37,9 @@ jobs:
         run: |
           mv cyanure_lib cyanure_lib_tmp
       - name: Get coverage
-        # fail_if_regression_in_coverage  
+        # fail_if_regression_in_coverage
+        env:
+          OMP_NUM_THREADS: 1
         run: |
           pytest --cov-config=.coveragec --cov=cyanure --cov-report xml:coverage.xml
           PYTHON_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage.xml)
@@ -46,7 +51,7 @@ jobs:
           mv cyanure_lib_tmp cyanure_lib
           mv build/temp.linux-x86_64-cpython-310/cyanure_lib/cyanure_wrap_module.gcno ./
           mv build/temp.linux-x86_64-cpython-310/cyanure_lib/cyanure_wrap_module.gcda ./
-          gcovr -r ./ . --cobertura coverage_cxx.xml
+          gcovr -r ./ . --cobertura coverage_cxx.xml --gcov-suspicious-hits-threshold 281474976710656
           CXX_COVERAGE=$( xmllint --xpath 'string(/coverage/@line-rate)' coverage_cxx.xml)
           test_cxx=$(echo "$CXX_COVERAGE < 0.1" | bc)
           if ((test_cxx)); then echo "Failed because of cxx coverage";exit 1; fi

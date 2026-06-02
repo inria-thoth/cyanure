@@ -727,13 +727,27 @@ template <typename floating_type, typename I> inline void SpMatrix<floating_type
     I M = _n;
 
     XAt.resize(n, K);
+    int NUM_THREADS = init_omp(MAX_THREADS);
+    floating_type* XAtT = new floating_type[NUM_THREADS * n * K];
+    for (j = 0; j < NUM_THREADS * n * K; ++j) XAtT[j] = floating_type();
 
- #pragma omp parallel for private(i,j)
+#pragma omp parallel for private(i,j)
     for (i = 0; i < M; ++i) {
+#ifdef _OPENMP
+        int numT = omp_get_thread_num();
+#else
+        int numT = 0;
+#endif
+        floating_type* write_area = XAtT + numT * n * K;
         for (j = _pB[i]; j < _pE[i]; ++j) {
-            cblas_axpy<floating_type>(n, _v[j], X._X + i * n, 1, XAt._X + _r[j] * n, 1);
+            cblas_axpy<floating_type>(n, _v[j], X._X + i * n, 1, write_area + _r[j] * n, 1);
         }
     }
+
+    cblas_copy<floating_type>(n * K, XAtT, 1, XAt._X, 1);
+    for (int t = 1; t < NUM_THREADS; ++t)
+        cblas_axpy<floating_type>(n * K, 1.0, XAtT + t * n * K, 1, XAt._X, 1);
+    delete[](XAtT);
 };
 
 /// XAt <- X(:,indices)*A(:,indices)'

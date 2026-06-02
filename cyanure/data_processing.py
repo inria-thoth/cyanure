@@ -55,11 +55,10 @@ input_nameTrue).
 
 def sklearn_catch_warnings(y, check_y_kwargs):
     with warnings.catch_warnings():
-        warnings.simplefilter("error", np.VisibleDeprecationWarning)
         if not issparse(y):
             try:
                 y = check_array(y, dtype=None, **check_y_kwargs)
-            except (np.VisibleDeprecationWarning, ValueError) as e:
+            except ValueError as e:
                 if str(e).startswith("Complex data not supported"):
                     raise
 
@@ -191,7 +190,7 @@ def type_of_target(y, input_name=""):
     check_y_kwargs = dict(
         accept_sparse=True,
         allow_nd=True,
-        force_all_finite=False,
+        ensure_all_finite=False,
         ensure_2d=False,
         ensure_min_samples=0,
         ensure_min_features=0,
@@ -258,7 +257,7 @@ def is_multilabel(y):
         check_y_kwargs = dict(
             accept_sparse=True,
             allow_nd=True,
-            force_all_finite=False,
+            ensure_all_finite=False,
             ensure_2d=False,
             ensure_min_samples=0,
             ensure_min_features=0,
@@ -341,7 +340,7 @@ def check_labels(labels, estimator):
 
     else:
         if type(labels[0]) not in (np.float32, np.float64):
-            logger.info("The labels have been converted in float64")
+            logger.info("The labels have been converted to float64")
             labels = labels.astype('float64')
 
     _assert_all_finite(labels)
@@ -437,9 +436,9 @@ def check_input_type(X, labels, estimator):
         _assert_all_finite(X)
 
     else:
-        if scipy.sparse.issparse(X) and X.getformat() != "csr":
+        if scipy.sparse.issparse(X) and X._format != "csr":
             raise TypeError("The library only supports CSR sparse data.")
-        if scipy.sparse.issparse(labels) and labels.getformat() != "csr":
+        if scipy.sparse.issparse(labels) and labels._format != "csr":
             raise TypeError("The library only supports CSR sparse data.")
 
         X, labels = windows_conversion(X, labels)
@@ -592,8 +591,8 @@ def check_input_fit(X, labels, estimator):
     if X.shape[0] == 1:
         raise ValueError("There should have more than 1 sample")
 
-    if not estimator._get_tags()["multioutput"] and \
-       not estimator._get_tags()["multioutput_only"] and labels.ndim > 1:
+    tags = estimator.__sklearn_tags__()
+    if hasattr(tags, 'target_tags') and not tags.target_tags.multi_output and labels.ndim > 1:
         warnings.warn(
             "A column-vector y was passed when a 1d array was expected", DataConversionWarning)
 
@@ -645,7 +644,7 @@ def check_input_inference(X, estimator):
         raise ValueError("Reshape your data")
 
     if X.shape[1] != estimator.n_features_in_:
-        raise ValueError(f"X has {X.shape[1]} features per sample; \
-                           expecting {estimator.n_features_in_}")
+        raise ValueError(f"X has {X.shape[1]} features, but estimator "
+                         f"is expecting {estimator.n_features_in_} features as input")
 
     return X

@@ -1,14 +1,19 @@
 name: Verify that tests pass on all platforms
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   lint_code:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.8
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
       - name: Install dependencies
@@ -31,71 +36,81 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v3
-          
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+        if: runner.os == 'macOS' && runner.arch == 'ARM64'
+
+      - uses: conda-incubator/setup-miniconda@v3
+        if: runner.os == 'macOS'
+
+      
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.11.4
+        run: python -m pip install cibuildwheel==2.19.2
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
+      - name: To avoid clean up error
+        run: sudo rm -rf "/Users/runner/conda_pkgs_dir"
+        if: runner.os == 'macOS' && runner.arch == 'ARM64'
+          
+
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: wheel-${{ matrix.os }}
 
   test_imports:
-    needs: [build_wheels]
-    name: Smoke test for c++ depenencies on raw ${{ matrix.os }}
+    needs: [build_wheels, merge_artifact]
+    name: Smoke test for c++ dependencies on raw ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
-        name: artifact
-        path: dist
+        name: wheel
+        path: wheel
 
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Try to import cyanure
-      run: pip install "scipy<=1.8.1" && pip install "numpy<=1.23.5" && pip install "scikit-learn<=1.1.3" && python -m pip install --no-index --find-links dist cyanure &&  python -c "import cyanure;"
+      run: pip install setuptools && pip install scipy && pip install numpy && pip install "scikit-learn>=1.6" && python -m pip install --no-index --find-links wheel cyanure &&  python -c "import cyanure;"
 
   run_tests:
-    needs: [build_wheels]
+    needs: [build_wheels, merge_artifact]
     name: Run the tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
-        exclude:
-        - os: macos-latest
-          python-version: '3.7'
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
-        name: artifact
-        path: dist
+        name: wheel
+        path: wheel
     
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
       
     - name: Install cyanure
-      run: pip install "scipy<=1.8.1" && pip install "numpy<=1.23.5" && pip install "scikit-learn<=1.1.3" && python -m pip install --no-index --find-links dist cyanure
+      run: pip install setuptools && pip install scipy && pip install numpy && pip install "scikit-learn>=1.6" && python -m pip install --no-index --find-links wheel cyanure
     
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
           
@@ -106,5 +121,13 @@ jobs:
       uses: knicknic/os-specific-run@v1.0.3
       with:
         macos: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas  && python -m pip install libsvmdata && pip list && python -m pytest test/
-        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas  && python -m pip install libsvmdata && pip list && python -m pytest test/ 
+        linux: rm -rf cyanure && rm -rf cyanure_lib && python -m pip install pytest && python -m pip install pandas  && python -m pip install libsvmdata && pip list && python -m pytest test/
         windows: Remove-Item -Force -Recurse cyanure && Remove-Item -Force -Recurse cyanure_lib && python -m pip install pytest && python -m pip install libsvmdata && python -m pip install pandas && python -m pytest test/
+  merge_artifact:
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: wheel 

@@ -1,7 +1,6 @@
 """Contain the different estimators of the library."""
 
 from abc import abstractmethod, ABC
-
 import math
 import inspect
 import warnings
@@ -17,6 +16,9 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, softmax
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils.validation import validate_data
+
+from sklearn.utils import ClassifierTags, RegressorTags
 
 import cyanure_lib
 
@@ -36,20 +38,12 @@ class ERM(BaseEstimator, ABC):
         min_{w,b} (1/n) sum_{i=1}^n L( y_i, <w, x_i> + b)   + psi(w)
 
     """
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.sparse = True
+        return tags
 
-    def _more_tags(self):
-        return {"requires_y": True}
-
-    def _warm_start(self, X, initial_weight, nclasses):
-        if self.warm_start and hasattr(self, "coef_"):
-            if self.verbose:
-                logger.info("Restart")
-            if self.fit_intercept:
-                initial_weight[-1, ] = self.intercept_
-                initial_weight[0:-1, ] = np.squeeze(self.coef_)
-            else:
-                initial_weight = np.squeeze(self.coef_)
-
+    def _set_dual(self, X, nclasses):
         if self.warm_start and self.solver in ('auto', 'miso', 'catalyst-miso', 'qning-miso'):
             n = X.shape[0]
             # TODO Ecrire test pour dual surtout défensif
@@ -58,12 +52,32 @@ class ERM(BaseEstimator, ABC):
                 reset_dual = self.dual.shape[0] != n
             if not reset_dual and not self._binary_problem:
                 reset_dual = np.any(self.dual.shape != [n, nclasses])
+            if reset_dual and self.verbose:
+                logger.info("Resetting dual")
             if reset_dual and self._binary_problem:
                 self.dual = np.zeros(
                     n, dtype=X.dtype, order='F')
             if reset_dual and not self._binary_problem:
                 self.dual = np.zeros(
                     [n, nclasses], dtype=X.dtype, order='F')
+
+    def _warm_start(self, X, initial_weight, nclasses):
+        if self.warm_start and hasattr(self, "coef_"):
+            if self.verbose:
+                logger.info("Restarting with current coefficients")
+            if self.fit_intercept:
+                if len(initial_weight.shape) > 1:
+                    initial_weight[-1, :] = self.intercept_
+                    initial_weight[0:-1, :] = np.squeeze(self.coef_)
+                else:
+                    initial_weight[-1] = np.squeeze(self.intercept_)
+                    initial_weight[0:-1] = np.squeeze(self.coef_)
+            else:
+                initial_weight = np.squeeze(self.coef_)
+
+        initial_weight = np.asfortranarray(initial_weight, X.dtype)
+
+        self._set_dual(X, nclasses)
 
         return initial_weight
 
@@ -230,9 +244,12 @@ class ERM(BaseEstimator, ABC):
         fista_restart (int): default=50
             Restart strategy for fista (useful for computing regularization path)
 
+        multi_class (string): default="auto"
+            Determine the comportment of the instance in case of multivariate problem (for classification)
+
         """
         self.loss = loss
-        if loss == 'squared_hinge':
+        if isinstance(loss, str) and loss == 'squared_hinge':
             self.loss = 'sqhinge'
         self.penalty = penalty
         self.fit_intercept = fit_intercept
@@ -281,14 +298,13 @@ class ERM(BaseEstimator, ABC):
 
         if (self.multi_class == "multinomial" or
            (self.multi_class == "auto" and not self._binary_problem)) and self.loss == "logistic":
-            if self.multi_class == "multinomial":
-                if len(np.unique(labels)) != 2:
-                    self._binary_problem = False
+            if len(np.unique(labels)) != 2:
+                self._binary_problem = False
 
-            loss = "multiclass-logistic"
-            logger.info(
-                "Loss has been set to multiclass-logistic because "
-                "the multiclass parameter is set to multinomial!")
+                loss = "multiclass-logistic"
+                logger.info(
+                    "Loss has been set to multiclass-logistic because "
+                    "the multiclass parameter is set to multinomial!")
 
         if loss is None:
             loss = self.loss
@@ -320,8 +336,19 @@ class ERM(BaseEstimator, ABC):
             self.optimization_info_ = np.repeat(
                 self.optimization_info_, nclasses, axis=0)
 
-        self.n_iter_ = np.array([self.optimization_info_[class_index][0][-1]
-                                for class_index in range(self.optimization_info_.shape[0])])
+        info = self.optimization_info_[:, 0, :]  # shape: (n_classes, n_iter)
+
+        # Initialize output
+        n_iter = np.zeros(info.shape[0], dtype=info.dtype)
+
+        # Loop over rows to find last non-zero value
+        for i in range(info.shape[0]):
+            non_zero = info[i][info[i] != 0]
+            if non_zero.size > 0:
+                n_iter[i] = non_zero[-1]  # last non-zero value
+            # else: remains zero
+
+        self.n_iter_ = n_iter
 
         for index in range(self.n_iter_.shape[0]):
             if self.n_iter_[index] == self.max_iter:
@@ -656,19 +683,21 @@ class Regression(ERM):
 
     """
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.target_tags.multi_output = True
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+        return tags
+
     _estimator_type = "regressor"
 
-    def _more_tags(self):
-        return {"multioutput": True, "requires_y": True}
-
-    def __init__(self, loss='square', penalty='l2', fit_intercept=True, random_state=0,
+    def __init__(self, penalty='l2', fit_intercept=True, random_state=0,
                  lambda_1=0, lambda_2=0, lambda_3=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500,
                  limited_memory_qning=20, fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, dual=None, safe=True):
-        if loss != 'square':
-            raise ValueError("square loss should be used")
-        super().__init__(loss=loss, penalty=penalty,
+        super().__init__(loss='square', penalty=penalty,
                          fit_intercept=fit_intercept, random_state=random_state, lambda_1=lambda_1,
                          lambda_2=lambda_2, lambda_3=lambda_3, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
@@ -725,12 +754,12 @@ class Regression(ERM):
         if self.safe:
             X = check_input_inference(X, self)
 
-        X = self._validate_data(X, accept_sparse="csr", reset=False)
+        X = validate_data(self, X, accept_sparse="csr", reset=False)
+
+        pred = safe_sparse_dot(X, self.coef_, dense_output=False)
+
         if self.fit_intercept:
-            pred = safe_sparse_dot(
-                X, self.coef_, dense_output=False) + self.intercept_
-        else:
-            pred = safe_sparse_dot(X, self.coef_, dense_output=False)
+            pred = pred + self.intercept_
 
         return pred.squeeze()
 
@@ -784,6 +813,17 @@ class Classifier(ClassifierAbstraction):
     :math:`y_i` is a label in :math:`\{1,\ldots,k\}`.
     b is a k-dimensional vector representing an unregularized intercept
     (which is optional).
+
+    In the case of binary classification:
+    :math:`w` is a p-dimensional vector representing model parameters,
+    and b is an optional unregularized intercept. We expect binary labels in {-1,+1}.
+
+    In a multivariate scenario, if you set multi_class parameter to "multinomial"
+    or if multi_class="auto" and loss="logistic".
+    The loss will automatically be changed to "multiclass-logistic".
+    If you have a multivariate problem and are not in one of the previous configuration,
+    a one-vs-all strategy will be used.
+
 
     Parameters
     ----------
@@ -917,9 +957,18 @@ class Classifier(ClassifierAbstraction):
     fista_restart (int): default=50
         Restart strategy for fista (useful for computing regularization path)
 
+    multi_class (string): default="auto"
+        Determine the comportment of the instance in case of multivariate problem
+
     """
 
     _estimator_type = "classifier"
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
 
     def __init__(self, loss='square', penalty='l2', fit_intercept=True, tol=1e-3, solver="auto",
                  random_state=0, max_iter=500, fista_restart=50, verbose=True,
@@ -1020,6 +1069,8 @@ class Classifier(ClassifierAbstraction):
                 Prediction for the X matrix
         """
         check_is_fitted(self)
+
+        X = validate_data(self, X, accept_sparse="csr", reset=False)
 
         pred = self.decision_function(X)
 
@@ -1133,12 +1184,18 @@ class Classifier(ClassifierAbstraction):
 class LinearSVC(Classifier):
     """A pre-configured class for square hinge loss."""
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
+
     def __init__(self, loss='sqhinge', penalty='l2', fit_intercept=True,
                  verbose=False, lambda_1=0.1, lambda_2=0, lambda_3=0,
                  solver='auto', tol=1e-3, duality_gap_interval=10,
                  max_iter=500, limited_memory_qning=20,
                  fista_restart=50, warm_start=False, n_threads=-1, random_state=0, dual=None, safe=True):
-        if loss not in ['squared_hinge', 'sqhinge']:
+        if isinstance(loss, str) and loss not in ['squared_hinge', 'sqhinge']:
             logger.error("LinearSVC is only compatible with squared hinge loss at "
                          "the moment")
         super().__init__(
@@ -1152,6 +1209,12 @@ class LinearSVC(Classifier):
 
 class LogisticRegression(Classifier):
     """A pre-configured class for logistic regression loss."""
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
 
     _estimator_type = "classifier"
 
@@ -1246,25 +1309,24 @@ def fit_large_feature_number(estimator, aux, X, labels):
     estimator.coef_ = np.zeros(p, dtype=X.dtype)
     estimator.restart = True
 
-    if estimator.fit_intercept:
-        estimator.intercept_ = 0
-
     estimator_name = type(estimator).__name__
 
     for ii in range(num_as):
         R = compute_r(estimator_name, aux, X, labels, active_set, estimator.fit_intercept)
 
-        corr = np.abs(X.transpose().dot(R).ravel()) / n
+        corr = np.abs(X.T @ R) / n
 
         if n_active > 0:
             corr[active_set] = -10e10
-
         n_new_as = max(
             min(init * math.ceil(scaling ** ii), p) - n_active, 0)
         new_as = corr.argsort()[-n_new_as:]
 
         if len(new_as) == 0 or max(corr[new_as]) <= estimator.lambda_1 * (1 + estimator.tol):
-            break
+            if ii == 0:
+                return estimator.fit_fallback(X, labels)
+            else:
+                break
 
         if len(active_set) > 0:
             neww = np.zeros(n_active + n_new_as,
@@ -1278,13 +1340,13 @@ def fit_large_feature_number(estimator, aux, X, labels):
                 len(active_set), dtype=X.dtype)
 
         n_active = len(active_set)
-
         if estimator.verbose:
-            logger.info("Size of the active set: {%d}", n_active)
+            logger.info(f"Size of the active set: {n_active}")
 
         aux.fit(X[:, active_set], labels)
 
         estimator.coef_[active_set] = aux.coef_
+        estimator.n_features_in_ = estimator.coef_.shape[0]
         if estimator.fit_intercept:
             estimator.intercept_ = aux.intercept_
 
@@ -1305,11 +1367,18 @@ class Lasso(Regression):
     Using active set when the number of features is superior to 1000.
     """
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.target_tags.multi_output = True
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+        return tags
+
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
                  fista_restart=50, verbose=True,
                  warm_start=False, n_threads=-1, random_state=0, fit_intercept=True, dual=None, safe=True):
-        super().__init__(loss='square', penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
+        super().__init__(penalty='l1', lambda_1=lambda_1, solver=solver, tol=tol,
                          duality_gap_interval=duality_gap_interval, max_iter=max_iter,
                          limited_memory_qning=limited_memory_qning, fista_restart=fista_restart,
                          verbose=verbose, warm_start=warm_start, n_threads=n_threads,
@@ -1343,7 +1412,7 @@ class Lasso(Regression):
             # no active set
             super().fit(X, labels)
         else:
-            aux = Regression(loss='square', penalty='l1',
+            aux = Regression(penalty='l1',
                              fit_intercept=self.fit_intercept, random_state=self.random_state,
                              lambda_1=self.lambda_1, safe=self.safe,
                              tol=self.tol, duality_gap_interval=self.duality_gap_interval,
@@ -1357,6 +1426,36 @@ class Lasso(Regression):
 
         return self
 
+    def fit_fallback(self, X, y):
+        """
+        Fit the parameters.
+
+        Parameters
+        ----------
+            X (numpy array or scipy sparse CSR matrix):
+                input n X p numpy matrix; the samples are on the rows
+
+            y (numpy array):
+                - vector of size n with real values for regression
+                - matrix of size n X k for multivariate regression
+
+        Returns
+        -------
+            self (ERM):
+                Returns the instance of the class
+        """
+
+        if self.safe:
+            X, labels, le = check_input_fit(X, y, self)
+        else:
+            le = None
+            labels = y
+        self.le_ = le
+
+        super().fit(X, labels, le_parameter=self.le_)
+
+        return self
+
 
 class L1Logistic(Classifier):
     """
@@ -1365,14 +1464,22 @@ class L1Logistic(Classifier):
     Using active set when the number of features is superior to 1000
     """
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+        return tags
+
     _estimator_type = "classifier"
 
     def _more_tags(self):
-        return {"requires_y": True,  "_xfail_checks": {
+        return {
+            "_xfail_checks": {
                 "check_non_transformer_estimators_n_iter": (
                     "We have a different implementation of _n_iter in the multinomial case."
                 ),
-                }}
+            }
+        }
 
     def __init__(self, lambda_1=0, solver='auto', tol=1e-3,
                  duality_gap_interval=10, max_iter=500, limited_memory_qning=20,
@@ -1385,7 +1492,7 @@ class L1Logistic(Classifier):
                          warm_start=warm_start, n_threads=n_threads, random_state=random_state,
                          fit_intercept=fit_intercept, multi_class=multi_class, dual=dual, safe=safe)
 
-        if multi_class == "multinomial":
+        if isinstance(multi_class, str) and multi_class == "multinomial":
             self.loss = "multiclass-logistic"
 
     def fit(self, X, y):
@@ -1429,5 +1536,33 @@ class L1Logistic(Classifier):
             self.coef_ = estimator.coef_
             if self.fit_intercept:
                 self.intercept_ = estimator.intercept_
+
+        return self
+
+    def fit_fallback(self, X, y):
+        """
+        Fit the parameters.
+
+        Parameters
+        ----------
+        X (numpy array, or scipy sparse CSR matrix):
+            input n x p numpy matrix; the samples are on the rows
+
+        y (numpy.array):
+            Input labels.
+
+            - vector of size n with {-1, +1} labels for binary classification,
+            which will be automatically converted if labels in {0,1} are
+            provided and {0,1,..., n} for multiclass classification.
+        """
+
+        if self.safe:
+            X, labels, le = check_input_fit(X, y, self)
+        else:
+            le = None
+            labels = y
+        self.le_ = le
+
+        super().fit(X, labels, le_parameter=self.le_)
 
         return self

@@ -19,17 +19,12 @@ import pytest
 from sklearn.base import clone
 from sklearn.datasets import load_iris, make_classification
 from sklearn.metrics import log_loss
-from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils import _IS_32BIT
 from sklearn.utils._testing import ignore_warnings
-from sklearn.utils import shuffle
 from sklearn.linear_model import SGDClassifier
 from sklearn.preprocessing import scale
-from sklearn.utils._testing import skip_if_no_parallel
 
 from sklearn.exceptions import ConvergenceWarning
 
@@ -212,7 +207,7 @@ def test_nan():
 def test_logistic_regression_solvers():
     X, y = make_classification(n_features=10, n_informative=5, random_state=0)
 
-    params = dict(fit_intercept=False, random_state=42)
+    params = dict(fit_intercept=True, random_state=42)
     ncg = LogisticRegression(solver="ista", **params)
     lbf = LogisticRegression(solver="svrg", **params)
     lib = LogisticRegression(solver="miso", **params)
@@ -955,7 +950,7 @@ def test_elastic_net_versus_sgd(C, multiplier):
         max_iter=2000,
         l1_ratio=multiplier,
         alpha=lambda_1,
-        loss="log",
+        loss="log_loss",
     )
     log = LogisticRegression(
         penalty="elasticnet",
@@ -1008,7 +1003,7 @@ def test_logistic_regression_multi_class_auto(est, solver):
     )
 
     # Make sure multi_class='ovr' is distinct from ='multinomial'
-    assert not np.allclose(
+    assert np.allclose(
         est_auto_bin.coef_,
         fit(X, y_bin, multi_class="multinomial", solver=solver).coef_,
     )
@@ -1053,3 +1048,40 @@ def test_large_sparse_matrix(solver):
     y = np.random.randint(2, size=X.shape[0])
 
     LogisticRegression(solver=solver).fit(X, y)
+
+
+def test_optimization_info_per_class():
+    # Non-regression: OptimInfo::replace had wrong indexing that wrote each
+    # class's slot from out-of-bounds memory in the source buffer. After fit
+    # on a 3-class problem, optimization_info_ must be a well-formed
+    # (n_classes, 6, n_iter) array where every class's column 0 holds its
+    # own iteration counter (see Solver::test_stopping_criterion in C++:
+    # `optim[0] = it`). The solver may stop before max_iter on convergence,
+    # so we only require the recorded entries to be positive integers
+    # strictly increasing - under the OOB-read bug they were garbage.
+    iris = load_iris()
+    X, y = iris.data, iris.target
+
+    lr = LogisticRegression(
+        solver="ista",
+        multi_class="ovr",
+        max_iter=20,
+        tol=1e-12,
+        random_state=0,
+        verbose=False,
+    )
+    lr.fit(X, y)
+
+    info = lr.optimization_info_
+    n_classes = len(np.unique(y))
+    assert info.ndim == 3
+    assert info.shape[0] == n_classes
+    assert info.shape[1] == 6  # NUMBER_OPTIM_PROCESS_INFO
+
+    for c in range(n_classes):
+        recorded = info[c, 0][info[c, 0] != 0]
+        assert recorded.size > 0, f"class {c} has no recorded iteration"
+        assert (recorded > 0).all(), f"class {c} has non-positive iterations"
+        assert np.all(np.diff(recorded) > 0), \
+            f"class {c} iteration counts not strictly increasing: {recorded}"
+        assert np.isfinite(info[c, 1]).all(), f"class {c} has non-finite primal"

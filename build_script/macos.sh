@@ -3,7 +3,7 @@
 set -e
 set -x
 
-sudo conda env remove -n build
+# sudo conda env remove -n build
 
 # OpenMP is not present on macOS by default
 if [[ "$RUNNER_OS" == "macOS" ]]; then
@@ -25,23 +25,25 @@ if [[ "$RUNNER_OS" == "macOS" ]]; then
 
         OPENMP_URL="https://anaconda.org/conda-forge/llvm-openmp/11.1.0/download/osx-arm64/llvm-openmp-11.1.0-hf3c4609_1.tar.bz2"
         OPENBLAS_URL="https://anaconda.org/conda-forge/libopenblas/0.3.21/download/osx-arm64/libopenblas-0.3.21-openmp_hc731615_3.tar.bz2"
+        OPENBLAS_DEVEL_URL="https://anaconda.org/anaconda/openblas-devel/0.3.21/download/osx-arm64/openblas-devel-0.3.21-hca03da5_0.tar.bz2"
         GFORTRAN_URL="https://anaconda.org/conda-forge/libgfortran5/11.3.0/download/osx-arm64/libgfortran5-11.3.0-hdaf2cc0_26.tar.bz2"
+        LIBCXX_URL="https://anaconda.org/conda-forge/libcxx/11.0.0/download/osx-arm64/libcxx-11.0.0-h7cf67bf_1.tar.bz2"
 
-        sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL
-        
+        sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL $OPENBLAS_DEVEL_URL $LIBCXX_URL
+        sudo CONDA_SUBDIR=osx-arm64 conda install -n build -c conda-forge --no-deps "llvm-openmp>=15"
+
     else
-        export MACOSX_DEPLOYMENT_TARGET=10.9
+        export MACOSX_DEPLOYMENT_TARGET=11.0
         OPENMP_URL="https://anaconda.org/conda-forge/llvm-openmp/11.1.0/download/osx-64/llvm-openmp-11.1.0-hda6cdc1_1.tar.bz2"
         OPENBLAS_URL="https://anaconda.org/conda-forge/libopenblas/0.3.21/download/osx-64/libopenblas-0.3.21-openmp_h429af6e_3.tar.bz2"
+        OPENBLAS_DEVEL_URL="https://anaconda.org/anaconda/openblas-devel/0.3.21/download/osx-64/openblas-devel-0.3.21-hecd8cb5_0.tar.bz2"
         GFORTRAN_URL="https://anaconda.org/conda-forge/libgfortran5/11.3.0/download/osx-64/libgfortran5-11.3.0-h082f757_26.tar.bz2"
 
-        sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL
+        sudo conda create -n build $OPENMP_URL $OPENBLAS_URL $GFORTRAN_URL $OPENBLAS_DEVEL_URL
+        sudo CONDA_SUBDIR=osx-64 conda install -n build -c conda-forge --no-deps "llvm-openmp>=15"
     fi
 
     
-
-    PREFIX="/usr/local/miniconda/envs/build"
-
-    sudo cp "/usr/local/miniconda/envs/build/lib/libopenblas.0.dylib" "/usr/local/miniconda/envs/build/lib/libopenblas.dylib"
+    sudo cp "/Users/runner/miniconda3/envs/build/lib/libopenblas.0.dylib" "/Users/runner/miniconda3/envs/build/lib/libopenblas.dylib"
 
 fi

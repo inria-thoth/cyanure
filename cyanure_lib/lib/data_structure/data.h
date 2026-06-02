@@ -36,8 +36,9 @@ public:
         if (_norms.n() == 0) {
             _norms.resize(_X.n());
             _X.norm_2sq_cols(_norms);
-            if (_intercept)
+            if (_intercept){
                 norms.add(_scale_intercept * _scale_intercept);
+            }
         }
         norms.copy(_norms);
     };
