@@ -37,13 +37,15 @@ def getBlas():
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION')) as version_file:
     version = version_file.read().strip()
 
-if platform.system() == "Darwin":
+# was: if platform.system() == "Darwin":
+if platform.system() == "Darwin" and "CONDA_BUILD" not in os.environ:
     os.environ["CC"] = "/usr/bin/clang"
     os.environ["CXX"] = "/usr/bin/clang++"
     os.environ["CPPFLAGS"] = "-Xpreprocessor -fopenmp"
     os.environ["CFLAGS"] = "-I/Users/runner/miniconda3/envs/build/include"
     os.environ["CXXFLAGS"] = "-I/Users/runner/miniconda3/envs/build/include"
     os.environ["LDFLAGS"] = "-Wl,-rpath,/Users/runner/miniconda3/envs/build/lib -L/Users/runner/miniconda3/envs/build/lib -lomp"
+
 
 np_blas = getBlas()
 
@@ -117,19 +119,23 @@ else:
         LIBRARY_DIRS = ['/usr/lib64/'] + LIBRARY_DIRS
         LIBS = libs
 
-        if platform.system() == "Darwin":
+        if platform.system() == "Darwin" and "CONDA_BUILD" not in os.environ:
+            # project's own macOS wheel CI (unchanged)
             INCLUDE_DIRS = ['/Users/runner/miniconda3/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
-            EXTRA_COMPILE_ARGS = [
-            '-DINT_64BITS', '-DAXPBY', '-fPIC',
-            '-std=c++11']
+            EXTRA_COMPILE_ARGS = ['-DINT_64BITS', '-DAXPBY', '-fPIC', '-std=c++11']
             LIBRARY_DIRS = ['/Users/runner/miniconda3/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
             LIBS = libs
             RUNTIME_LIRABRY_DIRS = LIBRARY_DIRS
             EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names']
+        elif platform.system() == "Darwin":
+            # conda-build: use conda's clang ($CXX), macOS SDK, and OpenBLAS from $PREFIX
+            EXTRA_COMPILE_ARGS = ['-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
+                                  '-std=c++11', '-Xpreprocessor', '-fopenmp']
+            EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names', '-lomp']
         else:
-            EXTRA_COMPILE_ARGS = [
-            '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
-            '-std=c++11', '-fopenmp']
+            EXTRA_COMPILE_ARGS = ['-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
+                                  '-std=c++11', '-fopenmp']
+
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
