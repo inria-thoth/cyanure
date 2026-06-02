@@ -1,0 +1,66 @@
+name: AddressSanitizer hunt
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  asan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev g++
+          python -m pip install --upgrade pip
+          pip install numpy scipy "scikit-learn>=1.6" pytest pytest-timeout pandas libsvmdata
+
+      - name: Build with -fsanitize=address
+        env:
+          SANITIZE: address
+        run: pip install --no-build-isolation -e . -v
+
+      - name: Run focused tests under ASan
+        env:
+          # detect_leaks=0: too many false leaks from numpy/python globals.
+          # halt_on_error=0: keep reporting all bugs found.
+          # abort_on_error=1: get a usable core/stack at first heap-overflow/UAF.
+          ASAN_OPTIONS: "detect_leaks=0:halt_on_error=0:abort_on_error=1:symbolize=1:print_stacktrace=1"
+        continue-on-error: true
+        timeout-minutes: 15
+        run: |
+          set +e
+          set +o pipefail
+          LIBASAN=$(gcc -print-file-name=libasan.so)
+          echo "Preloading $LIBASAN"
+          ls -l "$LIBASAN" || true
+          export LD_PRELOAD="$LIBASAN"
+          # Run a single iteration of the failing test files; ASan output goes to stderr.
+          python -m pytest -s -v -p no:cacheprovider --timeout=300 \
+            test/test_logistic_regression.py::test_warm_start \
+            test/test_logistic_regression.py::test_max_iter \
+            2>&1 | tee asan_output.log
+          true
+
+      - name: Extract ASan reports
+        if: always()
+        run: |
+          echo '=== ASan errors ==='
+          grep -B 2 -A 60 'AddressSanitizer:' asan_output.log | head -600 || echo 'No ASan reports captured.'
+
+      - name: Upload full log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asan-log
+          path: asan_output.log
