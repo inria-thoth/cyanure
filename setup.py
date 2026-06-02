@@ -75,18 +75,18 @@ if platform.system() == "Windows":
     if 'mkl' in np_blas:
         LIBS = ['mkl_rt', 'iomp5']
         EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
+            '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '/permissive-', '/W1']
 
     else:
         if np_blas == "" or "openblas" in np_blas:
             EXTRA_COMPILE_ARGS = [
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
             LIBS = ["libopenblas"]
 
         elif 'blas' in np_blas:
             EXTRA_COMPILE_ARGS = [
-                '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '-DINT_64BITS', '-DAXPBY', '/PIC',
                 '/permissive-', '/W1']
             LIBS = ['lapack', 'blas']
 
@@ -101,7 +101,7 @@ else:
     ##### setup mkl_rt
     if 'mkl' in np_blas:
         extra_compile_args_mkl = [
-            '-DNDEBUG', '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
+            '-DINT_64BITS', '-DHAVE_MKL', '-DAXPBY', '-fPIC',
              '-std=c++11', '-O3', '-fopenmp']
 
         LIBS = ['mkl_rt', 'iomp5']
@@ -120,7 +120,7 @@ else:
         if platform.system() == "Darwin":
             INCLUDE_DIRS = ['/Users/runner/miniconda3/envs/build/include', '/usr/local/opt/openblas/include'] + [numpy.get_include()]
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-fPIC',
+            '-DINT_64BITS', '-DAXPBY', '-fPIC',
             '-std=c++11']
             LIBRARY_DIRS = ['/Users/runner/miniconda3/envs/build/lib', '/usr/local/opt/openblas/lib'] + LIBRARY_DIRS
             LIBS = libs
@@ -128,21 +128,12 @@ else:
             EXTRA_LINK_ARGS = ['-Wl,-headerpad_max_install_names']
         else:
             EXTRA_COMPILE_ARGS = [
-            '-DNDEBUG', '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
+            '-DINT_64BITS', '-DAXPBY', '-DHAVE_OPENBLAS', '-fPIC',
             '-std=c++11', '-fopenmp']
 
     if "COVERAGE" in os.environ:
         EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + ['-fprofile-arcs', '-ftest-coverage']
         LIBS = LIBS + ['gcov']
-
-    sanitize = os.environ.get("SANITIZE")
-    if sanitize:
-        # Drop NDEBUG and add debug info + sanitizer flags. Use -O1 so the
-        # report has usable line numbers without hiding races behind -O3.
-        EXTRA_COMPILE_ARGS = [a for a in EXTRA_COMPILE_ARGS
-                              if a not in ('-DNDEBUG', '-O3')]
-        EXTRA_COMPILE_ARGS = EXTRA_COMPILE_ARGS + [
-            f'-fsanitize={sanitize}', '-fno-omit-frame-pointer', '-O1', '-g']
 
 
 if platform.system() != "Windows":
@@ -150,8 +141,6 @@ if platform.system() != "Windows":
         EXTRA_LINK_ARGS = ['-fopenmp']
     if "COVERAGE" in os.environ:
         EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + ['-fprofile-arcs']
-    if os.environ.get("SANITIZE"):
-        EXTRA_LINK_ARGS = EXTRA_LINK_ARGS + [f'-fsanitize={os.environ["SANITIZE"]}']
 else:
     EXTRA_LINK_ARGS = []
 

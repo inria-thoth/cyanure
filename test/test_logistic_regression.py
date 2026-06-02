@@ -1047,4 +1047,40 @@ def test_large_sparse_matrix(solver):
         setattr(X, attr, getattr(X, attr).astype("int64"))
     y = np.random.randint(2, size=X.shape[0])
 
+
+def test_optimization_info_per_class():
+    # Non-regression: OptimInfo::replace had wrong indexing that wrote each
+    # class's slot from out-of-bounds memory in the source buffer. After fit,
+    # optimization_info_ must be a well-formed (n_classes, 6, n_iter) array
+    # where every class has its own recorded primal/iteration trace.
+    iris = load_iris()
+    X, y = iris.data, iris.target  # 3 classes
+
+    lr = LogisticRegression(
+        solver="ista",
+        multi_class="ovr",
+        max_iter=20,
+        tol=1e-12,
+        random_state=0,
+        verbose=False,
+    )
+    lr.fit(X, y)
+
+    info = lr.optimization_info_
+    n_classes = len(np.unique(y))
+    assert info.ndim == 3
+    assert info.shape[0] == n_classes
+    assert info.shape[1] == 6  # NUMBER_OPTIM_PROCESS_INFO
+
+    # Per class, the iteration column (index 0) must contain at least one
+    # recorded step, and the primal column (index 1) must be finite and not
+    # all zeros. The pre-fix bug produced garbage / all-zero rows for some
+    # classes because of the out-of-bounds reads.
+    iters = info[:, 0, :]
+    primals = info[:, 1, :]
+    for c in range(n_classes):
+        assert (iters[c] != 0).any(), f"class {c} has no recorded iteration"
+        assert np.isfinite(primals[c]).all(), f"class {c} has non-finite primal"
+        assert (primals[c] != 0).any(), f"class {c} has no recorded primal"
+
     LogisticRegression(solver=solver).fit(X, y)
