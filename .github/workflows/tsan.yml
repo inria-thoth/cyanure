@@ -35,9 +35,14 @@ jobs:
           TSAN_OPTIONS: "halt_on_error=0:detect_deadlocks=0:history_size=7:abort_on_error=0:exitcode=0:report_thread_leaks=0:report_signal_unsafe=0"
         # Don't let a TSan-time crash kill the step before we can collect the log.
         continue-on-error: true
+        # Hard cap: TSan-instrumented OpenMP can deadlock; bail at 20 min.
+        timeout-minutes: 20
         run: |
           set +e
           set +o pipefail
+          # Belt-and-suspenders: also fail individual hung tests after 5 min.
+          PYTEST_TIMEOUT="--timeout=300"
+          python -m pip install pytest-timeout >/dev/null 2>&1 || PYTEST_TIMEOUT=""
           # Resolve libtsan against the same gcc that built the extension so
           # the ABI matches. Hardcoding libtsan.so.2 broke on this runner.
           LIBTSAN=$(gcc -print-file-name=libtsan.so)
@@ -46,7 +51,7 @@ jobs:
           export LD_PRELOAD="$LIBTSAN"
           # Run the tests that were known to crash. -s keeps output flowing,
           # -p no:cacheprovider avoids unrelated file races in pytest's cache.
-          python -m pytest -s -v -p no:cacheprovider \
+          python -m pytest -s -v -p no:cacheprovider $PYTEST_TIMEOUT \
             test/test_logistic_regression.py::test_max_iter \
             test/test_logistic_regression.py::test_warm_start \
             2>&1 | tee tsan_output.log
