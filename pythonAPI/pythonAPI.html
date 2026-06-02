@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Python API &mdash; Cyanure 1.0.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -92,9 +94,12 @@
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.predict"><code class="docutils literal notranslate"><span class="pre">Regression.predict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.score"><code class="docutils literal notranslate"><span class="pre">Regression.score()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.densify"><code class="docutils literal notranslate"><span class="pre">Regression.densify()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.get_metadata_routing"><code class="docutils literal notranslate"><span class="pre">Regression.get_metadata_routing()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.get_params"><code class="docutils literal notranslate"><span class="pre">Regression.get_params()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.get_weights"><code class="docutils literal notranslate"><span class="pre">Regression.get_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.set_fit_request"><code class="docutils literal notranslate"><span class="pre">Regression.set_fit_request()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.set_params"><code class="docutils literal notranslate"><span class="pre">Regression.set_params()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.set_score_request"><code class="docutils literal notranslate"><span class="pre">Regression.set_score_request()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Regression.sparsify"><code class="docutils literal notranslate"><span class="pre">Regression.sparsify()</span></code></a></li>
 </ul>
 </li>
@@ -108,8 +113,10 @@
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.decision_function"><code class="docutils literal notranslate"><span class="pre">Classifier.decision_function()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.predict_proba"><code class="docutils literal notranslate"><span class="pre">Classifier.predict_proba()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.densify"><code class="docutils literal notranslate"><span class="pre">Classifier.densify()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.get_metadata_routing"><code class="docutils literal notranslate"><span class="pre">Classifier.get_metadata_routing()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.get_params"><code class="docutils literal notranslate"><span class="pre">Classifier.get_params()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.get_weights"><code class="docutils literal notranslate"><span class="pre">Classifier.get_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">Classifier.set_fit_request()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.set_params"><code class="docutils literal notranslate"><span class="pre">Classifier.set_params()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Classifier.sparsify"><code class="docutils literal notranslate"><span class="pre">Classifier.sparsify()</span></code></a></li>
 </ul>
@@ -117,14 +124,23 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="estimators.html#pre-configured-classes">Pre-configured classes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="estimators.html#cyanure.estimators.LinearSVC"><code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="estimators.html#cyanure.estimators.LogisticRegression"><code class="docutils literal notranslate"><span class="pre">LogisticRegression</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="estimators.html#cyanure.estimators.LinearSVC"><code class="docutils literal notranslate"><span class="pre">LinearSVC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.LinearSVC.set_fit_request"><code class="docutils literal notranslate"><span class="pre">LinearSVC.set_fit_request()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="estimators.html#cyanure.estimators.LogisticRegression"><code class="docutils literal notranslate"><span class="pre">LogisticRegression</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.LogisticRegression.set_fit_request"><code class="docutils literal notranslate"><span class="pre">LogisticRegression.set_fit_request()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="estimators.html#cyanure.estimators.Lasso"><code class="docutils literal notranslate"><span class="pre">Lasso</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Lasso.fit"><code class="docutils literal notranslate"><span class="pre">Lasso.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Lasso.fit_fallback"><code class="docutils literal notranslate"><span class="pre">Lasso.fit_fallback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.Lasso.set_score_request"><code class="docutils literal notranslate"><span class="pre">Lasso.set_score_request()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="estimators.html#cyanure.estimators.L1Logistic"><code class="docutils literal notranslate"><span class="pre">L1Logistic</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.L1Logistic.fit"><code class="docutils literal notranslate"><span class="pre">L1Logistic.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="estimators.html#cyanure.estimators.L1Logistic.fit_fallback"><code class="docutils literal notranslate"><span class="pre">L1Logistic.fit_fallback()</span></code></a></li>
 </ul>
 </li>
 </ul>

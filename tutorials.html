@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutorials &mdash; Cyanure 1.0.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -91,10 +93,10 @@
 <div class="section" id="examples-for-binary-classification">
 <h2>Examples for binary classification<a class="headerlink" href="#examples-for-binary-classification" title="Permalink to this heading"></a></h2>
 <p>The following code performs binary classification with <span class="math notranslate nohighlight">\(\ell_2\)</span>-regularized logistic regression, with no intercept, on the criteo dataset (21Gb, huge sparse matrix):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cyanure.estimators</span> <span class="kn">import</span> <span class="n">Classifier</span>
-<span class="kn">from</span> <span class="nn">cyanure.data_processing</span> <span class="kn">import</span> <span class="n">preprocess</span>
-<span class="kn">import</span> <span class="nn">scipy.sparse</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.estimators</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.data_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">preprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">y_path</span> <span class="o">=</span> <span class="s2">&quot;dataset/criteo_y.npz&quot;</span>
 <span class="n">x_path</span> <span class="o">=</span> <span class="s2">&quot;dataset/criteo_X.npz&quot;</span>
@@ -152,10 +154,10 @@ GPUs, or distributed computing architectures.</p>
 <span class="math notranslate nohighlight">\(\ell_1\)</span>-regularization, choosing the regularization parameter such that the
 obtained solution has about 10% non-zero coefficients. It runs on 16 threads.
 We also fit an intercept.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cyanure.estimators</span> <span class="kn">import</span> <span class="n">Classifier</span>
-<span class="kn">from</span> <span class="nn">cyanure.data_processing</span> <span class="kn">import</span> <span class="n">preprocess</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.sparse</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.estimators</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.data_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">preprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse</span>
 
 <span class="c1">#load rcv1 dataset about 1Gb, n=781265, p=47152</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;dataset/rcv1.npz&#39;</span><span class="p">,</span><span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -201,9 +203,9 @@ We also fit an intercept.:</p>
 <p>Let us now do something a bit more involved and perform multinomial logistic regression on the
 <em>ckn_mnist</em> dataset (10 classes, n=60000, p=2304, dense matrix), with multi-task group lasso regularization,
 using 2 Intel(R) Xeon(R) Silver 4112 CPU &#64; 2.60GHz CPUs with 32Gb of memory., and choosing a regularization parameter that yields a solution with 5% non zero coefficients.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cyanure.estimators</span> <span class="kn">import</span> <span class="n">Classifier</span>
-<span class="kn">from</span> <span class="nn">cyanure.data_processing</span> <span class="kn">import</span> <span class="n">preprocess</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.estimators</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.data_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">preprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
 <span class="c1">#load ckn_mnist dataset 10 classes, n=60000, p=2304</span>
@@ -250,9 +252,9 @@ using 2 Intel(R) Xeon(R) Silver 4112 CPU &#64; 2.60GHz CPUs with 32Gb of memory.
 </div>
 <p>Learning the multiclass classifier took about 5mn and 26s. To conclude, we provide a last more classical example
 of learning l2-logistic regression classifiers on the same dataset, in a one-vs-all fashion.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cyanure.estimators</span> <span class="kn">import</span> <span class="n">Classifier</span>
-<span class="kn">from</span> <span class="nn">cyanure.data_processing</span> <span class="kn">import</span> <span class="n">preprocess</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.estimators</span><span class="w"> </span><span class="kn">import</span> <span class="n">Classifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cyanure.data_processing</span><span class="w"> </span><span class="kn">import</span> <span class="n">preprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
 <span class="c1">#load ckn_mnist dataset 10 classes, n=60000, p=2304</span>
