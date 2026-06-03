@@ -82,22 +82,31 @@ if platform.system() == "Windows":
     else:
         if np_blas == "" or "openblas" in np_blas:
             EXTRA_COMPILE_ARGS = [
-                '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '-DINT_64BITS', '-DAXPBY',
                 '/permissive-', '/W1']
-            LIBS = ["libopenblas"]
+            # conda-forge ships the OpenBLAS import library as openblas.lib
+            LIBS = ["openblas"] if "CONDA_BUILD" in os.environ else ["libopenblas"]
 
         elif 'blas' in np_blas:
             EXTRA_COMPILE_ARGS = [
-                '-DINT_64BITS', '-DAXPBY', '/PIC',
+                '-DINT_64BITS', '-DAXPBY',
                 '/permissive-', '/W1']
             LIBS = ['lapack', 'blas']
 
-    if struct.calcsize("P") * 8 == 32:
+    if "CONDA_BUILD" in os.environ:
+        # conda-build (conda-forge): OpenBLAS headers live under
+        # Library\include\openblas (CMake install layout); libs under Library\lib.
+        library_prefix = os.environ["LIBRARY_PREFIX"]
+        INCLUDE_DIRS = [os.path.join(library_prefix, "include"),
+                        os.path.join(library_prefix, "include", "openblas")] + INCLUDE_DIRS
+        LIBRARY_DIRS = [os.path.join(library_prefix, "lib")] + LIBRARY_DIRS
+    elif struct.calcsize("P") * 8 == 32:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_86/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_86/lib'] + LIBRARY_DIRS
     else:
         INCLUDE_DIRS = ['D:/a/cyanure/cyanure/openblas_64/include'] + INCLUDE_DIRS
         LIBRARY_DIRS = ['D:/a/cyanure/cyanure/openblas_64/lib'] + LIBRARY_DIRS
+
 
 else:
     ##### setup mkl_rt
